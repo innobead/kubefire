@@ -1,6 +1,8 @@
 package cluster
 
-import "github.com/spf13/cobra"
+import (
+	"github.com/spf13/cobra"
+)
 
 func init() {
 	cmds := []*cobra.Command{
