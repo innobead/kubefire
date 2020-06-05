@@ -5,16 +5,14 @@ import (
 	"github.com/innobead/kubefire/pkg/cluster/node"
 )
 
-type Type string
-
 type Error error
 
 const (
-	KUBEADM Type = "kubeadm"
-	SKUBA   Type = "skuba"
+	KUBEADM = "kubeadm"
+	SKUBA   = "skuba"
 )
 
-var BuiltinTypes = map[Type]func() Bootstrapper{
+var BuiltinTypes = map[string]func() Bootstrapper{
 	KUBEADM: NewKubeadmBootstrapper,
 	SKUBA:   NewSkubaBootstrapper,
 }

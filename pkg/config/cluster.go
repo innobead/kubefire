@@ -1,11 +1,9 @@
 package config
 
-import "github.com/innobead/kubefire/pkg/bootstrap"
-
 type Cluster struct {
-	Name         string         `json:"name"`
-	Bootstrapper bootstrap.Type `json:"bootstrapper"`
-	Pubkey       string         `json:"pubkey"`
+	Name         string `json:"name"`
+	Bootstrapper string `json:"bootstrapper"`
+	Pubkey       string `json:"pubkey"`
 
 	Image       string `json:"image"`
 	KernelImage string `json:"kernel_image,omitempty"`
