@@ -1,8 +1,7 @@
 package bootstrap
 
 import (
-	"github.com/innobead/kubefire/pkg/cluster"
-	"github.com/innobead/kubefire/pkg/cluster/node"
+	"github.com/innobead/kubefire/pkg/data"
 )
 
 type Error error
@@ -12,15 +11,12 @@ const (
 	SKUBA   = "skuba"
 )
 
-var BuiltinTypes = map[string]func() Bootstrapper{
-	KUBEADM: NewKubeadmBootstrapper,
-	SKUBA:   NewSkubaBootstrapper,
-}
+var BuiltinTypes = []string{KUBEADM, SKUBA}
 
 type Bootstrapper interface {
-	Init(cluster *cluster.Cluster) Error
-	Bootstrap(node *node.Node) Error
-	Join(node *node.Node) Error
+	Init(cluster *data.Cluster) Error
+	Bootstrap(node *data.Node) Error
+	Join(node *data.Node) Error
 }
 
 type BootstrapperInstaller interface {

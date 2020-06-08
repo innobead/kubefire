@@ -9,7 +9,8 @@ import (
 )
 
 func init() {
-	rootCmd.PersistentFlags().StringVar(&config.LogLevel, "log-level", string(logrus.InfoLevel), "log level")
+	rootCmd.PersistentFlags().StringVar(&config.LogLevel, "log-level", string(logrus.InfoLevel), "Log level")
+	rootCmd.PersistentFlags().StringVar(&config.Output, "output", "", "Output format (ex: json)")
 }
 
 var rootCmd = &cobra.Command{

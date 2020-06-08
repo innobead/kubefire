@@ -6,9 +6,9 @@ import (
 
 func init() {
 	cmds := []*cobra.Command{
+		initCmd,
 		createCmd,
 		deleteCmd,
-		generateCmd,
 		getCmd,
 		listCmd,
 	}

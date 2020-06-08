@@ -9,14 +9,15 @@ type Cluster struct {
 	KernelImage string `json:"kernel_image,omitempty"`
 	KernelArgs  string `json:"kernel_args,omitempty"`
 
+	Admin  Node `json:"admin"`
 	Master Node `json:"master"`
 	Worker Node `json:"worker"`
 }
 
 type Node struct {
-	Count   int      `json:"count"`
-	Memory  string   `json:"memory,omitempty"`
-	Cpus    int      `json:"cpus,omitempty"`
-	Size    string   `json:"size,omitempty"`
-	Cluster *Cluster `json:"-"`
+	Count    int      `json:"count"`
+	Memory   string   `json:"memory,omitempty"`
+	Cpus     int      `json:"cpus,omitempty"`
+	DiskSize string   `json:"disk_size,omitempty"`
+	Cluster  *Cluster `json:"-"`
 }

@@ -1,3 +1,6 @@
 package config
 
-var LogLevel string
+var (
+	LogLevel string
+	Output   string
+)

@@ -11,7 +11,7 @@ var bootstrapper string
 
 func init() {
 	InstallCmd.Flags().BoolVar(&check, "check", false, "Check if the prerequisites are ready")
-	InstallCmd.Flags().StringVar(&bootstrapper, "bootstrapper", string(bootstrap.KUBEADM), fmt.Sprintf("Bootstrapper type. ex: %s", bootstrap.BuiltinTypes))
+	InstallCmd.Flags().StringVar(&bootstrapper, "bootstrapper", string(bootstrap.KUBEADM), fmt.Sprintf("bootstrapper type. ex: %v", bootstrap.BuiltinTypes))
 }
 
 var InstallCmd = &cobra.Command{

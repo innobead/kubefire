@@ -1,26 +1,25 @@
 package bootstrap
 
 import (
-	"github.com/innobead/kubefire/pkg/cluster"
-	"github.com/innobead/kubefire/pkg/cluster/node"
+	"github.com/innobead/kubefire/pkg/data"
 )
 
 type KubeadmBootstrapper struct {
 }
 
-func NewKubeadmBootstrapper() Bootstrapper {
+func NewKubeadmBootstrapper() *KubeadmBootstrapper {
 	return &KubeadmBootstrapper{}
 }
 
-func (k *KubeadmBootstrapper) Init(cluster *cluster.Cluster) Error {
+func (k *KubeadmBootstrapper) Init(cluster *data.Cluster) Error {
 	panic("implement me")
 }
 
-func (k *KubeadmBootstrapper) Bootstrap(node *node.Node) Error {
+func (k *KubeadmBootstrapper) Bootstrap(node *data.Node) Error {
 	panic("implement me")
 }
 
-func (k *KubeadmBootstrapper) Join(node *node.Node) Error {
+func (k *KubeadmBootstrapper) Join(node *data.Node) Error {
 	panic("implement me")
 }
 

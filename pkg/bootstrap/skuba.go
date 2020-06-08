@@ -1,26 +1,25 @@
 package bootstrap
 
 import (
-	"github.com/innobead/kubefire/pkg/cluster"
-	"github.com/innobead/kubefire/pkg/cluster/node"
+	"github.com/innobead/kubefire/pkg/data"
 )
 
 type SkubaBootstrapper struct {
 }
 
-func NewSkubaBootstrapper() Bootstrapper {
+func NewSkubaBootstrapper() *SkubaBootstrapper {
 	return &SkubaBootstrapper{}
 }
 
-func (s *SkubaBootstrapper) Init(cluster *cluster.Cluster) Error {
+func (s *SkubaBootstrapper) Init(cluster *data.Cluster) Error {
 	panic("implement me")
 }
 
-func (s *SkubaBootstrapper) Bootstrap(node *node.Node) Error {
+func (s *SkubaBootstrapper) Bootstrap(node *data.Node) Error {
 	panic("implement me")
 }
 
-func (s *SkubaBootstrapper) Join(node *node.Node) Error {
+func (s *SkubaBootstrapper) Join(node *data.Node) Error {
 	panic("implement me")
 }
 
