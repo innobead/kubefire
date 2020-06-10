@@ -2,6 +2,7 @@ package config
 
 import (
 	"github.com/goccy/go-yaml"
+	"github.com/sirupsen/logrus"
 	"io/ioutil"
 	"os"
 	"path"
@@ -36,14 +37,14 @@ func NewLocalConfigManager() *LocalConfigManager {
 }
 
 func (l *LocalConfigManager) SaveCluster(name string, cluster *Cluster) error {
+	logrus.Infof("Saving cluster (%s) configurations", name)
+
 	d := ClusterDir(name)
 
 	if _, err := os.Stat(d); os.IsNotExist(err) {
 		if err := os.MkdirAll(ClusterDir(name), 0755); err != nil {
 			return err
 		}
-	} else {
-		println(os.IsNotExist(err))
 	}
 
 	bytes, err := yaml.Marshal(cluster)
@@ -59,10 +60,14 @@ func (l *LocalConfigManager) SaveCluster(name string, cluster *Cluster) error {
 }
 
 func (l *LocalConfigManager) DeleteCluster(name string) error {
+	logrus.Infof("Deleting cluster (%s) configurations", name)
+
 	return os.RemoveAll(ClusterDir(name))
 }
 
 func (l *LocalConfigManager) GetCluster(name string) (*Cluster, error) {
+	logrus.Debugf("Getting cluster (%s) configurations", name)
+
 	bytes, err := ioutil.ReadFile(ClusterConfigFile(name))
 	if err != nil {
 		return nil, err
@@ -81,6 +86,8 @@ func (l *LocalConfigManager) GetCluster(name string) (*Cluster, error) {
 }
 
 func (l *LocalConfigManager) ListClusters() ([]*Cluster, error) {
+	logrus.Debugln("Getting the list of cluster configurations")
+
 	clusterDirs, err := ioutil.ReadDir(ClusterRootDir)
 	if err != nil {
 		return nil, err

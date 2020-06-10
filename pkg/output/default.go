@@ -28,7 +28,13 @@ func (d *DefaultOutput) Print(obj interface{}, filters []string, title string) e
 	var tableData [][]string
 
 	if value.Kind() == reflect.Slice {
-		fmt.Printf("= %s\n", title)
+		if value.Len() == 0 {
+			return nil
+		}
+
+		if title != "" {
+			fmt.Printf("= %s\n", title)
+		}
 
 		for i := 0; i < value.Len(); i++ {
 			if value.Index(i).Kind() == reflect.Ptr {
@@ -67,7 +73,9 @@ func (d *DefaultOutput) Print(obj interface{}, filters []string, title string) e
 				}
 
 			default:
-				fmt.Printf("= %s\n", title)
+				if title != "" {
+					fmt.Printf("= %s\n", title)
+				}
 
 				d.parse(value, filters, &tableHeaders, &tableData)
 			}

@@ -1,10 +1,12 @@
 package cluster
 
 import (
+	"fmt"
 	"github.com/innobead/kubefire/pkg/bootstrap"
 	pkgconfig "github.com/innobead/kubefire/pkg/config"
 	"github.com/innobead/kubefire/pkg/data"
 	"github.com/innobead/kubefire/pkg/node"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
 
@@ -43,14 +45,19 @@ func NewDefaultManager(nodeManager node.Manager, bootstrapper bootstrap.Bootstra
 }
 
 func (d *DefaultManager) Init(cluster *pkgconfig.Cluster) error {
+	logrus.Infof("Initializing cluster (%s) configuration", cluster.Name)
+	logrus.Debugf("%+v", cluster)
+
 	if _, err := d.ConfigManager.GetCluster(cluster.Name); err == nil {
-		logrus.Warnf("cluster (%s) config (%s) already exists", cluster.Name, pkgconfig.ClusterConfigFile(cluster.Name))
+		return errors.New(fmt.Sprintf("cluster (%s) configuration already exists", cluster.Name))
 	}
 
 	return d.ConfigManager.SaveCluster(cluster.Name, cluster)
 }
 
 func (d *DefaultManager) Create(name string) error {
+	logrus.Infof("Creating cluster (%s)", name)
+
 	cluster, err := d.ConfigManager.GetCluster(name)
 	if err != nil {
 		return err
@@ -71,6 +78,8 @@ func (d *DefaultManager) Create(name string) error {
 }
 
 func (d *DefaultManager) Delete(name string, force bool) error {
+	logrus.Infof("Deleting cluster (%s), force (%t)", name, force)
+
 	cluster, err := d.ConfigManager.GetCluster(name)
 	if err != nil {
 		return err
@@ -99,6 +108,8 @@ func (d *DefaultManager) Delete(name string, force bool) error {
 }
 
 func (d *DefaultManager) Get(name string) (*data.Cluster, error) {
+	logrus.Debugf("Getting cluster (%s)", name)
+
 	configCluster, err := d.ConfigManager.GetCluster(name)
 	if err != nil {
 		return nil, err
@@ -117,6 +128,8 @@ func (d *DefaultManager) Get(name string) (*data.Cluster, error) {
 }
 
 func (d *DefaultManager) List() ([]*data.Cluster, error) {
+	logrus.Debugln("Listing clusters")
+
 	configClusters, err := d.ConfigManager.ListClusters()
 	if err != nil {
 		return nil, err

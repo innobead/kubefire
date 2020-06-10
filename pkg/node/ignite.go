@@ -28,6 +28,8 @@ func NewIgniteNodeManager() *IgniteNodeManager {
 }
 
 func (i *IgniteNodeManager) CreateNodes(nodeType Type, node *config.Node) Error {
+	logrus.Infof("Creating nodes of cluster (%s)", node.Cluster.Name)
+
 	tmp, err := template.New("create").Parse(RunCmd)
 	if err != nil {
 		return err
@@ -38,7 +40,7 @@ func (i *IgniteNodeManager) CreateNodes(nodeType Type, node *config.Node) Error 
 	for i := 1; i <= node.Count; i++ {
 		tmpBuffer := &bytes.Buffer{}
 
-		c := &struct {
+		node := &struct {
 			Name        string
 			Image       string
 			KernelImage string
@@ -56,13 +58,15 @@ func (i *IgniteNodeManager) CreateNodes(nodeType Type, node *config.Node) Error 
 			DiskSize:    node.DiskSize,
 		}
 
-		if err := tmp.Execute(tmpBuffer, c); err != nil {
+		if err := tmp.Execute(tmpBuffer, node); err != nil {
 			return err
 		}
 
 		cmd := exec.Command("ignite", strings.Split(tmpBuffer.String(), " ")...)
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
+
+		logrus.Infof("Creating node (%s)", node.Name)
 
 		err := cmd.Start()
 		if err != nil {
@@ -71,13 +75,13 @@ func (i *IgniteNodeManager) CreateNodes(nodeType Type, node *config.Node) Error 
 
 		wgCreateNode.Add(1)
 
-		go func() {
+		go func(name string) {
 			defer wgCreateNode.Done()
 
 			if err := cmd.Wait(); err != nil {
-				logrus.WithError(err).Errorln("")
+				logrus.WithError(err).Errorf("failed to create node (%s)", name)
 			}
-		}()
+		}(node.Name)
 	}
 
 	wgCreateNode.Wait()
@@ -86,26 +90,11 @@ func (i *IgniteNodeManager) CreateNodes(nodeType Type, node *config.Node) Error 
 }
 
 func (i *IgniteNodeManager) DeleteNodes(nodeType Type, node *config.Node) Error {
-	tmp, err := template.New("create").Parse(DeleteCmd)
-	if err != nil {
-		return err
-	}
+	logrus.Infof("Deleting nodes of type (%s)", nodeType)
 
-	for i := 1; i <= node.Count; i++ {
-		tmpBuffer := &bytes.Buffer{}
-
-		c := &struct {
-			Name string
-		}{
-			Name: fmt.Sprintf("%s-%s-%s", node.Cluster.Name, nodeType, strconv.Itoa(i)),
-		}
-
-		if err := tmp.Execute(tmpBuffer, c); err != nil {
-			return err
-		}
-
-		cmd := exec.Command("ignite", strings.Split(tmpBuffer.String(), " ")...)
-		if err := cmd.Run(); err != nil {
+	for j := 1; j <= node.Count; j++ {
+		name := fmt.Sprintf("%s-%s-%s", node.Cluster.Name, nodeType, strconv.Itoa(j))
+		if err := i.DeleteNode(name); err != nil {
 			return err
 		}
 	}
@@ -114,6 +103,8 @@ func (i *IgniteNodeManager) DeleteNodes(nodeType Type, node *config.Node) Error 
 }
 
 func (i *IgniteNodeManager) DeleteNode(name string) Error {
+	logrus.Infof("Deleting node (%s)", name)
+
 	tmp, err := template.New("delete").Parse(DeleteCmd)
 	if err != nil {
 		return err
@@ -139,6 +130,8 @@ func (i *IgniteNodeManager) DeleteNode(name string) Error {
 }
 
 func (i *IgniteNodeManager) GetNode(name string) (*data.Node, Error) {
+	logrus.Debugf("Getting node (%s)", name)
+
 	cmdArgs := strings.Split(fmt.Sprintf("ps --all -f {{.ObjectMeta.Name}}=%s", name), " ")
 	cmd := exec.Command("ignite", cmdArgs...)
 
@@ -200,6 +193,8 @@ func (i *IgniteNodeManager) GetNode(name string) (*data.Node, Error) {
 }
 
 func (i *IgniteNodeManager) ListNodes(clusterName string) ([]*data.Node, Error) {
+	logrus.Debugf("Listing nodes of cluster (%s)", clusterName)
+
 	cmdArgs := strings.Split("ps --all", " ")
 
 	if clusterName != "" {

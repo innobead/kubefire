@@ -6,9 +6,13 @@ GO_LDFLAGS=-ldflags "-X=github.com/innobead/kubefire/internal/config.BuildVersio
 BUILD_DIR=target
 
 .PHONY: build
-build: clean
+build: clean format
 	mkdir -p $(BUILD_DIR)
 	go build -o $(BUILD_DIR) $(GO_LDFLAGS) ./cmd/...
+
+.PHONY: format
+format:
+	go fmt ./...
 
 .PHONY: clean
 clean:

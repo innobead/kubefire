@@ -15,7 +15,6 @@ var getCmd = &cobra.Command{
 			return err
 		}
 
-		// print the cluster config
 		if err := util.Output().Print(cluster, nil, ""); err != nil {
 			return err
 		}
