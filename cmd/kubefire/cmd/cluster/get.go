@@ -1,9 +1,7 @@
 package cluster
 
 import (
-	"fmt"
 	"github.com/innobead/kubefire/internal/util"
-	"github.com/innobead/kubefire/pkg/config"
 	"github.com/spf13/cobra"
 )
 
@@ -17,23 +15,9 @@ var getCmd = &cobra.Command{
 			return err
 		}
 
-		if err := util.Output().Print(cluster.Config); err != nil {
+		// print the cluster config
+		if err := util.Output().Print(cluster, nil, ""); err != nil {
 			return err
-		}
-		println("")
-
-		data := map[string]*config.Node{
-			"Admin Node":  &cluster.Config.Admin,
-			"Master Node": &cluster.Config.Master,
-			"Worker Node": &cluster.Config.Worker,
-		}
-
-		for k, v := range data {
-			fmt.Printf("# %s\n", k)
-
-			if err := util.Output().Print(v); err != nil {
-				return err
-			}
 		}
 
 		return nil

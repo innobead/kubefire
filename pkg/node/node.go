@@ -7,10 +7,18 @@ import (
 
 type Error error
 
+type Type string
+
+const (
+	Admin  Type = "admin"
+	Master Type = "master"
+	Worker Type = "worker"
+)
+
 type Manager interface {
-	CreateNodes(clusterName string, node *config.Node) Error
-	DeleteNodes(clusterName string, node *config.Node) Error
+	CreateNodes(nodeType Type, node *config.Node) Error
+	DeleteNodes(nodeType Type, node *config.Node) Error
 	Delete(name string) Error
 	Get(name string) (*data.Node, Error)
-	List() ([]*data.Node, Error)
+	List(clusterName string) ([]*data.Node, Error)
 }

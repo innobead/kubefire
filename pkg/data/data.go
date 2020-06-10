@@ -3,11 +3,17 @@ package data
 import "github.com/innobead/kubefire/pkg/config"
 
 type Cluster struct {
-	Name   string
-	Config *config.Cluster
+	Name  string
+	Spec  config.Cluster
+	Nodes []*Node
 }
 
 type Node struct {
 	Name   string
-	Config *config.Node
+	Spec   config.Node
+	Status NodeStatus
+}
+
+type NodeStatus struct {
+	Running bool
 }

@@ -1,7 +1,7 @@
 package config
 
 import (
-	"github.com/go-yaml/yaml"
+	"github.com/goccy/go-yaml"
 	"io/ioutil"
 	"os"
 	"path"
@@ -68,12 +68,16 @@ func (l *LocalConfigManager) Get(name string) (*Cluster, error) {
 		return nil, err
 	}
 
-	c := Cluster{}
-	if err := yaml.Unmarshal(bytes, &c); err != nil {
+	c := &Cluster{}
+	if err := yaml.Unmarshal(bytes, c); err != nil {
 		return nil, err
 	}
 
-	return &c, nil
+	c.Admin.Cluster = c
+	c.Master.Cluster = c
+	c.Worker.Cluster = c
+
+	return c, nil
 }
 
 func (l *LocalConfigManager) List() ([]*Cluster, error) {
