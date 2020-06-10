@@ -22,7 +22,7 @@ func init() {
 	flags.StringVar(&cluster.KernelImage, "kernel-image", "innobead/ignite-kernel:4.19.125-amd64", "")
 	flags.StringVar(&cluster.KernelArgs, "kernel-args", "console=ttyS0 reboot=k panic=1 pci=off ip=dhcp security=apparmor apparmor=1", "")
 
-	flags.IntVar(&cluster.Admin.Count, "admin-count", 1, "")
+	flags.IntVar(&cluster.Admin.Count, "admin-count", 0, "")
 	flags.IntVar(&cluster.Admin.Cpus, "admin-cpu", 1, "")
 	flags.StringVar(&cluster.Admin.Memory, "admin-memory", "512MB", "")
 	flags.StringVar(&cluster.Admin.DiskSize, "admin-size", "2GB", "")
