@@ -18,7 +18,7 @@ const (
 type Manager interface {
 	CreateNodes(nodeType Type, node *config.Node) Error
 	DeleteNodes(nodeType Type, node *config.Node) Error
-	Delete(name string) Error
-	Get(name string) (*data.Node, Error)
-	List(clusterName string) ([]*data.Node, Error)
+	DeleteNode(name string) Error
+	GetNode(name string) (*data.Node, Error)
+	ListNodes(clusterName string) ([]*data.Node, Error)
 }

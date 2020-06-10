@@ -11,22 +11,22 @@ func NewSkubaBootstrapper() *SkubaBootstrapper {
 	return &SkubaBootstrapper{}
 }
 
-func (s *SkubaBootstrapper) Init(cluster *data.Cluster) Error {
+func (s *SkubaBootstrapper) Init(cluster *data.Cluster) error {
 	panic("implement me")
 }
 
-func (s *SkubaBootstrapper) Bootstrap(node *data.Node) Error {
+func (s *SkubaBootstrapper) Bootstrap(node *data.Node) error {
 	panic("implement me")
 }
 
-func (s *SkubaBootstrapper) Join(node *data.Node) Error {
+func (s *SkubaBootstrapper) Join(node *data.Node) error {
 	panic("implement me")
 }
 
-func (s *SkubaBootstrapper) Install() Error {
+func (s *SkubaBootstrapper) InstallRequirements() error {
 	panic("implement me")
 }
 
-func (k *SkubaBootstrapper) Check() Error {
+func (k *SkubaBootstrapper) CheckRequirements() error {
 	panic("implement me")
 }

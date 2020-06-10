@@ -1,8 +1,8 @@
 package config
 
 type Manager interface {
-	Save(name string, cluster *Cluster) error
-	Delete(name string) error
-	Get(name string) (*Cluster, error)
-	List() ([]*Cluster, error)
+	SaveCluster(name string, cluster *Cluster) error
+	DeleteCluster(name string) error
+	GetCluster(name string) (*Cluster, error)
+	ListClusters() ([]*Cluster, error)
 }

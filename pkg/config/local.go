@@ -35,7 +35,7 @@ func NewLocalConfigManager() *LocalConfigManager {
 	return &LocalConfigManager{}
 }
 
-func (l *LocalConfigManager) Save(name string, cluster *Cluster) error {
+func (l *LocalConfigManager) SaveCluster(name string, cluster *Cluster) error {
 	d := ClusterDir(name)
 
 	if _, err := os.Stat(d); os.IsNotExist(err) {
@@ -58,11 +58,11 @@ func (l *LocalConfigManager) Save(name string, cluster *Cluster) error {
 	return nil
 }
 
-func (l *LocalConfigManager) Delete(name string) error {
+func (l *LocalConfigManager) DeleteCluster(name string) error {
 	return os.RemoveAll(ClusterDir(name))
 }
 
-func (l *LocalConfigManager) Get(name string) (*Cluster, error) {
+func (l *LocalConfigManager) GetCluster(name string) (*Cluster, error) {
 	bytes, err := ioutil.ReadFile(ClusterConfigFile(name))
 	if err != nil {
 		return nil, err
@@ -80,7 +80,7 @@ func (l *LocalConfigManager) Get(name string) (*Cluster, error) {
 	return c, nil
 }
 
-func (l *LocalConfigManager) List() ([]*Cluster, error) {
+func (l *LocalConfigManager) ListClusters() ([]*Cluster, error) {
 	clusterDirs, err := ioutil.ReadDir(ClusterRootDir)
 	if err != nil {
 		return nil, err
@@ -93,7 +93,7 @@ func (l *LocalConfigManager) List() ([]*Cluster, error) {
 			continue
 		}
 
-		c, err := l.Get(clusterDir.Name())
+		c, err := l.GetCluster(clusterDir.Name())
 		if err != nil {
 			return nil, err
 		}

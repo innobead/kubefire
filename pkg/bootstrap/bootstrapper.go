@@ -4,8 +4,6 @@ import (
 	"github.com/innobead/kubefire/pkg/data"
 )
 
-type Error error
-
 const (
 	KUBEADM = "kubeadm"
 	SKUBA   = "skuba"
@@ -14,12 +12,12 @@ const (
 var BuiltinTypes = []string{KUBEADM, SKUBA}
 
 type Bootstrapper interface {
-	Init(cluster *data.Cluster) Error
-	Bootstrap(node *data.Node) Error
-	Join(node *data.Node) Error
+	Init(cluster *data.Cluster) error
+	Bootstrap(node *data.Node) error
+	Join(node *data.Node) error
 }
 
 type BootstrapperInstaller interface {
-	Install() Error
-	Check() Error
+	InstallRequirements() error
+	CheckRequirements() error
 }

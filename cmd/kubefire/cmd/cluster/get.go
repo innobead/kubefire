@@ -7,7 +7,7 @@ import (
 
 var getCmd = &cobra.Command{
 	Use:   "get [name]",
-	Short: "Get cluster",
+	Short: "GetCluster cluster",
 	Args:  util.Validate1thArg("name"),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cluster, err := util.ClusterManager().Get(args[0])

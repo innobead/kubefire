@@ -8,14 +8,12 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type Error error
-
 type Manager interface {
-	Init(cluster *pkgconfig.Cluster) Error
-	Create(name string) Error
-	Delete(name string, force bool) Error
-	Get(name string) (*data.Cluster, Error)
-	List() ([]*data.Cluster, Error)
+	Init(cluster *pkgconfig.Cluster) error
+	Create(name string) error
+	Delete(name string, force bool) error
+	Get(name string) (*data.Cluster, error)
+	List() ([]*data.Cluster, error)
 }
 
 type DefaultManager struct {
@@ -44,16 +42,16 @@ func NewDefaultManager(nodeManager node.Manager, bootstrapper bootstrap.Bootstra
 	}, nil
 }
 
-func (d *DefaultManager) Init(cluster *pkgconfig.Cluster) Error {
-	if _, err := d.ConfigManager.Get(cluster.Name); err == nil {
+func (d *DefaultManager) Init(cluster *pkgconfig.Cluster) error {
+	if _, err := d.ConfigManager.GetCluster(cluster.Name); err == nil {
 		logrus.Warnf("cluster (%s) config (%s) already exists", cluster.Name, pkgconfig.ClusterConfigFile(cluster.Name))
 	}
 
-	return d.ConfigManager.Save(cluster.Name, cluster)
+	return d.ConfigManager.SaveCluster(cluster.Name, cluster)
 }
 
-func (d *DefaultManager) Create(name string) Error {
-	cluster, err := d.ConfigManager.Get(name)
+func (d *DefaultManager) Create(name string) error {
+	cluster, err := d.ConfigManager.GetCluster(name)
 	if err != nil {
 		return err
 	}
@@ -72,8 +70,8 @@ func (d *DefaultManager) Create(name string) Error {
 	return nil
 }
 
-func (d *DefaultManager) Delete(name string, force bool) Error {
-	cluster, err := d.ConfigManager.Get(name)
+func (d *DefaultManager) Delete(name string, force bool) error {
+	cluster, err := d.ConfigManager.GetCluster(name)
 	if err != nil {
 		return err
 	}
@@ -87,46 +85,47 @@ func (d *DefaultManager) Delete(name string, force bool) Error {
 		if err := d.NodeManager.DeleteNodes(t, c); err != nil {
 			if !force {
 				return err
-			} else {
-				logrus.WithError(err).Warnln("failed to delete nodes")
 			}
+
+			logrus.WithError(err).Warnln("failed to delete nodes")
 		}
 	}
 
-	if err := d.ConfigManager.Delete(name); err != nil {
+	if err := d.ConfigManager.DeleteCluster(name); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (d *DefaultManager) Get(name string) (*data.Cluster, Error) {
-	c, err := d.ConfigManager.Get(name)
+func (d *DefaultManager) Get(name string) (*data.Cluster, error) {
+	configCluster, err := d.ConfigManager.GetCluster(name)
 	if err != nil {
 		return nil, err
 	}
 
-	ns, err := d.NodeManager.List(name)
+	nodes, err := d.NodeManager.ListNodes(name)
 	if err != nil {
 		return nil, err
 	}
 
 	return &data.Cluster{
-		Name:  c.Name,
-		Spec:  *c,
-		Nodes: ns,
+		Name:  configCluster.Name,
+		Spec:  *configCluster,
+		Nodes: nodes,
 	}, nil
 }
 
-func (d *DefaultManager) List() ([]*data.Cluster, Error) {
-	cs, err := d.ConfigManager.List()
+func (d *DefaultManager) List() ([]*data.Cluster, error) {
+	configClusters, err := d.ConfigManager.ListClusters()
 	if err != nil {
 		return nil, err
 	}
 
 	var clusters []*data.Cluster
 
-	for _, c := range cs {
+	for _, c := range configClusters {
+		// no need to have nodes info
 		clusters = append(clusters, &data.Cluster{
 			Name: c.Name,
 			Spec: *c,

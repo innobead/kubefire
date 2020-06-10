@@ -8,7 +8,7 @@ import (
 
 var listCmd = &cobra.Command{
 	Use:   "list",
-	Short: "List clusters",
+	Short: "ListClusters clusters",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		clusters, err := util.ClusterManager().List()
 		if err != nil {

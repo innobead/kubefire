@@ -11,22 +11,22 @@ func NewKubeadmBootstrapper() *KubeadmBootstrapper {
 	return &KubeadmBootstrapper{}
 }
 
-func (k *KubeadmBootstrapper) Init(cluster *data.Cluster) Error {
+func (k *KubeadmBootstrapper) Init(cluster *data.Cluster) error {
 	panic("implement me")
 }
 
-func (k *KubeadmBootstrapper) Bootstrap(node *data.Node) Error {
+func (k *KubeadmBootstrapper) Bootstrap(node *data.Node) error {
 	panic("implement me")
 }
 
-func (k *KubeadmBootstrapper) Join(node *data.Node) Error {
+func (k *KubeadmBootstrapper) Join(node *data.Node) error {
 	panic("implement me")
 }
 
-func (k *KubeadmBootstrapper) Install() Error {
+func (k *KubeadmBootstrapper) InstallRequirements() error {
 	panic("implement me")
 }
 
-func (k *KubeadmBootstrapper) Check() Error {
+func (k *KubeadmBootstrapper) CheckRequirements() error {
 	panic("implement me")
 }

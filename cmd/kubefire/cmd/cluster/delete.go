@@ -13,7 +13,7 @@ func init() {
 
 var deleteCmd = &cobra.Command{
 	Use:   "delete [name]",
-	Short: "Delete cluster",
+	Short: "DeleteCluster cluster",
 	Args:  util.Validate1thArg("name"),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return util.ClusterManager().Delete(args[0], force)

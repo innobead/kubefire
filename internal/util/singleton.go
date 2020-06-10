@@ -23,16 +23,17 @@ func Output() output.Outputer {
 		return outputer
 	}
 
-	t := output.DEFAULT
+	outputType := output.DEFAULT
 
 	switch config.Output {
 	case "json":
-		t = output.JSON
+		outputType = output.JSON
+
 	case "yaml":
-		t = output.YAML
+		outputType = output.YAML
 	}
 
-	if o, err := output.NewOutput(t, os.Stdout); err != nil {
+	if o, err := output.NewOutput(outputType, os.Stdout); err != nil {
 		panic(err)
 	} else {
 		outputer = o
