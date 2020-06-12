@@ -3,16 +3,17 @@ package cluster
 import (
 	"github.com/innobead/kubefire/internal/util"
 	"github.com/innobead/kubefire/pkg/config"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
 
 var listCmd = &cobra.Command{
 	Use:   "list",
-	Short: "ListClusters clusters",
+	Short: "List clusters",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		clusters, err := util.ClusterManager().List()
 		if err != nil {
-			return err
+			return errors.WithMessagef(err, "failed to list clusters info")
 		}
 
 		var configClusters []*config.Cluster
@@ -21,7 +22,7 @@ var listCmd = &cobra.Command{
 		}
 
 		if err := util.Output().Print(configClusters, []string{"name", "bootstrapper"}, ""); err != nil {
-			return err
+			return errors.WithMessagef(err, "failed to print output of clusters")
 		}
 
 		return nil

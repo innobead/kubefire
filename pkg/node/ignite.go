@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/innobead/kubefire/pkg/config"
 	"github.com/innobead/kubefire/pkg/data"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"html/template"
 	"os"
@@ -16,8 +17,8 @@ import (
 )
 
 const (
-	RunCmd    = "run {{.Image}} --name={{.Name}} --ssh --kernel-image={{.KernelImage}} --cpus={{.Cpus}} --memory={{.Memory}} --size={{.DiskSize}}"
-	DeleteCmd = "rm {{.Name}} --force"
+	RunCmd    = "ignite run {{.Image}} --name={{.Name}} --ssh --kernel-image={{.KernelImage}} --cpus={{.Cpus}} --memory={{.Memory}} --size={{.DiskSize}}"
+	DeleteCmd = "ignite rm {{.Name}} --force"
 )
 
 type IgniteNodeManager struct {
@@ -27,12 +28,12 @@ func NewIgniteNodeManager() *IgniteNodeManager {
 	return &IgniteNodeManager{}
 }
 
-func (i *IgniteNodeManager) CreateNodes(nodeType Type, node *config.Node) Error {
+func (i *IgniteNodeManager) CreateNodes(nodeType Type, node *config.Node) error {
 	logrus.Infof("Creating nodes of cluster (%s)", node.Cluster.Name)
 
 	tmp, err := template.New("create").Parse(RunCmd)
 	if err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 
 	var wgCreateNode sync.WaitGroup
@@ -59,10 +60,10 @@ func (i *IgniteNodeManager) CreateNodes(nodeType Type, node *config.Node) Error 
 		}
 
 		if err := tmp.Execute(tmpBuffer, node); err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 
-		cmd := exec.Command("ignite", strings.Split(tmpBuffer.String(), " ")...)
+		cmd := exec.Command("sudo", strings.Split(tmpBuffer.String(), " ")...)
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 
@@ -70,7 +71,7 @@ func (i *IgniteNodeManager) CreateNodes(nodeType Type, node *config.Node) Error 
 
 		err := cmd.Start()
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 
 		wgCreateNode.Add(1)
@@ -89,7 +90,7 @@ func (i *IgniteNodeManager) CreateNodes(nodeType Type, node *config.Node) Error 
 	return nil
 }
 
-func (i *IgniteNodeManager) DeleteNodes(nodeType Type, node *config.Node) Error {
+func (i *IgniteNodeManager) DeleteNodes(nodeType Type, node *config.Node) error {
 	logrus.Infof("Deleting nodes of type (%s)", nodeType)
 
 	for j := 1; j <= node.Count; j++ {
@@ -102,12 +103,12 @@ func (i *IgniteNodeManager) DeleteNodes(nodeType Type, node *config.Node) Error 
 	return nil
 }
 
-func (i *IgniteNodeManager) DeleteNode(name string) Error {
+func (i *IgniteNodeManager) DeleteNode(name string) error {
 	logrus.Infof("Deleting node (%s)", name)
 
 	tmp, err := template.New("delete").Parse(DeleteCmd)
 	if err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 
 	tmpBuffer := &bytes.Buffer{}
@@ -118,22 +119,25 @@ func (i *IgniteNodeManager) DeleteNode(name string) Error {
 		Name: name,
 	}
 	if err := tmp.Execute(tmpBuffer, c); err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 
-	cmd := exec.Command("ignite", strings.Split(tmpBuffer.String(), " ")...)
+	cmd := exec.Command("sudo", strings.Split(tmpBuffer.String(), " ")...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
 	if err := cmd.Run(); err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 
 	return nil
 }
 
-func (i *IgniteNodeManager) GetNode(name string) (*data.Node, Error) {
+func (i *IgniteNodeManager) GetNode(name string) (*data.Node, error) {
 	logrus.Debugf("Getting node (%s)", name)
 
-	cmdArgs := strings.Split(fmt.Sprintf("ps --all -f {{.ObjectMeta.Name}}=%s", name), " ")
-	cmd := exec.Command("ignite", cmdArgs...)
+	cmdArgs := strings.Split(fmt.Sprintf("ignite ps --all -f {{.ObjectMeta.Name}}=%s", name), " ")
+	cmd := exec.Command("sudo", cmdArgs...)
 
 	if err := cmd.Run(); err != nil {
 		return nil, err
@@ -163,10 +167,12 @@ func (i *IgniteNodeManager) GetNode(name string) (*data.Node, Error) {
 			newCmdArgs := cmdArgs
 			newCmdArgs = append(newCmdArgs, "-t "+filter)
 
-			cmd := exec.Command("ignite", newCmdArgs...)
+			cmd := exec.Command("sudo", newCmdArgs...)
+			cmd.Stderr = os.Stderr
+
 			output, err := cmd.Output()
 			if err != nil {
-				return nil, err
+				return nil, errors.WithStack(err)
 			}
 
 			fieldValue := strings.TrimSuffix(strings.TrimSpace(string(output)), "\n")
@@ -192,10 +198,10 @@ func (i *IgniteNodeManager) GetNode(name string) (*data.Node, Error) {
 	return node, nil
 }
 
-func (i *IgniteNodeManager) ListNodes(clusterName string) ([]*data.Node, Error) {
+func (i *IgniteNodeManager) ListNodes(clusterName string) ([]*data.Node, error) {
 	logrus.Debugf("Listing nodes of cluster (%s)", clusterName)
 
-	cmdArgs := strings.Split("ps --all", " ")
+	cmdArgs := strings.Split("ignite ps --all", " ")
 
 	if clusterName != "" {
 		cmdArgs = append(
@@ -207,10 +213,12 @@ func (i *IgniteNodeManager) ListNodes(clusterName string) ([]*data.Node, Error) 
 		)
 	}
 
-	cmd := exec.Command("ignite", cmdArgs...)
+	cmd := exec.Command("sudo", cmdArgs...)
+	cmd.Stderr = os.Stderr
+
 	output, err := cmd.Output()
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 
 	var nodes []*data.Node

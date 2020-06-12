@@ -5,13 +5,15 @@ import (
 	"io"
 )
 
-type Type int
+type Type string
 
 const (
-	DEFAULT Type = iota
-	JSON
-	YAML
+	DEFAULT Type = "default"
+	JSON    Type = "json"
+	YAML    Type = "yaml"
 )
+
+var BuiltinTypes = []Type{DEFAULT, JSON, YAML}
 
 type Outputer interface {
 	Print(obj interface{}, filters []string, title string) error

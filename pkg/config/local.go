@@ -37,7 +37,7 @@ func NewLocalConfigManager() *LocalConfigManager {
 }
 
 func (l *LocalConfigManager) SaveCluster(name string, cluster *Cluster) error {
-	logrus.Infof("Saving cluster (%s) configurations", name)
+	logrus.WithField("cluster", name).Infoln("Saving cluster configurations")
 
 	d := ClusterDir(name)
 
@@ -66,7 +66,7 @@ func (l *LocalConfigManager) DeleteCluster(name string) error {
 }
 
 func (l *LocalConfigManager) GetCluster(name string) (*Cluster, error) {
-	logrus.Debugf("Getting cluster (%s) configurations", name)
+	logrus.WithField("cluster", name).Debugln("Getting cluster configurations")
 
 	bytes, err := ioutil.ReadFile(ClusterConfigFile(name))
 	if err != nil {

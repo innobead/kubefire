@@ -5,8 +5,6 @@ import (
 	"github.com/innobead/kubefire/pkg/data"
 )
 
-type Error error
-
 type Type string
 
 const (
@@ -16,9 +14,9 @@ const (
 )
 
 type Manager interface {
-	CreateNodes(nodeType Type, node *config.Node) Error
-	DeleteNodes(nodeType Type, node *config.Node) Error
-	DeleteNode(name string) Error
-	GetNode(name string) (*data.Node, Error)
-	ListNodes(clusterName string) ([]*data.Node, Error)
+	CreateNodes(nodeType Type, node *config.Node) error
+	DeleteNodes(nodeType Type, node *config.Node) error
+	DeleteNode(name string) error
+	GetNode(name string) (*data.Node, error)
+	ListNodes(clusterName string) ([]*data.Node, error)
 }

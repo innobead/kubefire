@@ -9,8 +9,6 @@ KubeFire, manage Kubernetes clusters on FireCracker microVMs.
 
 # Usage
 
-TBU
-
 # Design
 
 TBU

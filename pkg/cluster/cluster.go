@@ -45,7 +45,7 @@ func NewDefaultManager(nodeManager node.Manager, bootstrapper bootstrap.Bootstra
 }
 
 func (d *DefaultManager) Init(cluster *pkgconfig.Cluster) error {
-	logrus.Infof("Initializing cluster (%s) configuration", cluster.Name)
+	logrus.WithField("cluster", cluster.Name).Infof("initializing cluster configuration")
 	logrus.Debugf("%+v", cluster)
 
 	if _, err := d.ConfigManager.GetCluster(cluster.Name); err == nil {
@@ -78,7 +78,10 @@ func (d *DefaultManager) Create(name string) error {
 }
 
 func (d *DefaultManager) Delete(name string, force bool) error {
-	logrus.Infof("Deleting cluster (%s), force (%t)", name, force)
+	logrus.WithFields(logrus.Fields{
+		"cluster": name,
+		"force":   force,
+	}).Infoln("deleting cluster")
 
 	cluster, err := d.ConfigManager.GetCluster(name)
 	if err != nil {
@@ -108,7 +111,7 @@ func (d *DefaultManager) Delete(name string, force bool) error {
 }
 
 func (d *DefaultManager) Get(name string) (*data.Cluster, error) {
-	logrus.Debugf("Getting cluster (%s)", name)
+	logrus.Debugf("getting cluster (%s)", name)
 
 	configCluster, err := d.ConfigManager.GetCluster(name)
 	if err != nil {
@@ -128,7 +131,7 @@ func (d *DefaultManager) Get(name string) (*data.Cluster, error) {
 }
 
 func (d *DefaultManager) List() ([]*data.Cluster, error) {
-	logrus.Debugln("Listing clusters")
+	logrus.Debugln("listing clusters")
 
 	configClusters, err := d.ConfigManager.ListClusters()
 	if err != nil {

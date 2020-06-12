@@ -8,7 +8,7 @@ import (
 func Validate1thArg(name string) cobra.PositionalArgs {
 	return func(cmd *cobra.Command, args []string) error {
 		if err := cobra.ExactArgs(1)(cmd, args); err != nil {
-			return errors.Wrapf(err, "missing %s", name)
+			return errors.WithMessagef(err, "missing %s", name)
 		}
 
 		return nil

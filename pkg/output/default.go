@@ -29,11 +29,12 @@ func (d *DefaultOutput) Print(obj interface{}, filters []string, title string) e
 
 	if value.Kind() == reflect.Slice {
 		if value.Len() == 0 {
+			fmt.Println("Not found")
 			return nil
 		}
 
 		if title != "" {
-			fmt.Printf("= %s\n", title)
+			fmt.Printf("# %s #\n", title)
 		}
 
 		for i := 0; i < value.Len(); i++ {
@@ -53,7 +54,7 @@ func (d *DefaultOutput) Print(obj interface{}, filters []string, title string) e
 		} else {
 			switch value.Interface().(type) {
 			case data.Cluster:
-				fmt.Println("= Cluster Configuration")
+				fmt.Println("# Cluster Configuration #")
 
 				specField := value.FieldByName("Spec")
 
@@ -74,7 +75,7 @@ func (d *DefaultOutput) Print(obj interface{}, filters []string, title string) e
 
 			default:
 				if title != "" {
-					fmt.Printf("= %s\n", title)
+					fmt.Printf("# %s #\n", title)
 				}
 
 				d.parse(value, filters, &tableHeaders, &tableData)
