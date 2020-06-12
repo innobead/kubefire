@@ -3,9 +3,10 @@ package main
 import (
 	"github.com/innobead/kubefire/cmd/kubefire/cmd"
 	"github.com/innobead/kubefire/cmd/kubefire/cmd/cluster"
+	"github.com/innobead/kubefire/cmd/kubefire/cmd/node"
 	"github.com/innobead/kubefire/internal/config"
-	"github.com/innobead/kubefire/internal/util"
 	"github.com/innobead/kubefire/pkg/output"
+	"github.com/innobead/kubefire/pkg/util"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -29,6 +30,7 @@ func main() {
 		cmd.InstallCmd,
 		cmd.VersionCmd,
 		cluster.Cmd,
+		node.Cmd,
 	}
 
 	for _, c := range cmds {

@@ -114,64 +114,72 @@ func (d *DefaultOutput) Print(obj interface{}, filters []string, title string) e
 func (d *DefaultOutput) parse(v reflect.Value, filters []string, tableHeaders *[]string, tableData *[][]string) {
 	switch v.Interface().(type) {
 	case data.Node:
-		filters = append(filters, "Name", "Status.Running")
+		filters = append(
+			filters,
+			"Name",
+			"Status.Running",
+			"Status.IPAddresses",
+			"Status.Image",
+			"Status.Kernel",
+		)
+	}
+
+	updateTableData := func(f reflect.Value, subTableData *[]string) {
+		switch f.Kind() {
+		case reflect.String:
+			*subTableData = append(*subTableData, f.String())
+
+		case reflect.Int:
+			*subTableData = append(*subTableData, strconv.FormatInt(f.Int(), 10))
+
+		case reflect.Bool:
+			*subTableData = append(*subTableData, strconv.FormatBool(f.Bool()))
+		}
 	}
 
 	var subTableData []string
-	filterCount := len(filters)
 
-loop:
 	for i := 0; i < v.NumField(); i++ {
 		f := v.Field(i)
 		fs := v.Type().Field(i)
 
 		if filters != nil {
-			newFilters := filters
-			filterMatched := false
-
-		filterLoop:
 			for _, filter := range filters {
+				newField := f
+				newFieldStruct := fs
+
 				subFilters := strings.Split(filter, ".")
 
 				for i, subFilter := range subFilters {
+					if i == 0 && newFieldStruct.Name != subFilter {
+						break
+					}
+
 					if i > 0 {
-						fs, _ = f.Type().FieldByName(subFilter)
-						f = f.FieldByName(subFilter)
+						newFieldStruct, _ = newField.Type().FieldByName(subFilter)
+						newField = newField.FieldByName(subFilter)
 					}
 
 					if i == len(subFilters)-1 {
-						if strings.EqualFold(subFilter, fs.Name) {
-							filterMatched = true
-							break filterLoop
+						if strings.EqualFold(subFilter, newFieldStruct.Name) {
+							updateTableData(newField, &subTableData)
+
+							if len(*tableHeaders) < len(filters) {
+								*tableHeaders = append(*tableHeaders, newFieldStruct.Name)
+							}
+
+							break
 						}
 					}
-
-					newFilters = append(newFilters, filter)
 				}
 			}
 
-			if !filterMatched {
-				continue loop
-			} else {
-				filters = newFilters
-			}
-		}
-
-		switch f.Kind() {
-		case reflect.String:
-			subTableData = append(subTableData, f.String())
-
-		case reflect.Int:
-			subTableData = append(subTableData, strconv.FormatInt(f.Int(), 10))
-
-		case reflect.Bool:
-			subTableData = append(subTableData, strconv.FormatBool(f.Bool()))
-
-		default:
 			continue
 		}
 
-		if filters != nil && len(*tableHeaders) < filterCount || filterCount == 0 && len(*tableHeaders) < v.NumField() {
+		updateTableData(f, &subTableData)
+
+		if len(*tableHeaders) < v.NumField() {
 			*tableHeaders = append(*tableHeaders, fs.Name)
 		}
 	}

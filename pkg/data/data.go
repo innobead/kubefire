@@ -15,5 +15,8 @@ type Node struct {
 }
 
 type NodeStatus struct {
-	Running bool
+	Running     bool
+	IPAddresses string
+	Image       string
+	Kernel      string
 }

@@ -1,8 +1,14 @@
 package config
 
 import (
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/x509"
+	"encoding/pem"
 	"github.com/goccy/go-yaml"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/crypto/ssh"
 	"io/ioutil"
 	"os"
 	"path"
@@ -21,14 +27,6 @@ func init() {
 	_ = os.MkdirAll(ClusterRootDir, 0755)
 }
 
-func ClusterDir(name string) string {
-	return path.Join(ClusterRootDir, name)
-}
-
-func ClusterConfigFile(name string) string {
-	return path.Join(ClusterDir(name), "cluster.yaml")
-}
-
 type LocalConfigManager struct {
 }
 
@@ -39,12 +37,16 @@ func NewLocalConfigManager() *LocalConfigManager {
 func (l *LocalConfigManager) SaveCluster(name string, cluster *Cluster) error {
 	logrus.WithField("cluster", name).Infoln("Saving cluster configurations")
 
-	d := ClusterDir(name)
+	d := LocalClusterDir(name)
 
 	if _, err := os.Stat(d); os.IsNotExist(err) {
-		if err := os.MkdirAll(ClusterDir(name), 0755); err != nil {
-			return err
+		if err := os.MkdirAll(LocalClusterDir(name), 0755); err != nil {
+			return errors.WithStack(err)
 		}
+	}
+
+	if err := l.generateKeys(cluster); err != nil {
+		return errors.WithStack(err)
 	}
 
 	bytes, err := yaml.Marshal(cluster)
@@ -52,7 +54,7 @@ func (l *LocalConfigManager) SaveCluster(name string, cluster *Cluster) error {
 		return err
 	}
 
-	if err := ioutil.WriteFile(ClusterConfigFile(name), bytes, 0755); err != nil {
+	if err := ioutil.WriteFile(LocalClusterConfigFile(name), bytes, 0755); err != nil {
 		return err
 	}
 
@@ -60,15 +62,15 @@ func (l *LocalConfigManager) SaveCluster(name string, cluster *Cluster) error {
 }
 
 func (l *LocalConfigManager) DeleteCluster(name string) error {
-	logrus.Infof("Deleting cluster (%s) configurations", name)
+	logrus.Infof("deleting cluster (%s) configurations", name)
 
-	return os.RemoveAll(ClusterDir(name))
+	return os.RemoveAll(LocalClusterDir(name))
 }
 
 func (l *LocalConfigManager) GetCluster(name string) (*Cluster, error) {
 	logrus.WithField("cluster", name).Debugln("Getting cluster configurations")
 
-	bytes, err := ioutil.ReadFile(ClusterConfigFile(name))
+	bytes, err := ioutil.ReadFile(LocalClusterConfigFile(name))
 	if err != nil {
 		return nil, err
 	}
@@ -109,4 +111,88 @@ func (l *LocalConfigManager) ListClusters() ([]*Cluster, error) {
 	}
 
 	return clusters, nil
+}
+
+func (l *LocalConfigManager) generateKeys(cluster *Cluster) error {
+	key, err := rsa.GenerateKey(rand.Reader, 2048)
+	if err != nil {
+		return err
+	}
+
+	cluster.Prikey, cluster.Pubkey = LocalClusterKeyFiles(cluster.Name)
+
+	_ = os.Remove(cluster.Prikey)
+	_ = os.Remove(cluster.Pubkey)
+
+	keysInfo := []struct {
+		keyType string
+		path    string
+		private bool
+	}{
+		{
+			"PRIVATE KEY",
+			cluster.Prikey,
+			true,
+		},
+		{
+			"PUBLIC KEY",
+			cluster.Pubkey,
+			false,
+		},
+	}
+
+	var f *os.File
+	defer func() {
+		if f != nil {
+			f.Close()
+		}
+	}()
+
+	for _, keyInfo := range keysInfo {
+		f, err = os.Create(keyInfo.path)
+		if err != nil {
+			return err
+		}
+
+		var encodeErr error
+
+		switch keyInfo.private {
+		case true:
+			encodeErr = pem.Encode(f, &pem.Block{
+				Type:  "RSA PRIVATE KEY",
+				Bytes: x509.MarshalPKCS1PrivateKey(key),
+			})
+
+		default:
+			pubkey, err := ssh.NewPublicKey(&key.PublicKey)
+			if err != nil {
+				return err
+			}
+
+			_, encodeErr = f.Write(ssh.MarshalAuthorizedKey(pubkey))
+		}
+
+		f.Close()
+
+		if encodeErr != nil {
+			_ = os.Remove(cluster.Prikey)
+			_ = os.Remove(cluster.Pubkey)
+
+			return encodeErr
+		}
+	}
+
+	return nil
+}
+
+func LocalClusterDir(name string) string {
+	return path.Join(ClusterRootDir, name)
+}
+
+func LocalClusterConfigFile(name string) string {
+	return path.Join(LocalClusterDir(name), "cluster.yaml")
+}
+
+func LocalClusterKeyFiles(name string) (string, string) {
+	return path.Join(LocalClusterDir(name), "key"), path.Join(LocalClusterDir(name), "key.pub")
 }

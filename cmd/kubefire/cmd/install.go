@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	"github.com/innobead/kubefire/internal/util"
 	"github.com/innobead/kubefire/pkg/bootstrap"
+	"github.com/innobead/kubefire/pkg/util"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )

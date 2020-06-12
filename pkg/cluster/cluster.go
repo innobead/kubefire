@@ -16,6 +16,8 @@ type Manager interface {
 	Delete(name string, force bool) error
 	Get(name string) (*data.Cluster, error)
 	List() ([]*data.Cluster, error)
+	GetNodeManager() node.Manager
+	GetConfigManager() pkgconfig.Manager
 }
 
 type DefaultManager struct {
@@ -56,7 +58,7 @@ func (d *DefaultManager) Init(cluster *pkgconfig.Cluster) error {
 }
 
 func (d *DefaultManager) Create(name string) error {
-	logrus.Infof("Creating cluster (%s)", name)
+	logrus.Infof("creating cluster (%s)", name)
 
 	cluster, err := d.ConfigManager.GetCluster(name)
 	if err != nil {
@@ -149,4 +151,12 @@ func (d *DefaultManager) List() ([]*data.Cluster, error) {
 	}
 
 	return clusters, nil
+}
+
+func (d *DefaultManager) GetNodeManager() node.Manager {
+	return d.NodeManager
+}
+
+func (d *DefaultManager) GetConfigManager() pkgconfig.Manager {
+	return d.ConfigManager
 }

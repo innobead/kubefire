@@ -1,8 +1,8 @@
 package cluster
 
 import (
-	"github.com/innobead/kubefire/internal/util"
 	"github.com/innobead/kubefire/pkg/config"
+	"github.com/innobead/kubefire/pkg/util"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
@@ -21,7 +21,7 @@ var listCmd = &cobra.Command{
 			configClusters = append(configClusters, &c.Spec)
 		}
 
-		if err := util.Output().Print(configClusters, []string{"name", "bootstrapper"}, ""); err != nil {
+		if err := util.Output().Print(configClusters, []string{"Name", "Bootstrapper"}, ""); err != nil {
 			return errors.WithMessagef(err, "failed to print output of clusters")
 		}
 

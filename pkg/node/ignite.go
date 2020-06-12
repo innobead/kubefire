@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	RunCmd    = "ignite run {{.Image}} --name={{.Name}} --ssh --kernel-image={{.KernelImage}} --cpus={{.Cpus}} --memory={{.Memory}} --size={{.DiskSize}}"
+	RunCmd    = "ignite run {{.Image}} --name={{.Name}} --label=cluster={{.Cluster}} --ssh={{.Pubkey}} --kernel-image={{.KernelImage}} --cpus={{.Cpus}} --memory={{.Memory}} --size={{.DiskSize}}"
 	DeleteCmd = "ignite rm {{.Name}} --force"
 )
 
@@ -29,7 +29,7 @@ func NewIgniteNodeManager() *IgniteNodeManager {
 }
 
 func (i *IgniteNodeManager) CreateNodes(nodeType Type, node *config.Node) error {
-	logrus.Infof("Creating nodes of cluster (%s)", node.Cluster.Name)
+	logrus.Infof("creating nodes of cluster (%s)", node.Cluster.Name)
 
 	tmp, err := template.New("create").Parse(RunCmd)
 	if err != nil {
@@ -43,17 +43,21 @@ func (i *IgniteNodeManager) CreateNodes(nodeType Type, node *config.Node) error 
 
 		node := &struct {
 			Name        string
+			Cluster     string
 			Image       string
 			KernelImage string
 			KernelArgs  string
+			Pubkey      string
 			Cpus        int
 			Memory      string
 			DiskSize    string
 		}{
 			Name:        fmt.Sprintf("%s-%s-%s", node.Cluster.Name, nodeType, strconv.Itoa(i)),
+			Cluster:     node.Cluster.Name,
 			Image:       node.Cluster.Image,
 			KernelImage: node.Cluster.KernelImage,
 			KernelArgs:  node.Cluster.KernelArgs,
+			Pubkey:      node.Cluster.Pubkey,
 			Cpus:        node.Cpus,
 			Memory:      node.Memory,
 			DiskSize:    node.DiskSize,
@@ -67,7 +71,7 @@ func (i *IgniteNodeManager) CreateNodes(nodeType Type, node *config.Node) error 
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 
-		logrus.Infof("Creating node (%s)", node.Name)
+		logrus.Infof("creating node (%s)", node.Name)
 
 		err := cmd.Start()
 		if err != nil {
@@ -91,7 +95,7 @@ func (i *IgniteNodeManager) CreateNodes(nodeType Type, node *config.Node) error 
 }
 
 func (i *IgniteNodeManager) DeleteNodes(nodeType Type, node *config.Node) error {
-	logrus.Infof("Deleting nodes of type (%s)", nodeType)
+	logrus.Infof("deleting nodes of type (%s)", nodeType)
 
 	for j := 1; j <= node.Count; j++ {
 		name := fmt.Sprintf("%s-%s-%s", node.Cluster.Name, nodeType, strconv.Itoa(j))
@@ -104,7 +108,7 @@ func (i *IgniteNodeManager) DeleteNodes(nodeType Type, node *config.Node) error 
 }
 
 func (i *IgniteNodeManager) DeleteNode(name string) error {
-	logrus.Infof("Deleting node (%s)", name)
+	logrus.Infof("deleting node (%s)", name)
 
 	tmp, err := template.New("delete").Parse(DeleteCmd)
 	if err != nil {
@@ -145,18 +149,24 @@ func (i *IgniteNodeManager) GetNode(name string) (*data.Node, error) {
 
 	node := &data.Node{
 		Name:   name,
-		Spec:   config.Node{},
+		Spec:   config.Node{Cluster: &config.Cluster{}},
 		Status: data.NodeStatus{},
 	}
 
 	nodeValueFilters := map[interface{}]map[string]string{
+		node.Spec.Cluster: {
+			"{{.ObjectMeta.Labels.cluster}}": "Name",
+		},
 		&node.Spec: {
 			"{{.Spec.CPUs}}":     "Cpus",
 			"{{.Spec.Memory}}":   "Memory",
 			"{{.Spec.DiskSize}}": "DiskSize",
 		},
 		&node.Status: {
-			"{{.Status.Running}}": "Running",
+			"{{.Status.Running}}":     "Running",
+			"{{.Status.IPAddresses}}": "IPAddresses",
+			"{{.Status.Image.ID}}":    "Image",
+			"{{.Status.Kernel.ID}}":   "Kernel",
 		},
 	}
 
@@ -199,7 +209,7 @@ func (i *IgniteNodeManager) GetNode(name string) (*data.Node, error) {
 }
 
 func (i *IgniteNodeManager) ListNodes(clusterName string) ([]*data.Node, error) {
-	logrus.Debugf("Listing nodes of cluster (%s)", clusterName)
+	logrus.Debugf("listing nodes of cluster (%s)", clusterName)
 
 	cmdArgs := strings.Split("ignite ps --all", " ")
 
@@ -237,4 +247,30 @@ func (i *IgniteNodeManager) ListNodes(clusterName string) ([]*data.Node, error) 
 	}
 
 	return nodes, nil
+}
+
+func (i *IgniteNodeManager) LoginBySSH(name string, configManager config.Manager) error {
+	logrus.Debugf("ssh into node (%s)", name)
+
+	node, err := i.GetNode(name)
+	if err != nil {
+		return err
+	}
+
+	cluster, err := configManager.GetCluster(node.Spec.Cluster.Name)
+	if err != nil {
+		return err
+	}
+
+	cmdArgs := strings.Split(fmt.Sprintf("ignite ssh -i %s %s", cluster.Prikey, name), " ")
+	cmd := exec.Command("sudo", cmdArgs...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Stdin = os.Stdin
+
+	if err := cmd.Run(); err != nil {
+		return errors.WithStack(err)
+	}
+
+	return nil
 }

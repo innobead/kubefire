@@ -19,4 +19,5 @@ type Manager interface {
 	DeleteNode(name string) error
 	GetNode(name string) (*data.Node, error)
 	ListNodes(clusterName string) ([]*data.Node, error)
+	LoginBySSH(name string, configManager config.Manager) error
 }
