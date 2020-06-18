@@ -16,6 +16,12 @@ RUNC_VERSION="v1.0.0-rc90"
 mkdir -p $TMP_DIR
 pushd $TMP_DIR
 
+function cleanup() {
+  rm -rf $TMP_DIR || true
+}
+
+trap cleanup EXIT ERR INT TERM
+
 function install_kubeadm() {
   curl -sfOL --remote-name-all https://storage.googleapis.com/kubernetes-release/release/${KUBE_VERSION}/bin/linux/amd64/{kubeadm,kubelet,kubectl}
   chmod +x {kubeadm,kubelet,kubectl}
@@ -27,7 +33,7 @@ function install_kubeadm() {
   systemctl enable --now kubelet
 }
 
-function install_cri_runtime() {
+function install_containerd() {
   local version="${CONTAINERD_VERSION:1}"
   local dir=containerd-$version
 
@@ -43,10 +49,14 @@ function install_cri_runtime() {
   systemctl enable --now containerd
 }
 
+function install_crio() {
+    :
+}
+
 function install_runc() {
-    curl -sSL "https://github.com/opencontainers/runc/releases/download/$RUNC_VERSION/runc.amd64" -o runc
-    chmod +x runc
-    mv runc /usr/local/bin/
+  curl -sSL "https://github.com/opencontainers/runc/releases/download/$RUNC_VERSION/runc.amd64" -o runc
+  chmod +x runc
+  mv runc /usr/local/bin/
 }
 
 function install_cni() {
@@ -59,16 +69,10 @@ function install_kubelet_cri() {
   echo "export CONTAINER_RUNTIME_ENDPOINT=unix:///run/containerd/containerd.sock" >>/etc/profile
 }
 
-function cleanup() {
-  rm -rf $TMP_DIR || true
-}
-
-trap cleanup EXIT ERR INT TERM
-
 install_cni
 install_runc
 install_kubelet_cri
-install_cri_runtime
+install_containerd
 install_kubeadm
 
 popd
