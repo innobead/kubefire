@@ -3,8 +3,9 @@ package config
 import "github.com/sirupsen/logrus"
 
 var (
-	LogLevel string
-	Output   string
+	LogLevel  string
+	Output    string
+	Bootstrap string
 )
 
 func init() {

@@ -1,6 +1,8 @@
 package cluster
 
 import (
+	"github.com/innobead/kubefire/internal/config"
+	"github.com/innobead/kubefire/internal/di"
 	"github.com/innobead/kubefire/pkg/bootstrap"
 	pkgconfig "github.com/innobead/kubefire/pkg/config"
 	"github.com/innobead/kubefire/pkg/util"
@@ -12,6 +14,8 @@ var cluster = pkgconfig.Cluster{
 	Master: pkgconfig.Node{},
 	Worker: pkgconfig.Node{},
 }
+
+var forceCreate bool
 
 func init() {
 	flags := createCmd.Flags()
@@ -36,6 +40,10 @@ func init() {
 	flags.IntVar(&cluster.Worker.Cpus, "worker-cpu", 2, "CPUs of worker node")
 	flags.StringVar(&cluster.Worker.Memory, "worker-memory", "2GB", "memory of worker node")
 	flags.StringVar(&cluster.Worker.DiskSize, "worker-size", "10GB", "disk size of worker node")
+
+	flags.BoolVar(&forceCreate, "force", false, "force to recreate")
+
+	config.Bootstrap = cluster.Bootstrapper
 }
 
 var createCmd = &cobra.Command{
@@ -45,12 +53,25 @@ var createCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cluster.Name = args[0]
 
-		if err := util.ClusterManager().Init(&cluster); err != nil {
+		if forceCreate {
+			_ = di.ClusterManager().Delete(cluster.Name, true)
+		}
+
+		if err := di.ClusterManager().Init(&cluster); err != nil {
 			return errors.WithMessagef(err, "failed to init cluster (%s)", cluster.Name)
 		}
 
-		if err := util.ClusterManager().Create(cluster.Name); err != nil {
+		if err := di.ClusterManager().Create(cluster.Name); err != nil {
 			return errors.WithMessagef(err, "failed to create cluster (%s)", cluster.Name)
+		}
+
+		c, err := di.ClusterManager().Get(cluster.Name)
+		if err != nil {
+			return errors.WithMessagef(err, "failed to get cluster (%s) before bootstrapping", cluster.Name)
+		}
+
+		if err := di.Bootstrapper().Deploy(c); err != nil {
+			return errors.WithMessagef(err, "failed to deploy cluster (%s)", c.Spec.Bootstrapper)
 		}
 
 		return nil

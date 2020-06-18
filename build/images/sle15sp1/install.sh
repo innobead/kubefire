@@ -1,5 +1,13 @@
 #!/usr/bin/env bash
 
+cleanup() {
+  zypper rr product
+  zypper rr product-update
+  zypper rr basesystem
+  zypper rr basesystem-update
+}
+trap cleanup EXIT
+
 zypper ar http://download.suse.de/ibs/SUSE/Products/SLE-Product-SLES/15-SP1/x86_64/product product
 zypper ar http://download.suse.de/ibs/SUSE/Updates/SLE-Product-SLES/15-SP1/x86_64/update/ product-update
 zypper ar http://download.suse.de/ibs/SUSE/Products/SLE-Module-Basesystem/15-SP1/x86_64/product/ basesystem
@@ -23,7 +31,14 @@ zypper -n install -f -y \
         wget \
         e2fsprogs \
         device-mapper \
-        SUSEConnect
+        SUSEConnect \
+        tar \
+        curl \
+        ethtool \
+        socat \
+        ebtables \
+        iptables \
+        conntrack-tools
 
 zypper install -t pattern -f -y apparmor
 zypper install -f -y apparmor-utils

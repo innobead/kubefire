@@ -1,15 +1,16 @@
 package cluster
 
 import (
+	"github.com/innobead/kubefire/internal/di"
 	"github.com/innobead/kubefire/pkg/util"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
 
-var force bool
+var forceDelete bool
 
 func init() {
-	deleteCmd.Flags().BoolVar(&force, "force", false, "force to delete")
+	deleteCmd.Flags().BoolVar(&forceDelete, "force", false, "force to delete")
 }
 
 var deleteCmd = &cobra.Command{
@@ -19,7 +20,7 @@ var deleteCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		name := args[0]
 
-		if err := util.ClusterManager().Delete(name, force); err != nil {
+		if err := di.ClusterManager().Delete(name, forceDelete); err != nil {
 			return errors.WithMessagef(err, "failed to delete cluster (%s)", name)
 		}
 

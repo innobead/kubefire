@@ -27,7 +27,6 @@ var rootCmd = &cobra.Command{
 
 func main() {
 	cmds := []*cobra.Command{
-		cmd.InstallCmd,
 		cmd.VersionCmd,
 		cluster.Cmd,
 		node.Cmd,

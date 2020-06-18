@@ -17,7 +17,14 @@ zypper -n install -f -y \
         sudo \
         wget \
         e2fsprogs \
-        device-mapper
+        device-mapper \
+        tar \
+        curl \
+        ethtool \
+        socat \
+        ebtables \
+        iptables \
+        conntrack-tools
 
 zypper install -t pattern -f -y apparmor
 zypper install -f -y apparmor-utils

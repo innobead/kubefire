@@ -26,24 +26,12 @@ type DefaultManager struct {
 	ConfigManager pkgconfig.Manager
 }
 
-func NewDefaultManager(nodeManager node.Manager, bootstrapper bootstrap.Bootstrapper, configManager pkgconfig.Manager) (Manager, error) {
-	if nodeManager == nil {
-		nodeManager = node.NewIgniteNodeManager()
-	}
-
-	if bootstrapper == nil {
-		bootstrapper = bootstrap.NewKubeadmBootstrapper()
-	}
-
-	if configManager == nil {
-		configManager = pkgconfig.NewLocalConfigManager()
-	}
-
+func NewDefaultManager(nodeManager node.Manager, bootstrapper bootstrap.Bootstrapper, configManager pkgconfig.Manager) Manager {
 	return &DefaultManager{
 		NodeManager:   nodeManager,
 		Bootstrapper:  bootstrapper,
 		ConfigManager: configManager,
-	}, nil
+	}
 }
 
 func (d *DefaultManager) Init(cluster *pkgconfig.Cluster) error {

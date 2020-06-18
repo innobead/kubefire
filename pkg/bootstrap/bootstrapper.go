@@ -12,12 +12,17 @@ const (
 var BuiltinTypes = []string{KUBEADM, SKUBA}
 
 type Bootstrapper interface {
-	Init(cluster *data.Cluster) error
-	Bootstrap(node *data.Node) error
-	Join(node *data.Node) error
+	Deploy(cluster *data.Cluster) error
+
+	init(cluster *data.Cluster) error
+	bootstrap(node *data.Node) error
+	join(node *data.Node) error
 }
 
-type BootstrapperInstaller interface {
-	InstallRequirements() error
-	CheckRequirements() error
-}
+//
+//$ lscpu | grep Virtualization
+//Virtualization:      VT-x
+//
+//$ lsmod | grep kvm
+//kvm_intel             200704  0
+//kvm                   593920  1 kvm_intel

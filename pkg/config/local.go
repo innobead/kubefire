@@ -64,7 +64,7 @@ func (l *LocalConfigManager) SaveCluster(name string, cluster *Cluster) error {
 func (l *LocalConfigManager) DeleteCluster(name string) error {
 	logrus.Infof("deleting cluster (%s) configurations", name)
 
-	return os.RemoveAll(LocalClusterDir(name))
+	return errors.WithStack(os.RemoveAll(LocalClusterDir(name)))
 }
 
 func (l *LocalConfigManager) GetCluster(name string) (*Cluster, error) {
@@ -72,12 +72,12 @@ func (l *LocalConfigManager) GetCluster(name string) (*Cluster, error) {
 
 	bytes, err := ioutil.ReadFile(LocalClusterConfigFile(name))
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 
 	c := &Cluster{}
 	if err := yaml.Unmarshal(bytes, c); err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 
 	c.Admin.Cluster = c
@@ -92,7 +92,7 @@ func (l *LocalConfigManager) ListClusters() ([]*Cluster, error) {
 
 	clusterDirs, err := ioutil.ReadDir(ClusterRootDir)
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 
 	var clusters []*Cluster
@@ -116,7 +116,7 @@ func (l *LocalConfigManager) ListClusters() ([]*Cluster, error) {
 func (l *LocalConfigManager) generateKeys(cluster *Cluster) error {
 	key, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 
 	cluster.Prikey, cluster.Pubkey = LocalClusterKeyFiles(cluster.Name)
@@ -151,7 +151,7 @@ func (l *LocalConfigManager) generateKeys(cluster *Cluster) error {
 	for _, keyInfo := range keysInfo {
 		f, err = os.Create(keyInfo.path)
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 
 		var encodeErr error
@@ -178,7 +178,7 @@ func (l *LocalConfigManager) generateKeys(cluster *Cluster) error {
 			_ = os.Remove(cluster.Prikey)
 			_ = os.Remove(cluster.Pubkey)
 
-			return encodeErr
+			return errors.WithStack(encodeErr)
 		}
 	}
 
