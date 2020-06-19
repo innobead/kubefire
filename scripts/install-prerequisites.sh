@@ -10,7 +10,7 @@ TMP_DIR=/tmp/kubefire
 GOARCH=$(go env GOARCH 2>/dev/null || echo "amd64")
 CONTAINERD_VERSION="v1.3.4"
 IGNITE_VERION="v0.7.0"
-CNI_VERSION="v0.8.2"
+CNI_VERSION="v0.8.6"
 RUNC_VERSION="v1.0.0-rc90"
 
 mkdir -p $TMP_DIR
@@ -22,6 +22,17 @@ function cleanup() {
 
 trap cleanup EXIT ERR INT TERM
 
+function _check_version() {
+  set +o pipefail
+
+  local exec_name=$1
+  local exec_version_cmd=$2
+  local version=$3
+
+  command -v "${exec_name}" && [[ "$(eval "$exec_name $exec_version_cmd")" =~ $version ]]
+  return $?
+}
+
 function check_virtualization() {
   lscpu | grep Virtualization
   lsmod | grep kvm
@@ -30,41 +41,62 @@ function check_virtualization() {
 function check_container_runtime() {
   set +o pipefail
 
-  ! pgrep containerd || pgrep dockerd
+  pgrep containerd
   return $?
 }
 
 function install_containerd() {
+  if _check_version containerd --version $CONTAINERD_VERSION; then
+    echo "containerd (${CONTAINERD_VERSION}) installed already!"
+    return
+  fi
+
   local version="${CONTAINERD_VERSION:1}"
   local dir=containerd-$version
 
-  curl -sSLO "https://github.com/containerd/containerd/releases/download/$CONTAINERD_VERSION/containerd-$version.linux-$GOARCH.tar.gz"
+  curl -sSLO "https://github.com/containerd/containerd/releases/download/${CONTAINERD_VERSION}/containerd-${version}.linux-${GOARCH}.tar.gz"
   mkdir -p $dir
   tar -zxvf $dir*.tar.gz -C $dir
   chmod +x $dir/bin/*
   sudo mv $dir/bin/* /usr/local/bin/
 
-  curl -sSL "https://raw.githubusercontent.com/containerd/containerd/$CONTAINERD_VERSION/containerd.service" >/etc/systemd/system/containerd.service
-  mkdir -p /etc/containerd
-  containerd config default >/etc/containerd/config.toml
-  systemctl enable --now containerd
+  curl -sSLO "https://raw.githubusercontent.com/containerd/containerd/${CONTAINERD_VERSION}/containerd.service"
+  sudo mv containerd.service /etc/systemd/system/containerd.service
+  sudo mkdir -p /etc/containerd
+  containerd config default | sudo tee /etc/containerd/config.toml >/dev/null
+  sudo systemctl enable --now containerd
 }
 
 function install_runc() {
-  curl -sSL "https://github.com/opencontainers/runc/releases/download/$RUNC_VERSION/runc.amd64" -o runc
+  if _check_version runc -version $RUNC_VERSION; then
+    echo "runc (${RUNC_VERSION}) installed already!"
+    return
+  fi
+
+  curl -sSL "https://github.com/opencontainers/runc/releases/download/${RUNC_VERSION}/runc.amd64" -o runc
   chmod +x runc
   sudo mv runc /usr/local/bin/
 }
 
 function install_cni() {
+  if _check_version /opt/cni/bin/bridge --version $CNI_VERSION; then
+    echo "CNI plugins (${CNI_VERSION}) installed already!"
+    return
+  fi
+
   mkdir -p /opt/cni/bin
   curl -L "https://github.com/containernetworking/plugins/releases/download/${CNI_VERSION}/cni-plugins-linux-amd64-${CNI_VERSION}.tgz" | tar -C /opt/cni/bin -xz
 }
 
 function install_ignite() {
+  if _check_version ignite version $IGNITE_VERION; then
+    echo "ignite (${IGNITE_VERION}) installed already!"
+    return
+  fi
+
   for binary in ignite ignited; do
     echo "Installing $binary..."
-    curl -sfLo $binary "https://github.com/weaveworks/ignite/releases/download/$IGNITE_VERION/$binary-$GOARCH"
+    curl -sfLo $binary "https://github.com/weaveworks/ignite/releases/download/${IGNITE_VERION}/${binary}-${GOARCH}"
     chmod +x $binary
     sudo mv $binary /usr/local/bin
   done
