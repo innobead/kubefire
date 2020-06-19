@@ -6,6 +6,7 @@ set -o pipefail
 set -o xtrace
 
 TMP_DIR=/tmp/kubefire
+GOARCH=$(go env GOARCH 2>/dev/null || echo "amd64")
 KUBE_VERSION="v1.18.4" # https://dl.k8s.io/release/stable.txt
 KUBE_RELEASE_VERSION="v0.2.7"
 CONTAINERD_VERSION="v1.3.4"
@@ -23,49 +24,50 @@ function cleanup() {
 trap cleanup EXIT ERR INT TERM
 
 function install_kubeadm() {
-  curl -sfOL --remote-name-all https://storage.googleapis.com/kubernetes-release/release/${KUBE_VERSION}/bin/linux/amd64/{kubeadm,kubelet,kubectl}
+  curl -sfOL --remote-name-all "https://storage.googleapis.com/kubernetes-release/release/${KUBE_VERSION}/bin/linux/${GOARCH}/{kubeadm,kubelet,kubectl}"
   chmod +x {kubeadm,kubelet,kubectl}
-  mv {kubeadm,kubelet,kubectl} /usr/local/bin/
+  sudo mv {kubeadm,kubelet,kubectl} /usr/local/bin/
 
-  curl -sSL "https://raw.githubusercontent.com/kubernetes/release/${KUBE_RELEASE_VERSION}/cmd/kubepkg/templates/latest/deb/kubelet/lib/systemd/system/kubelet.service" | sed "s:/usr/bin:/usr/local/bin:g" >/etc/systemd/system/kubelet.service
+  curl -sSL "https://raw.githubusercontent.com/kubernetes/release/${KUBE_RELEASE_VERSION}/cmd/kubepkg/templates/latest/deb/kubelet/lib/systemd/system/kubelet.service" | sudo sed "s:/usr/bin:/usr/local/bin:g" >/etc/systemd/system/kubelet.service
   mkdir -p /etc/systemd/system/kubelet.service.d
-  curl -sSL "https://raw.githubusercontent.com/kubernetes/release/${KUBE_RELEASE_VERSION}/cmd/kubepkg/templates/latest/deb/kubeadm/10-kubeadm.conf" | sed "s:/usr/bin:/usr/local/bin:g" >/etc/systemd/system/kubelet.service.d/10-kubeadm.conf
-  systemctl enable --now kubelet
+  curl -sSL "https://raw.githubusercontent.com/kubernetes/release/${KUBE_RELEASE_VERSION}/cmd/kubepkg/templates/latest/deb/kubeadm/10-kubeadm.conf" | sudo sed "s:/usr/bin:/usr/local/bin:g" >/etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+  sudo systemctl enable --now kubelet
 }
 
 function install_containerd() {
   local version="${CONTAINERD_VERSION:1}"
   local dir=containerd-$version
 
-  curl -sSLO "https://github.com/containerd/containerd/releases/download/$CONTAINERD_VERSION/containerd-$version.linux-amd64.tar.gz"
+  curl -sSLO "https://github.com/containerd/containerd/releases/download/${CONTAINERD_VERSION}/containerd-${version}.linux-${GOARCH}.tar.gz"
   mkdir -p $dir
   tar -zxvf $dir*.tar.gz -C $dir
   chmod +x $dir/bin/*
-  mv $dir/bin/* /usr/local/bin/
+  sudo mv $dir/bin/* /usr/local/bin/
 
-  curl -sSL "https://raw.githubusercontent.com/containerd/containerd/$CONTAINERD_VERSION/containerd.service" >/etc/systemd/system/containerd.service
-  mkdir -p /etc/containerd
-  containerd config default >/etc/containerd/config.toml
-  systemctl enable --now containerd
+  curl -sSLO "https://raw.githubusercontent.com/containerd/containerd/${CONTAINERD_VERSION}/containerd.service"
+  sudo mv containerd.service /etc/systemd/system/containerd.service
+  sudo mkdir -p /etc/containerd
+  sudo containerd config default >/etc/containerd/config.toml
+  sudo systemctl enable --now containerd
 }
 
 function install_crio() {
-    :
+  :
 }
 
 function install_runc() {
-  curl -sSL "https://github.com/opencontainers/runc/releases/download/$RUNC_VERSION/runc.amd64" -o runc
+  curl -sSL "https://github.com/opencontainers/runc/releases/download/${RUNC_VERSION}/runc.${GOARCH}" -o runc
   chmod +x runc
-  mv runc /usr/local/bin/
+  sudo mv runc /usr/local/bin/
 }
 
 function install_cni() {
   mkdir -p /opt/cni/bin
-  curl -L "https://github.com/containernetworking/plugins/releases/download/${CNI_VERSION}/cni-plugins-linux-amd64-${CNI_VERSION}.tgz" | tar -C /opt/cni/bin -xz
+  curl -sSL "https://github.com/containernetworking/plugins/releases/download/${CNI_VERSION}/cni-plugins-linux-${GOARCH}-${CNI_VERSION}.tgz" | tar -C /opt/cni/bin -xz
 }
 
 function install_kubelet_cri() {
-  curl -L "https://github.com/kubernetes-sigs/cri-tools/releases/download/${CRICTL_VERSION}/crictl-${CRICTL_VERSION}-linux-amd64.tar.gz" | tar -C /usr/local/bin -xz
+  curl -sSL "https://github.com/kubernetes-sigs/cri-tools/releases/download/${CRICTL_VERSION}/crictl-${CRICTL_VERSION}-linux-${GOARCH}.tar.gz" | sudo tar -C /usr/local/bin -xz
   echo "export CONTAINER_RUNTIME_ENDPOINT=unix:///run/containerd/containerd.sock" >>/etc/profile
 }
 
