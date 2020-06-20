@@ -39,7 +39,7 @@ function check_virtualization() {
 }
 
 function install_containerd() {
-  if _check_version /usr/loca/bin/containerd --version $CONTAINERD_VERSION; then
+  if _check_version /usr/local/bin/containerd --version $CONTAINERD_VERSION; then
     echo "containerd (${CONTAINERD_VERSION}) installed already!"
     return
   fi
@@ -61,7 +61,7 @@ function install_containerd() {
 }
 
 function install_runc() {
-  if _check_version /usr/loca/bin/runc -version $RUNC_VERSION; then
+  if _check_version /usr/local/bin/runc -version $RUNC_VERSION; then
     echo "runc (${RUNC_VERSION}) installed already!"
     return
   fi
@@ -82,7 +82,7 @@ function install_cni() {
 }
 
 function install_ignite() {
-  if _check_version /usr/loca/bin/ignite version $IGNITE_VERION; then
+  if _check_version /usr/local/bin/ignite version $IGNITE_VERION; then
     echo "ignite (${IGNITE_VERION}) installed already!"
     return
   fi
