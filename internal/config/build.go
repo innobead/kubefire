@@ -1,3 +1,6 @@
 package config
 
-var BuildVersion string
+var (
+	BuildVersion = ""
+	TagVersion   = "master"
+)

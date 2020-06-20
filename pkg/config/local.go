@@ -14,17 +14,14 @@ import (
 	"path"
 )
 
-const (
-	ProjectDir = ".kubefire"
-)
-
 var (
-	HomeDir, _     = os.UserHomeDir()
-	ClusterRootDir = path.Join(HomeDir, ProjectDir)
+	HomeDir, _ = os.UserHomeDir()
+	RootDir    = path.Join(HomeDir, ".kubefire")
+	BinDir     = path.Join(RootDir, "bin")
 )
 
 func init() {
-	_ = os.MkdirAll(ClusterRootDir, 0755)
+	_ = os.MkdirAll(RootDir, 0755)
 }
 
 type LocalConfigManager struct {
@@ -90,7 +87,7 @@ func (l *LocalConfigManager) GetCluster(name string) (*Cluster, error) {
 func (l *LocalConfigManager) ListClusters() ([]*Cluster, error) {
 	logrus.Debugln("Getting the list of cluster configurations")
 
-	clusterDirs, err := ioutil.ReadDir(ClusterRootDir)
+	clusterDirs, err := ioutil.ReadDir(RootDir)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -186,7 +183,7 @@ func (l *LocalConfigManager) generateKeys(cluster *Cluster) error {
 }
 
 func LocalClusterDir(name string) string {
-	return path.Join(ClusterRootDir, name)
+	return path.Join(RootDir, name)
 }
 
 func LocalClusterConfigFile(name string) string {

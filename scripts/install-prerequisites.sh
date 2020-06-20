@@ -38,15 +38,8 @@ function check_virtualization() {
   lsmod | grep kvm
 }
 
-function check_container_runtime() {
-  set +o pipefail
-
-  pgrep containerd
-  return $?
-}
-
 function install_containerd() {
-  if _check_version containerd --version $CONTAINERD_VERSION; then
+  if _check_version /usr/loca/bin/containerd --version $CONTAINERD_VERSION; then
     echo "containerd (${CONTAINERD_VERSION}) installed already!"
     return
   fi
@@ -68,7 +61,7 @@ function install_containerd() {
 }
 
 function install_runc() {
-  if _check_version runc -version $RUNC_VERSION; then
+  if _check_version /usr/loca/bin/runc -version $RUNC_VERSION; then
     echo "runc (${RUNC_VERSION}) installed already!"
     return
   fi
@@ -89,7 +82,7 @@ function install_cni() {
 }
 
 function install_ignite() {
-  if _check_version ignite version $IGNITE_VERION; then
+  if _check_version /usr/loca/bin/ignite version $IGNITE_VERION; then
     echo "ignite (${IGNITE_VERION}) installed already!"
     return
   fi
@@ -108,11 +101,8 @@ function check_ignite() {
 
 check_virtualization
 
-if ! check_container_runtime; then
-  install_runc
-  install_containerd
-fi
-
+install_runc
+install_containerd
 install_cni
 install_ignite
 check_ignite

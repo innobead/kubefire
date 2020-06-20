@@ -10,6 +10,6 @@ var VersionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Show version",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("Version: %s\n", config.BuildVersion)
+		fmt.Printf("Version: %s\nBuild: %s\n", config.TagVersion, config.BuildVersion)
 	},
 }

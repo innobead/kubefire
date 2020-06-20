@@ -28,6 +28,8 @@ var rootCmd = &cobra.Command{
 func main() {
 	cmds := []*cobra.Command{
 		cmd.VersionCmd,
+		cmd.InstallCmd,
+		cmd.UninstallCmd,
 		cluster.Cmd,
 		node.Cmd,
 	}
@@ -37,7 +39,7 @@ func main() {
 	}
 
 	if err := rootCmd.Execute(); err != nil {
-		logrus.Errorf("%+v", err)
+		logrus.Tracef("%+v", err)
 
 		logrus.WithError(err).Fatalf("failed to run kubefire")
 	}
