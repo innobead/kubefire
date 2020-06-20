@@ -44,6 +44,7 @@ func Download(script Type, version string, force bool) error {
 	if version == "master" {
 		log.Infof("changing to force download script (%s) because tag version is master", script)
 		force = true
+		log = log.WithField("force", force)
 	}
 
 	var err error

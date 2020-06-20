@@ -29,7 +29,7 @@ function _check_version() {
   local exec_version_cmd=$2
   local version=$3
 
-  command -v "${exec_name}" && [[ "$(eval "$exec_name $exec_version_cmd")" =~ $version ]]
+  command -v "${exec_name}" && [[ "$(eval "$exec_name $exec_version_cmd 2>&1")" =~ $version ]]
   return $?
 }
 
