@@ -18,6 +18,9 @@ type Type string
 const (
 	InstallPrerequisites   Type = "install-prerequisites.sh"
 	UninstallPrerequisites Type = "uninstall-prerequisites.sh"
+
+	InstallPrerequisitesKubeadm Type = "install-prerequisites-kubeadm.sh"
+	InstallPrerequisitesSkuba   Type = "install-prerequisites-skuba.sh"
 )
 
 const (
@@ -30,6 +33,10 @@ func InstallPrerequisitesFile(version string) string {
 
 func UninstallPrerequisitesFile(version string) string {
 	return path.Join(config.BinDir, version, string(UninstallPrerequisites))
+}
+
+func RemoteScriptUrl(script Type) string {
+	return fmt.Sprintf(DownloadScriptEndpointFormat, script)
 }
 
 func Download(script Type, version string, force bool) error {
@@ -51,7 +58,7 @@ func Download(script Type, version string, force bool) error {
 
 	switch script {
 	case InstallPrerequisites:
-		url := fmt.Sprintf(DownloadScriptEndpointFormat, InstallPrerequisites)
+		url := RemoteScriptUrl(InstallPrerequisites)
 		destFile := InstallPrerequisitesFile(version)
 
 		log.Infof("downloading %s to save %s", url, destFile)
@@ -62,7 +69,7 @@ func Download(script Type, version string, force bool) error {
 		)
 
 	case UninstallPrerequisites:
-		url := fmt.Sprintf(DownloadScriptEndpointFormat, UninstallPrerequisites)
+		url := RemoteScriptUrl(UninstallPrerequisites)
 		destFile := UninstallPrerequisitesFile(version)
 
 		log.Infof("downloading %s to save %s", url, destFile)

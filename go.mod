@@ -3,7 +3,9 @@ module github.com/innobead/kubefire
 go 1.14
 
 require (
+	github.com/avast/retry-go v2.6.0+incompatible
 	github.com/goccy/go-yaml v1.7.5
+	github.com/hashicorp/go-multierror v1.1.0
 	github.com/olekukonko/tablewriter v0.0.4
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.6.0

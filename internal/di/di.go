@@ -96,6 +96,8 @@ func ConfigManager() pkgconfig.Manager {
 }
 
 func Bootstrapper() bootstrap.Bootstrapper {
+	nm := NodeManager()
+
 	lock.Lock()
 	defer lock.Unlock()
 
@@ -105,10 +107,10 @@ func Bootstrapper() bootstrap.Bootstrapper {
 
 	switch config.Bootstrap {
 	case bootstrap.SKUBA:
-		bootstrapper = bootstrap.NewSkubaBootstrapper()
+		bootstrapper = bootstrap.NewSkubaBootstrapper(nm)
 
 	case bootstrap.KUBEADM:
-		bootstrapper = bootstrap.NewKubeadmBootstrapper()
+		bootstrapper = bootstrap.NewKubeadmBootstrapper(nm)
 	}
 
 	return bootstrapper

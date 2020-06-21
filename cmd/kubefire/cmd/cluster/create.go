@@ -36,7 +36,7 @@ func init() {
 	flags.StringVar(&cluster.Master.Memory, "master-memory", "2GB", "memory of master node")
 	flags.StringVar(&cluster.Master.DiskSize, "master-size", "10GB", "disk size of master node")
 
-	flags.IntVar(&cluster.Worker.Count, "worker-count", 1, "count of worker node")
+	flags.IntVar(&cluster.Worker.Count, "worker-count", 0, "count of worker node")
 	flags.IntVar(&cluster.Worker.Cpus, "worker-cpu", 2, "CPUs of worker node")
 	flags.StringVar(&cluster.Worker.Memory, "worker-memory", "2GB", "memory of worker node")
 	flags.StringVar(&cluster.Worker.DiskSize, "worker-size", "10GB", "disk size of worker node")

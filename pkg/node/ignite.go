@@ -3,6 +3,7 @@ package node
 import (
 	"bytes"
 	"fmt"
+	"github.com/avast/retry-go"
 	"github.com/innobead/kubefire/pkg/config"
 	"github.com/innobead/kubefire/pkg/data"
 	"github.com/pkg/errors"
@@ -14,6 +15,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 )
 
 const (
@@ -52,7 +54,7 @@ func (i *IgniteNodeManager) CreateNodes(nodeType Type, node *config.Node) error 
 			Memory      string
 			DiskSize    string
 		}{
-			Name:        fmt.Sprintf("%s-%s-%s", node.Cluster.Name, nodeType, strconv.Itoa(i)),
+			Name:        NodeName(node.Cluster.Name, nodeType, i),
 			Cluster:     node.Cluster.Name,
 			Image:       node.Cluster.Image,
 			KernelImage: node.Cluster.KernelImage,
@@ -98,7 +100,7 @@ func (i *IgniteNodeManager) DeleteNodes(nodeType Type, node *config.Node) error 
 	logrus.Infof("deleting nodes of type (%s)", nodeType)
 
 	for j := 1; j <= node.Count; j++ {
-		name := fmt.Sprintf("%s-%s-%s", node.Cluster.Name, nodeType, strconv.Itoa(j))
+		name := NodeName(node.Cluster.Name, nodeType, j)
 		if err := i.DeleteNode(name); err != nil {
 			return err
 		}
@@ -269,6 +271,29 @@ func (i *IgniteNodeManager) LoginBySSH(name string, configManager config.Manager
 	cmd.Stdin = os.Stdin
 
 	if err := cmd.Run(); err != nil {
+		return errors.WithStack(err)
+	}
+
+	return nil
+}
+
+func (i *IgniteNodeManager) WaitNodesRunning(clusterName string, timeoutMin time.Duration) error {
+	err := retry.Do(func() error {
+		nodes, err := i.ListNodes(clusterName)
+		if err != nil {
+			return err
+		}
+
+		for _, n := range nodes {
+			if !n.Status.Running {
+				return errors.New(fmt.Sprintf("node (%s) is not running", n.Name))
+			}
+		}
+
+		return nil
+	}, retry.Delay(5*time.Second), retry.MaxDelay(timeoutMin*time.Minute))
+
+	if err != nil {
 		return errors.WithStack(err)
 	}
 

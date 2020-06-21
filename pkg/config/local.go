@@ -15,9 +15,10 @@ import (
 )
 
 var (
-	HomeDir, _ = os.UserHomeDir()
-	RootDir    = path.Join(HomeDir, ".kubefire")
-	BinDir     = path.Join(RootDir, "bin")
+	HomeDir, _     = os.UserHomeDir()
+	RootDir        = path.Join(HomeDir, ".kubefire")
+	ClusterRootDir = path.Join(RootDir, "clusters")
+	BinDir         = path.Join(RootDir, "bin")
 )
 
 func init() {
@@ -87,7 +88,7 @@ func (l *LocalConfigManager) GetCluster(name string) (*Cluster, error) {
 func (l *LocalConfigManager) ListClusters() ([]*Cluster, error) {
 	logrus.Debugln("Getting the list of cluster configurations")
 
-	clusterDirs, err := ioutil.ReadDir(RootDir)
+	clusterDirs, err := ioutil.ReadDir(ClusterRootDir)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -151,6 +152,10 @@ func (l *LocalConfigManager) generateKeys(cluster *Cluster) error {
 			return errors.WithStack(err)
 		}
 
+		if err := f.Chmod(0600); err != nil {
+			return errors.WithStack(err)
+		}
+
 		var encodeErr error
 
 		switch keyInfo.private {
@@ -183,7 +188,7 @@ func (l *LocalConfigManager) generateKeys(cluster *Cluster) error {
 }
 
 func LocalClusterDir(name string) string {
-	return path.Join(RootDir, name)
+	return path.Join(ClusterRootDir, name)
 }
 
 func LocalClusterConfigFile(name string) string {

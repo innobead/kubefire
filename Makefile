@@ -14,9 +14,13 @@ CWD=$(shell basename $(CURDIR))
 COMMIT=$(shell git rev-parse --short HEAD)
 TAG=$(shell git name-rev --tags --name-only $$(git rev-parse HEAD) | sed s/undefined/master/)
 IMAGES=$(shell ls ./build/images)
+GOBIN=$(shell go env GOBIN)
 
 GO_LDFLAGS=-ldflags "-X=github.com/innobead/kubefire/internal/config.BuildVersion=$(COMMIT) -X=github.com/innobead/kubefire/internal/config.TagVersion=$(TAG)"
 BUILD_DIR=target
+
+install: build
+	cp $(BUILD_DIR)/kubefire $(GOBIN)
 
 build: clean format
 	mkdir -p $(BUILD_DIR)
