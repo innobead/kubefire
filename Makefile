@@ -38,7 +38,7 @@ build-images:
 	for i in $(IMAGES); do $(MAKE) build-image-$$i; done
 
 build-image-%:
-	docker build -t innobead/$(CWD):$*-$(COMMIT) build/images/$*
+	docker build -t innobead/$(CWD):$*-$(COMMIT) -f build/images/$*/Dockerfile .
 	docker tag innobead/$(CWD):$*-$(COMMIT) innobead/$(CWD):$*-latest
 
 publish-images:

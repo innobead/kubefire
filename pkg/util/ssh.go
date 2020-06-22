@@ -30,14 +30,17 @@ func CreateSSHClientConfig(keyPath string, user string, sshConfigCB func(config 
 	return sshConfig, nil
 }
 
-func CreateSSHSession(address string, sshConfig *ssh.ClientConfig) (*ssh.Session, error) {
+func CreateSSHClient(address string, sshConfig *ssh.ClientConfig) (*ssh.Client, error) {
 	client, err := ssh.Dial("tcp", address+":22", sshConfig)
 	if err != nil {
 		return nil, err
 	}
-	defer client.Close()
 
-	session, err := client.NewSession()
+	return client, nil
+}
+
+func CreateSSHSession(sshClient *ssh.Client) (*ssh.Session, error) {
+	session, err := sshClient.NewSession()
 	if err != nil {
 		return nil, err
 	}
