@@ -43,14 +43,15 @@ func init() {
 	flags.StringVar(&cluster.Worker.DiskSize, "worker-size", "10GB", "disk size of worker node")
 
 	flags.BoolVar(&forceCreate, "force", false, "force to recreate")
-
-	config.Bootstrap = cluster.Bootstrapper
 }
 
 var createCmd = &cobra.Command{
 	Use:   "create [name]",
 	Short: "Create cluster",
 	Args:  util.Validate1thArg("name"),
+	PreRun: func(cmd *cobra.Command, args []string) {
+		config.Bootstrap = cluster.Bootstrapper
+	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cluster.Name = args[0]
 

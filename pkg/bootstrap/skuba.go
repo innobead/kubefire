@@ -3,6 +3,7 @@ package bootstrap
 import (
 	"context"
 	"fmt"
+	"github.com/avast/retry-go"
 	"github.com/hashicorp/go-multierror"
 	"github.com/innobead/kubefire/pkg/config"
 	"github.com/innobead/kubefire/pkg/data"
@@ -14,6 +15,7 @@ import (
 	"path"
 	"strings"
 	"sync"
+	"time"
 )
 
 type SkubaExtraOptions struct {
@@ -29,7 +31,7 @@ func NewSkubaBootstrapper(nodeManager node.Manager) *SkubaBootstrapper {
 }
 
 func (s *SkubaBootstrapper) Deploy(cluster *data.Cluster) error {
-	extraOptions := cluster.Spec.ParseExtraOptions(SkubaExtraOptions{}).(SkubaExtraOptions)
+	extraOptions := cluster.Spec.ParseExtraOptions(&SkubaExtraOptions{}).(SkubaExtraOptions)
 
 	if err := s.nodeManager.WaitNodesRunning(cluster.Name, 5); err != nil {
 		return errors.WithMessage(err, "some nodes are not running")
@@ -92,7 +94,9 @@ func (s *SkubaBootstrapper) init(cluster *data.Cluster, master *data.Node, extra
 	}
 
 	for _, c := range cmds {
-		cmd := exec.CommandContext(context.Background(), c)
+		cmdArgs := strings.Split(c, " ")
+
+		cmd := exec.CommandContext(context.Background(), cmdArgs[0], cmdArgs[1:]...)
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 		cmd.Stdin = os.Stdin
@@ -126,7 +130,9 @@ func (s *SkubaBootstrapper) bootstrap(master *data.Node, clusterDir string, isSi
 			continue
 		}
 
-		cmd := exec.CommandContext(context.Background(), c.cmdline)
+		cmdArgs := strings.Split(c.cmdline, " ")
+
+		cmd := exec.CommandContext(context.Background(), cmdArgs[0], cmdArgs[1:]...)
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 		cmd.Stdin = os.Stdin
@@ -146,7 +152,9 @@ func (s *SkubaBootstrapper) join(node *data.Node, nodeType node.Type, clusterDir
 	}
 
 	for _, c := range cmds {
-		cmd := exec.CommandContext(context.Background(), c)
+		cmdArgs := strings.Split(c, " ")
+
+		cmd := exec.CommandContext(context.Background(), cmdArgs[0], cmdArgs[1:]...)
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 		cmd.Stdin = os.Stdin
@@ -176,17 +184,45 @@ func (s *SkubaBootstrapper) register(cluster *data.Cluster, extraOptions *SkubaE
 		go func(n *data.Node) {
 			defer wgDone.Done()
 
-			client, err := ssh.NewClient(n.Name, cluster.Spec.Prikey, "root", n.Status.IPAddresses, nil)
-			if err != nil {
-				chErr <- err
-				return
-			}
+			_ = retry.Do(func() error {
+				sshClient, err := ssh.NewClient(
+					n.Name,
+					cluster.Spec.Prikey,
+					"root",
+					n.Status.IPAddresses,
+					nil,
+				)
+				if err != nil {
+					return err
+				}
+				defer sshClient.Close()
 
-			err = client.Run(nil, nil, fmt.Sprintf("SUSEConnect -r %s", extraOptions.RegisterCode))
-			if err != nil {
-				chErr <- err
-				return
-			}
+				client, err := ssh.NewClient(n.Name, cluster.Spec.Prikey, "root", n.Status.IPAddresses, nil)
+				if err != nil {
+					chErr <- err
+					return nil
+				}
+
+				cmds := []string{
+					"zypper in -y tar curl ethtool socat ebtables iptables conntrack-tools", // FIXME workaround until figuring out how to use the latest image on ignite
+					fmt.Sprintf("SUSEConnect -r %s", extraOptions.RegisterCode),
+					"SUSEConnect -p sle-module-containers/15.1/x86_64",
+					fmt.Sprintf("SUSEConnect -p caasp/4.0/x86_64 -r %s", extraOptions.RegisterCode),
+				}
+
+				for _, c := range cmds {
+					err = client.Run(nil, nil, c)
+					if err != nil {
+						chErr <- err
+						return nil
+					}
+				}
+
+				return nil
+			},
+				retry.Delay(10*time.Second),
+				retry.MaxDelay(1*time.Minute),
+			)
 		}(n)
 	}
 
