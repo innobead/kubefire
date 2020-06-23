@@ -2,6 +2,7 @@ package ssh
 
 import (
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/ssh"
 	"os"
 	"strings"
@@ -15,15 +16,17 @@ type Commander interface {
 type Callback func(session *ssh.Session) bool
 
 type Client struct {
+	name    string
 	keyPath string
 	user    string
 	address string
 
 	sshClientConfig *ssh.ClientConfig
 	sshClient       *ssh.Client
+	log             *logrus.Entry
 }
 
-func NewClient(keyPath string, user string, address string, sshClientConfigCallback func(config *ssh.ClientConfig)) (*Client, error) {
+func NewClient(name string, keyPath string, user string, address string, sshClientConfigCallback func(config *ssh.ClientConfig)) (*Client, error) {
 	clientConfig, err := CreateClientConfig(keyPath, user, sshClientConfigCallback)
 	if err != nil {
 		return nil, err
@@ -34,11 +37,13 @@ func NewClient(keyPath string, user string, address string, sshClientConfigCallb
 	}
 
 	client := &Client{
+		name:            name,
 		keyPath:         keyPath,
 		user:            user,
 		sshClientConfig: clientConfig,
 		address:         address,
 	}
+	client.log = logrus.WithField("node", client.name)
 
 	if err := client.Init(); err != nil {
 		return nil, err
@@ -60,6 +65,8 @@ func (c *Client) Init() error {
 
 func (c *Client) Run(before Callback, after Callback, cmds ...string) error {
 	for _, cmd := range cmds {
+		c.log.Infof("running %s", cmd)
+
 		session, err := c.createSSHSession()
 		if err != nil {
 			return err

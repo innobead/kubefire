@@ -12,6 +12,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/ssh"
+	"strings"
 	"sync"
 	"time"
 )
@@ -39,8 +40,9 @@ func (k *KubeadmBootstrapper) Deploy(cluster *data.Cluster) error {
 	if err != nil {
 		return err
 	}
+	firstMaster.Spec.Cluster = &cluster.Spec
 
-	joinCmd, err := k.bootstrap(firstMaster, len(cluster.Nodes) == 0)
+	joinCmd, err := k.bootstrap(firstMaster, len(cluster.Nodes) == 1)
 	if err != nil {
 		return err
 	}
@@ -54,6 +56,7 @@ func (k *KubeadmBootstrapper) Deploy(cluster *data.Cluster) error {
 		if n.Name == firstMaster.Name {
 			continue
 		}
+		n.Spec.Cluster = &cluster.Spec
 
 		if err := k.join(n, joinCmd); err != nil {
 			return err
@@ -79,6 +82,7 @@ func (k *KubeadmBootstrapper) init(cluster *data.Cluster) error {
 
 			_ = retry.Do(func() error {
 				sshClient, err := utilssh.NewClient(
+					n.Name,
 					cluster.Spec.Prikey,
 					"root",
 					n.Status.IPAddresses,
@@ -138,6 +142,7 @@ func (k *KubeadmBootstrapper) bootstrap(node *data.Node, isSingleNode bool) (joi
 	logrus.Infof("bootstrapping the first master node (%s)", node.Name)
 
 	sshClient, err := utilssh.NewClient(
+		node.Name,
 		node.Spec.Cluster.Prikey,
 		"root",
 		node.Status.IPAddresses,
@@ -196,13 +201,14 @@ func (k *KubeadmBootstrapper) bootstrap(node *data.Node, isSingleNode bool) (joi
 		}
 	}
 
-	return joinCmdBuf.String(), nil
+	return strings.TrimSuffix(joinCmdBuf.String(), "\n"), nil
 }
 
 func (k *KubeadmBootstrapper) join(node *data.Node, joinCmd string) error {
 	logrus.Infof("joining node (%s)", node.Name)
 
 	sshClient, err := utilssh.NewClient(
+		node.Name,
 		node.Spec.Cluster.Prikey,
 		"root",
 		node.Status.IPAddresses,
