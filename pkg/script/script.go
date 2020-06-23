@@ -1,6 +1,7 @@
 package script
 
 import (
+	"context"
 	"fmt"
 	"github.com/innobead/kubefire/pkg/config"
 	"github.com/pkg/errors"
@@ -161,7 +162,7 @@ func runScript(script string) error {
 		return errors.WithStack(err)
 	}
 
-	cmd := exec.Command("sudo", script)
+	cmd := exec.CommandContext(context.Background(), "sudo", script)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr

@@ -10,12 +10,19 @@ var InstallCmd = &cobra.Command{
 	Use:   "install",
 	Short: "Install prerequisites",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if err := script.Download(script.InstallPrerequisites, config.TagVersion, false); err != nil {
-			return err
+		scripts := []script.Type{
+			script.InstallPrerequisites,
+			script.InstallPrerequisitesSkuba,
 		}
 
-		if err := script.Run(script.InstallPrerequisites, config.TagVersion); err != nil {
-			return err
+		for _, s := range scripts {
+			if err := script.Download(s, config.TagVersion, false); err != nil {
+				return err
+			}
+
+			if err := script.Run(s, config.TagVersion); err != nil {
+				return err
+			}
 		}
 
 		return nil

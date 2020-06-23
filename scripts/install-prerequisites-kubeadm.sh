@@ -19,6 +19,7 @@ pushd $TMP_DIR
 
 function cleanup() {
   rm -rf $TMP_DIR || true
+  popd
 }
 
 trap cleanup EXIT ERR INT TERM
@@ -73,4 +74,3 @@ install_kubelet_cri
 install_containerd
 install_kubeadm
 
-popd

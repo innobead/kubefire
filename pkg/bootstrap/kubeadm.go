@@ -101,7 +101,7 @@ func (k *KubeadmBootstrapper) init(cluster *data.Cluster) error {
 					"sysctl -w net.ipv4.ip_forward=1",
 					`echo "net.ipv4.ip_forward = 1" >> /etc/sysctl.conf`,
 					`echo "0.0.0.0 $(hostname)" >> /etc/hosts`,
-					`echo "export CONTAINER_RUNTIME_ENDPOINT=unix:///run/containerd/containerd.sock" >> /etc/profile.d/containerd.sh`,
+					`echo "export CONTAINER_RUNTIME_ENDPOINT=unix:///enabled/containerd/containerd.sock" >> /etc/profile.d/containerd.sh`,
 					"kubeadm init phase preflight -v 5",
 				}
 

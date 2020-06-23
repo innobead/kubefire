@@ -2,6 +2,7 @@ package node
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"github.com/avast/retry-go"
 	"github.com/innobead/kubefire/pkg/config"
@@ -69,7 +70,7 @@ func (i *IgniteNodeManager) CreateNodes(nodeType Type, node *config.Node) error 
 			return errors.WithStack(err)
 		}
 
-		cmd := exec.Command("sudo", strings.Split(tmpBuffer.String(), " ")...)
+		cmd := exec.CommandContext(context.Background(), "sudo", strings.Split(tmpBuffer.String(), " ")...)
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 
@@ -128,7 +129,7 @@ func (i *IgniteNodeManager) DeleteNode(name string) error {
 		return errors.WithStack(err)
 	}
 
-	cmd := exec.Command("sudo", strings.Split(tmpBuffer.String(), " ")...)
+	cmd := exec.CommandContext(context.Background(), "sudo", strings.Split(tmpBuffer.String(), " ")...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
@@ -143,7 +144,7 @@ func (i *IgniteNodeManager) GetNode(name string) (*data.Node, error) {
 	logrus.Debugf("Getting node (%s)", name)
 
 	cmdArgs := strings.Split(fmt.Sprintf("ignite ps --all -f {{.ObjectMeta.Name}}=%s", name), " ")
-	cmd := exec.Command("sudo", cmdArgs...)
+	cmd := exec.CommandContext(context.Background(), "sudo", cmdArgs...)
 
 	if err := cmd.Run(); err != nil {
 		return nil, err
@@ -179,7 +180,7 @@ func (i *IgniteNodeManager) GetNode(name string) (*data.Node, error) {
 			newCmdArgs := cmdArgs
 			newCmdArgs = append(newCmdArgs, "-t "+filter)
 
-			cmd := exec.Command("sudo", newCmdArgs...)
+			cmd := exec.CommandContext(context.Background(), "sudo", newCmdArgs...)
 			cmd.Stderr = os.Stderr
 
 			output, err := cmd.Output()
@@ -225,7 +226,7 @@ func (i *IgniteNodeManager) ListNodes(clusterName string) ([]*data.Node, error) 
 		)
 	}
 
-	cmd := exec.Command("sudo", cmdArgs...)
+	cmd := exec.CommandContext(context.Background(), "sudo", cmdArgs...)
 	cmd.Stderr = os.Stderr
 
 	output, err := cmd.Output()
@@ -265,7 +266,7 @@ func (i *IgniteNodeManager) LoginBySSH(name string, configManager config.Manager
 	}
 
 	cmdArgs := strings.Split(fmt.Sprintf("ignite ssh -i %s %s", cluster.Prikey, name), " ")
-	cmd := exec.Command("sudo", cmdArgs...)
+	cmd := exec.CommandContext(context.Background(), "sudo", cmdArgs...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Stdin = os.Stdin
