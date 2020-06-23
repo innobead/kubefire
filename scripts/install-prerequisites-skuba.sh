@@ -23,7 +23,7 @@ function install_skuba() {
   git clone --branch v1.3.5 https://github.com/SUSE/skuba
   cd skuba
   make release
-  mv $GOBIN/skuba ~/.kubefire/bin/
+  mv $GOBIN/skuba /usr/local/bin/
 }
 
 install_skuba
