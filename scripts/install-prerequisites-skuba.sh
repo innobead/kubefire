@@ -7,10 +7,7 @@ set -o xtrace
 
 TMP_DIR=/tmp/kubefire
 GOARCH=$(go env GOARCH 2>/dev/null)
-GOARCH=${GOARCH:-"amd64"}
-
-GOBIN=$(go env GOBIN 2>/dev/null)
-GOBIN=${GOBIN:-"/usr/local/bin"}
+GOBIN=$(go env GOPATH 2>/dev/null)/bin
 
 mkdir -p $TMP_DIR
 pushd $TMP_DIR
