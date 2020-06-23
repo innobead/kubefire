@@ -8,7 +8,7 @@ import (
 	"github.com/innobead/kubefire/pkg/data"
 	"github.com/innobead/kubefire/pkg/node"
 	"github.com/innobead/kubefire/pkg/script"
-	"github.com/innobead/kubefire/pkg/util"
+	utilssh "github.com/innobead/kubefire/pkg/util/ssh"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/ssh"
@@ -21,7 +21,9 @@ type KubeadmBootstrapper struct {
 }
 
 func NewKubeadmBootstrapper(nodeManager node.Manager) *KubeadmBootstrapper {
-	return &KubeadmBootstrapper{nodeManager: nodeManager}
+	return &KubeadmBootstrapper{
+		nodeManager: nodeManager,
+	}
 }
 
 func (k *KubeadmBootstrapper) Deploy(cluster *data.Cluster) error {
@@ -29,12 +31,7 @@ func (k *KubeadmBootstrapper) Deploy(cluster *data.Cluster) error {
 		return errors.WithMessage(err, "some nodes are not running")
 	}
 
-	sshConfig, err := util.CreateSSHClientConfig(cluster.Spec.Prikey, "root", nil)
-	if err != nil {
-		return err
-	}
-
-	if err := k.init(sshConfig, cluster); err != nil {
+	if err := k.init(cluster); err != nil {
 		return err
 	}
 
@@ -43,7 +40,7 @@ func (k *KubeadmBootstrapper) Deploy(cluster *data.Cluster) error {
 		return err
 	}
 
-	joinCmd, err := k.bootstrap(sshConfig, firstMaster, len(cluster.Nodes) == 0)
+	joinCmd, err := k.bootstrap(firstMaster, len(cluster.Nodes) == 0)
 	if err != nil {
 		return err
 	}
@@ -58,7 +55,7 @@ func (k *KubeadmBootstrapper) Deploy(cluster *data.Cluster) error {
 			continue
 		}
 
-		if err := k.join(sshConfig, n, joinCmd); err != nil {
+		if err := k.join(n, joinCmd); err != nil {
 			return err
 		}
 	}
@@ -66,7 +63,7 @@ func (k *KubeadmBootstrapper) Deploy(cluster *data.Cluster) error {
 	return nil
 }
 
-func (k *KubeadmBootstrapper) init(sshConfig *ssh.ClientConfig, cluster *data.Cluster) error {
+func (k *KubeadmBootstrapper) init(cluster *data.Cluster) error {
 	logrus.Infof("initializing cluster (%s)", cluster.Name)
 
 	wgInitNodes := sync.WaitGroup{}
@@ -81,13 +78,19 @@ func (k *KubeadmBootstrapper) init(sshConfig *ssh.ClientConfig, cluster *data.Cl
 			defer wgInitNodes.Done()
 
 			_ = retry.Do(func() error {
-				sshClient, err := util.CreateSSHClient(n.Status.IPAddresses, sshConfig)
+				sshClient, err := utilssh.NewClient(
+					cluster.Spec.Prikey,
+					"root",
+					n.Status.IPAddresses,
+					nil,
+				)
 				if err != nil {
 					return err
 				}
 				defer sshClient.Close()
 
-				cmdLines := []string{
+				cmds := []string{
+					"zypper in -y tar curl ethtool socat ebtables iptables conntrack-tools", // FIXME workaround until figuring out how to use the latest image on ignite
 					fmt.Sprintf("curl -sSLO %s", script.RemoteScriptUrl(script.InstallPrerequisitesKubeadm)),
 					fmt.Sprintf("chmod +x %s", script.InstallPrerequisitesKubeadm),
 					fmt.Sprintf("./%s", script.InstallPrerequisitesKubeadm),
@@ -98,31 +101,16 @@ func (k *KubeadmBootstrapper) init(sshConfig *ssh.ClientConfig, cluster *data.Cl
 					"kubeadm init phase preflight -v 5",
 				}
 
-				for _, c := range cmdLines {
-					var err error
-
-					session, err := util.CreateSSHSession(sshClient)
-					if err != nil {
-						return err
-					}
-
-					func() {
-						defer func() {
-							session.Close()
-						}()
-
-						if e := session.Run(c); e != nil {
-							err = e
-						}
-					}()
-
-					if err != nil {
-						chInitNodesErrors <- errors.WithMessagef(err, "failed on node (%s)", n.Name)
-					}
+				err = sshClient.Run(nil, nil, cmds...)
+				if err != nil {
+					chInitNodesErrors <- errors.WithMessagef(err, "failed on node (%s)", n.Name)
 				}
 
 				return nil
-			}, retry.Delay(10*time.Second), retry.MaxDelay(1*time.Minute))
+			},
+				retry.Delay(10*time.Second),
+				retry.MaxDelay(1*time.Minute),
+			)
 		}(n)
 	}
 
@@ -146,10 +134,15 @@ func (k *KubeadmBootstrapper) init(sshConfig *ssh.ClientConfig, cluster *data.Cl
 	return err
 }
 
-func (k *KubeadmBootstrapper) bootstrap(sshClientConfig *ssh.ClientConfig, node *data.Node, isSingleNode bool) (joinCmd string, err error) {
+func (k *KubeadmBootstrapper) bootstrap(node *data.Node, isSingleNode bool) (joinCmd string, err error) {
 	logrus.Infof("bootstrapping the first master node (%s)", node.Name)
 
-	sshClient, err := util.CreateSSHClient(node.Status.IPAddresses, sshClientConfig)
+	sshClient, err := utilssh.NewClient(
+		node.Spec.Cluster.Prikey,
+		"root",
+		node.Status.IPAddresses,
+		nil,
+	)
 	if err != nil {
 		return "", err
 	}
@@ -159,8 +152,8 @@ func (k *KubeadmBootstrapper) bootstrap(sshClientConfig *ssh.ClientConfig, node 
 
 	cmds := []struct {
 		cmdline string
-		before  func(session *ssh.Session) bool
-		after   func(session *ssh.Session)
+		before  utilssh.Callback
+		after   utilssh.Callback
 	}{
 		{
 			cmdline: "kubeadm init -v 5",
@@ -197,26 +190,8 @@ func (k *KubeadmBootstrapper) bootstrap(sshClientConfig *ssh.ClientConfig, node 
 	}
 
 	for _, cmd := range cmds {
-		session, err := util.CreateSSHSession(sshClient)
+		err := sshClient.Run(cmd.before, cmd.after, cmd.cmdline)
 		if err != nil {
-			return "", err
-		}
-
-		if err := func() error {
-			defer session.Close()
-
-			if cmd.before != nil && cmd.before(session) {
-				if err := session.Run(cmd.cmdline); err != nil {
-					return err
-				}
-
-				if cmd.after != nil {
-					cmd.after(session)
-				}
-			}
-
-			return nil
-		}(); err != nil {
 			return "", errors.WithStack(err)
 		}
 	}
@@ -224,24 +199,23 @@ func (k *KubeadmBootstrapper) bootstrap(sshClientConfig *ssh.ClientConfig, node 
 	return joinCmdBuf.String(), nil
 }
 
-func (k *KubeadmBootstrapper) join(sshClientConfig *ssh.ClientConfig, node *data.Node, joinCmd string) error {
+func (k *KubeadmBootstrapper) join(node *data.Node, joinCmd string) error {
 	logrus.Infof("joining node (%s)", node.Name)
 
-	sshClient, err := util.CreateSSHClient(node.Status.IPAddresses, sshClientConfig)
+	sshClient, err := utilssh.NewClient(
+		node.Spec.Cluster.Prikey,
+		"root",
+		node.Status.IPAddresses,
+		nil,
+	)
 	if err != nil {
 		return err
 	}
 	defer sshClient.Close()
 
-	session, err := util.CreateSSHSession(sshClient)
-	if err != nil {
-		return err
-	}
-	defer session.Close()
-
 	logrus.Infof("running join command (%s)", joinCmd)
 
-	if err := session.Run(fmt.Sprintf("%s -v 5", joinCmd)); err != nil {
+	if err := sshClient.Run(nil, nil, fmt.Sprintf("%s -v 5", joinCmd)); err != nil {
 		return errors.WithStack(err)
 	}
 

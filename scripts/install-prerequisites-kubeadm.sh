@@ -32,8 +32,6 @@ function install_kubeadm() {
   mkdir -p /etc/systemd/system/kubelet.service.d
   curl -sSL "https://raw.githubusercontent.com/kubernetes/release/${KUBE_RELEASE_VERSION}/cmd/kubepkg/templates/latest/deb/kubeadm/10-kubeadm.conf" | sudo sed "s:/usr/bin:/usr/local/bin:g" >/etc/systemd/system/kubelet.service.d/10-kubeadm.conf
   sudo systemctl enable --now kubelet
-
-  kubeadm init phase preflight -v 5
 }
 
 function install_containerd() {

@@ -6,10 +6,13 @@ import (
 )
 
 type SkubaBootstrapper struct {
+	nodeManager node.Manager
 }
 
 func NewSkubaBootstrapper(nodeManager node.Manager) *SkubaBootstrapper {
-	return &SkubaBootstrapper{}
+	return &SkubaBootstrapper{
+		nodeManager: nodeManager,
+	}
 }
 
 func (s *SkubaBootstrapper) Deploy(cluster *data.Cluster) error {
