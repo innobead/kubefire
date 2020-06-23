@@ -6,6 +6,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var forceDownload bool
+
+func init() {
+	flags := InstallCmd.Flags()
+	flags.BoolVar(&forceDownload, "force", false, "force to download")
+}
+
 var InstallCmd = &cobra.Command{
 	Use:   "install",
 	Short: "Install prerequisites",
@@ -16,7 +23,7 @@ var InstallCmd = &cobra.Command{
 		}
 
 		for _, s := range scripts {
-			if err := script.Download(s, config.TagVersion, false); err != nil {
+			if err := script.Download(s, config.TagVersion, forceDownload); err != nil {
 				return err
 			}
 

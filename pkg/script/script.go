@@ -28,12 +28,8 @@ const (
 	DownloadScriptEndpointFormat = "https://raw.githubusercontent.com/innobead/kubefire/master/scripts/%s"
 )
 
-func InstallPrerequisitesFile(version string) string {
-	return path.Join(config.BinDir, version, string(InstallPrerequisites))
-}
-
-func UninstallPrerequisitesFile(version string) string {
-	return path.Join(config.BinDir, version, string(UninstallPrerequisites))
+func LocalScriptFile(version string, t Type) string {
+	return path.Join(config.BinDir, version, string(t))
 }
 
 func RemoteScriptUrl(script Type) string {
@@ -55,32 +51,15 @@ func Download(script Type, version string, force bool) error {
 		log = log.WithField("force", force)
 	}
 
-	var err error
+	url := RemoteScriptUrl(script)
+	destFile := LocalScriptFile(version, script)
 
-	switch script {
-	case InstallPrerequisites:
-		url := RemoteScriptUrl(InstallPrerequisites)
-		destFile := InstallPrerequisitesFile(version)
-
-		log.Infof("downloading %s to save %s", url, destFile)
-		err = downloadScript(
-			url,
-			destFile,
-			force,
-		)
-
-	case UninstallPrerequisites:
-		url := RemoteScriptUrl(UninstallPrerequisites)
-		destFile := UninstallPrerequisitesFile(version)
-
-		log.Infof("downloading %s to save %s", url, destFile)
-		err = downloadScript(
-			url,
-			destFile,
-			force,
-		)
-	}
-
+	log.Infof("downloading %s to save %s", url, destFile)
+	err := downloadScript(
+		url,
+		destFile,
+		force,
+	)
 	if err != nil {
 		return errors.WithMessagef(err, "failed to download script (%s)", script)
 	}
@@ -96,21 +75,10 @@ func Run(script Type, version string) error {
 	)
 	log.Infof("running script (%s)", script)
 
-	var err error
+	f := LocalScriptFile(version, script)
 
-	switch script {
-	case InstallPrerequisites:
-		f := InstallPrerequisitesFile(version)
-
-		log.Infof("running %s", f)
-		err = runScript(f)
-
-	case UninstallPrerequisites:
-		f := UninstallPrerequisitesFile(version)
-
-		log.Infof("running %s", f)
-		err = runScript(f)
-	}
+	log.Infof("running %s", f)
+	err := runScript(f)
 
 	if err != nil {
 		return errors.WithMessagef(err, "failed to run script (%s)", script)

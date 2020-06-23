@@ -6,11 +6,16 @@ import (
 	"github.com/spf13/cobra"
 )
 
+func init() {
+	flags := UninstallCmd.Flags()
+	flags.BoolVar(&forceDownload, "force", false, "force to download")
+}
+
 var UninstallCmd = &cobra.Command{
 	Use:   "uninstall",
 	Short: "Uninstall prerequisites",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if err := script.Download(script.UninstallPrerequisites, config.TagVersion, false); err != nil {
+		if err := script.Download(script.UninstallPrerequisites, config.TagVersion, forceDownload); err != nil {
 			return err
 		}
 
