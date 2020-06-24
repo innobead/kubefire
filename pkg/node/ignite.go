@@ -20,7 +20,7 @@ import (
 )
 
 const (
-	RunCmd    = "ignite run {{.Image}} --name={{.Name}} --label=cluster={{.Cluster}} --ssh={{.Pubkey}} --kernel-image={{.KernelImage}} --cpus={{.Cpus}} --memory={{.Memory}} --size={{.DiskSize}}"
+	RunCmd    = `ignite run {{.Image}} --name={{.Name}} --label=cluster={{.Cluster}} --ssh={{.Pubkey}} --kernel-image={{.KernelImage}} --kernel-image={{.KernelImage}} --cpus={{.Cpus}} --memory={{.Memory}} --size={{.DiskSize}}`
 	DeleteCmd = "ignite rm {{.Name}} --force"
 )
 
@@ -70,7 +70,10 @@ func (i *IgniteNodeManager) CreateNodes(nodeType Type, node *config.Node) error 
 			return errors.WithStack(err)
 		}
 
-		cmd := exec.CommandContext(context.Background(), "sudo", strings.Split(tmpBuffer.String(), " ")...)
+		cmdArgs := strings.Split(tmpBuffer.String(), " ")
+		cmdArgs = append(cmdArgs, fmt.Sprintf("--kernel-args=%s", node.KernelArgs))
+
+		cmd := exec.CommandContext(context.Background(), "sudo", cmdArgs...)
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 
