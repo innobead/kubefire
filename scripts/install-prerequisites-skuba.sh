@@ -23,7 +23,11 @@ trap cleanup EXIT ERR INT TERM
 
 function install_skuba() {
   git clone --branch $SKUBA_VERSION https://github.com/SUSE/skuba
+
   cd skuba
+  # remove the br_netfilter check, because it's builtin in the used kernel
+  sed -i '/"br_netfilter",/d' ./internal/pkg/skuba/deployments/ssh/kernel.go
+
   make release
   mv $GOBIN/skuba /usr/local/bin/
 }

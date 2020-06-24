@@ -12,5 +12,6 @@ Besides the prebuilt `weaveworks/ignite-kernel` kernel images, you can build cus
 make
 
 # build one kernel image
-make 4.19.125
+make build-4.19.125
+make build-5.4.43
 ```
