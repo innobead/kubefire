@@ -44,12 +44,11 @@ func (i *IgniteNodeManager) CreateNodes(nodeType Type, node *config.Node) error 
 	for i := 1; i <= node.Count; i++ {
 		tmpBuffer := &bytes.Buffer{}
 
-		node := &struct {
+		n := &struct {
 			Name        string
 			Cluster     string
 			Image       string
 			KernelImage string
-			KernelArgs  string
 			Pubkey      string
 			Cpus        int
 			Memory      string
@@ -59,25 +58,25 @@ func (i *IgniteNodeManager) CreateNodes(nodeType Type, node *config.Node) error 
 			Cluster:     node.Cluster.Name,
 			Image:       node.Cluster.Image,
 			KernelImage: node.Cluster.KernelImage,
-			KernelArgs:  node.Cluster.KernelArgs,
 			Pubkey:      node.Cluster.Pubkey,
 			Cpus:        node.Cpus,
 			Memory:      node.Memory,
 			DiskSize:    node.DiskSize,
 		}
 
-		if err := tmp.Execute(tmpBuffer, node); err != nil {
+		if err := tmp.Execute(tmpBuffer, n); err != nil {
 			return errors.WithStack(err)
 		}
 
 		cmdArgs := strings.Split(tmpBuffer.String(), " ")
-		cmdArgs = append(cmdArgs, fmt.Sprintf("--kernel-args=%s", node.KernelArgs))
+		cmdArgs = append(cmdArgs, fmt.Sprintf("--kernel-args=%s", node.Cluster.KernelArgs))
 
 		cmd := exec.CommandContext(context.Background(), "sudo", cmdArgs...)
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
+		cmd.Stdin = os.Stdin
 
-		logrus.Infof("creating node (%s)", node.Name)
+		logrus.Infof("creating node (%s)", n.Name)
 
 		err := cmd.Start()
 		if err != nil {
@@ -92,7 +91,7 @@ func (i *IgniteNodeManager) CreateNodes(nodeType Type, node *config.Node) error 
 			if err := cmd.Wait(); err != nil {
 				logrus.WithError(err).Errorf("failed to create node (%s)", name)
 			}
-		}(node.Name)
+		}(n.Name)
 	}
 
 	wgCreateNode.Wait()
