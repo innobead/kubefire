@@ -203,7 +203,6 @@ func (s *SkubaBootstrapper) register(cluster *data.Cluster, extraOptions *SkubaE
 				}
 
 				cmds := []string{
-					"zypper in -y tar curl ethtool socat ebtables iptables conntrack-tools", // FIXME workaround until figuring out how to use the latest image on ignite
 					fmt.Sprintf("SUSEConnect -r %s", extraOptions.RegisterCode),
 					"SUSEConnect -p sle-module-containers/15.1/x86_64",
 					fmt.Sprintf("SUSEConnect -p caasp/4.0/x86_64 -r %s", extraOptions.RegisterCode),

@@ -95,7 +95,6 @@ func (k *KubeadmBootstrapper) init(cluster *data.Cluster) error {
 				defer sshClient.Close()
 
 				cmds := []string{
-					"zypper in -y tar curl ethtool socat ebtables iptables conntrack-tools", // FIXME workaround until figuring out how to use the latest image on ignite
 					fmt.Sprintf("curl -sSLO %s", script.RemoteScriptUrl(script.InstallPrerequisitesKubeadm)),
 					fmt.Sprintf("chmod +x %s", script.InstallPrerequisitesKubeadm),
 					fmt.Sprintf("./%s", script.InstallPrerequisitesKubeadm),
