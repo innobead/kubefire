@@ -8,9 +8,9 @@ import (
 	"github.com/innobead/kubefire/pkg/config"
 	"github.com/innobead/kubefire/pkg/data"
 	"github.com/innobead/kubefire/pkg/node"
+	"github.com/innobead/kubefire/pkg/util"
 	"github.com/innobead/kubefire/pkg/util/ssh"
 	"github.com/pkg/errors"
-	"os"
 	"os/exec"
 	"path"
 	"strings"
@@ -62,6 +62,7 @@ func (s *SkubaBootstrapper) Deploy(cluster *data.Cluster) error {
 		if n.Name == firstMaster.Name {
 			continue
 		}
+
 		n.Spec.Cluster = &cluster.Spec
 
 		var nodeType node.Type
@@ -96,11 +97,13 @@ func (s *SkubaBootstrapper) init(cluster *data.Cluster, master *data.Node, extra
 	for _, c := range cmds {
 		cmdArgs := strings.Split(c, " ")
 
-		cmd := exec.CommandContext(context.Background(), cmdArgs[0], cmdArgs[1:]...)
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
-		cmd.Stdin = os.Stdin
+		cmd := exec.CommandContext(
+			context.Background(),
+			cmdArgs[0],
+			cmdArgs[1:]...,
+		)
 		cmd.Dir = config.LocalClusterDir(cluster.Name)
+		util.UpdateDefaultCmdPipes(cmd)
 
 		if err := cmd.Run(); err != nil {
 			return "", errors.WithStack(err)
@@ -133,10 +136,8 @@ func (s *SkubaBootstrapper) bootstrap(master *data.Node, clusterDir string, isSi
 		cmdArgs := strings.Split(c.cmdline, " ")
 
 		cmd := exec.CommandContext(context.Background(), cmdArgs[0], cmdArgs[1:]...)
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
-		cmd.Stdin = os.Stdin
 		cmd.Dir = clusterDir
+		util.UpdateDefaultCmdPipes(cmd)
 
 		if err := cmd.Run(); err != nil {
 			return errors.WithStack(err)
@@ -155,10 +156,8 @@ func (s *SkubaBootstrapper) join(node *data.Node, nodeType node.Type, clusterDir
 		cmdArgs := strings.Split(c, " ")
 
 		cmd := exec.CommandContext(context.Background(), cmdArgs[0], cmdArgs[1:]...)
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
-		cmd.Stdin = os.Stdin
 		cmd.Dir = clusterDir
+		util.UpdateDefaultCmdPipes(cmd)
 
 		if err := cmd.Run(); err != nil {
 			return errors.WithStack(err)

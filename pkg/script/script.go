@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/innobead/kubefire/pkg/config"
+	"github.com/innobead/kubefire/pkg/util"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"io"
@@ -131,9 +132,7 @@ func runScript(script string) error {
 	}
 
 	cmd := exec.CommandContext(context.Background(), "sudo", script)
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+	util.UpdateDefaultCmdPipes(cmd)
 
 	if err := cmd.Run(); err != nil {
 		return errors.WithStack(err)

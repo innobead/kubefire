@@ -110,6 +110,7 @@ func (c *Client) createSSHSession() (*ssh.Session, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	session.Stdin = os.Stdin
 	session.Stdout = os.Stdout
 	session.Stderr = os.Stderr

@@ -40,6 +40,7 @@ func (k *KubeadmBootstrapper) Deploy(cluster *data.Cluster) error {
 	if err != nil {
 		return err
 	}
+
 	firstMaster.Spec.Cluster = &cluster.Spec
 
 	joinCmd, err := k.bootstrap(firstMaster, len(cluster.Nodes) == 1)
@@ -72,7 +73,7 @@ func (k *KubeadmBootstrapper) init(cluster *data.Cluster) error {
 	wgInitNodes := sync.WaitGroup{}
 	wgInitNodes.Add(len(cluster.Nodes))
 
-	chInitNodesErrors := make(chan error, len(cluster.Nodes))
+	chErr := make(chan error, len(cluster.Nodes))
 
 	for _, n := range cluster.Nodes {
 		logrus.Infof("initializing node (%s)", n.Name)
@@ -107,7 +108,7 @@ func (k *KubeadmBootstrapper) init(cluster *data.Cluster) error {
 
 				err = sshClient.Run(nil, nil, cmds...)
 				if err != nil {
-					chInitNodesErrors <- errors.WithMessagef(err, "failed on node (%s)", n.Name)
+					chErr <- errors.WithMessagef(err, "failed on node (%s)", n.Name)
 				}
 
 				return nil
@@ -121,11 +122,11 @@ func (k *KubeadmBootstrapper) init(cluster *data.Cluster) error {
 	logrus.Info("waiting all nodes initialization finished")
 
 	wgInitNodes.Wait()
-	close(chInitNodesErrors)
+	close(chErr)
 
 	var err error
 	for {
-		e, ok := <-chInitNodesErrors
+		e, ok := <-chErr
 		if !ok {
 			break
 		}
@@ -194,8 +195,8 @@ func (k *KubeadmBootstrapper) bootstrap(node *data.Node, isSingleNode bool) (joi
 		},
 	}
 
-	for _, cmd := range cmds {
-		err := sshClient.Run(cmd.before, cmd.after, cmd.cmdline)
+	for _, c := range cmds {
+		err := sshClient.Run(c.before, c.after, c.cmdline)
 		if err != nil {
 			return "", errors.WithStack(err)
 		}

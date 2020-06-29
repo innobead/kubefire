@@ -7,6 +7,7 @@ import (
 	"github.com/avast/retry-go"
 	"github.com/innobead/kubefire/pkg/config"
 	"github.com/innobead/kubefire/pkg/data"
+	"github.com/innobead/kubefire/pkg/util"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"html/template"
@@ -72,9 +73,7 @@ func (i *IgniteNodeManager) CreateNodes(nodeType Type, node *config.Node) error 
 		cmdArgs = append(cmdArgs, fmt.Sprintf("--kernel-args=%s", node.Cluster.KernelArgs))
 
 		cmd := exec.CommandContext(context.Background(), "sudo", cmdArgs...)
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
-		cmd.Stdin = os.Stdin
+		util.UpdateDefaultCmdPipes(cmd)
 
 		logrus.Infof("creating node (%s)", n.Name)
 
@@ -268,10 +267,9 @@ func (i *IgniteNodeManager) LoginBySSH(name string, configManager config.Manager
 	}
 
 	cmdArgs := strings.Split(fmt.Sprintf("ignite ssh -i %s %s", cluster.Prikey, name), " ")
+
 	cmd := exec.CommandContext(context.Background(), "sudo", cmdArgs...)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	cmd.Stdin = os.Stdin
+	util.UpdateDefaultCmdPipes(cmd)
 
 	if err := cmd.Run(); err != nil {
 		return errors.WithStack(err)
