@@ -6,5 +6,3 @@ COPY build/images/sle15sp1/install.sh /workspace/bin/
 COPY scripts/install-prerequisites-*.sh /workspace/bin/
 
 RUN ./bin/install.sh
-RUN ./bin/install-prerequisites-kubeadm.sh
-RUN ./bin/install-prerequisites-skuba.sh
