@@ -7,7 +7,7 @@ set -o xtrace
 
 TMP_DIR=/tmp/kubefire
 GOARCH=$(go env GOARCH 2>/dev/null || echo "amd64")
-KUBE_VERSION="v1.18.4" # https://dl.k8s.io/release/stable.txt
+KUBE_VERSION="v1.18.5" # https://dl.k8s.io/release/stable.txt
 KUBE_RELEASE_VERSION="v0.2.7"
 CONTAINERD_VERSION="v1.3.4"
 CNI_VERSION="v0.8.6"
