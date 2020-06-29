@@ -47,7 +47,7 @@ build-images:
 
 build-image-%:
 	docker build -t innobead/$(CWD)-$*:$(COMMIT) -f build/images/$*/Dockerfile .
-	docker tag innobead/$(CWD)-$*:$(COMMIT) innobead/$(CWD):$*-latest
+	docker tag innobead/$(CWD)-$*:$(COMMIT) innobead/$(CWD)-$*:latest
 
 publish-image-%: build-image-%
 	docker push innobead/$(CWD)-$*:$(COMMIT)
