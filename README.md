@@ -10,7 +10,7 @@ KubeFire is to manage Kubernetes clusters running on FireCracker microVMs via **
 
 ## Installing KubeFire
 
-There is no official release, so please build and install kubefire in the `GOBIN` path.
+There is no official release, so please make sure go 1.14 installed, then build and install kubefire in the `GOBIN` path.
 
 ```
 make install
