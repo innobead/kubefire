@@ -1,18 +1,94 @@
-# Introduction
+# What is KubeFire?
 
-KubeFire, manage Kubernetes clusters on FireCracker microVMs.
+KubeFire is to manage Kubernetes clusters running on FireCracker microVMs via **weaveworks/ignite**. 
 
-# Prerequisites
+- No need to have KVM qocws image for rootfs and kernel. Ignite uses independent rootfs and kernel from OCI images.
+- Ignite uses container managment engine like docker or containerd to manage Firecracker processes running in containers.
+- Have different bootstappers to provision Kubernetes clusters like kubeadm and SUSE skuba. 
 
-- Docker or ContainerD
-- CNI plugins
+# Getting Started
+
+## Installing KubeFire
+
+There is no official release, so please build and install kubefire in the `GOBIN` path.
+
+```
+make install
+```
+
+## Installing Prerequisites
+
+Run the below command with root permission/sudo with no password for below things.
+
+- Check virtualization supported
+- Install necessary components including runc, containerd, CNI plugins, and Ignite
+
+```
+kubefire install
+```
+
+## Bootstrapping Cluster
+
+### Kubeadm (K8s 1.18.5)
+
+```
+kubefire cluster create --bootstrapper=kubeadm demo
+```
+
+[![asciicast](https://asciinema.org/a/344343.svg)](https://asciinema.org/a/344343)
+
+### SUSE Skuba (K8s 1.17.4)
+
+```
+kubefire cluster create demo --bootstrapper=skuba --extra-opts="RegisterCode=<Product Register Code>"
+```
 
 # Usage
 
-# Design
+## CLI Commands
 
-TBU
+Make sure to run kubefire commands with root permission or sudo without password, because ignite needs root permission to manage Firecracker VMs for now, but it is planned to improve in the future release.
 
-# Limitations
+```
+# Show version
+kubefire version
 
-- The usage depends on `ignite` and `firecracker`.
+# Install necessary components for cluster management
+kubefire install 
+
+# Uninstall ncessary components to clean up the environment
+kubefire uninstall
+
+# Cluster a cluster
+kubefire cluster create
+
+# Delete a cluster
+kubefire cluster delete
+
+# Get a cluster info
+kubefire cluster get
+
+# List clusters
+kubefire cluster list
+
+# SSH to a node
+kubefire node ssh
+```
+ 
+# Supported Container Images for RootFS and Kernel
+
+Besides below prebuilt images, you can also use the images provided by [weaveworks/ignite](https://github.com/weaveworks/ignite/tree/master/images).
+
+## RootFS images (w/ AppArmor enabled)
+- docker.io/innobead/kubefire-leapsp1:latest
+- docker.io/innobead/kubefire-sle15sp1:latest
+
+## Kernel images
+- docker.io/innobead/kubefire-kernel-5.4.43-amd64:latest
+- docker.io/innobead/kubefire-kernel-4.19.125-amd64:latest
+
+## References
+
+- [Firecracker](https://github.com/firecracker-microvm/firecracker)
+- [Ignite](https://github.com/weaveworks/ignite)
+ 
