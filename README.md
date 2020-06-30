@@ -50,6 +50,30 @@ kubefire cluster create demo --bootstrapper=skuba --extra-opts="RegisterCode=<Pr
 Make sure to run kubefire commands with root permission or sudo without password, because ignite needs root permission to manage Firecracker VMs for now, but it is planned to improve in the future release.
 
 ```
+KubeFire, manage Kubernetes clusters on FireCracker microVMs
+
+Usage:
+  kubefire [flags]
+  kubefire [command]
+
+Available Commands:
+  cluster     Manage cluster
+  help        Help about any command
+  install     Install prerequisites
+  node        Manage node
+  uninstall   Uninstall prerequisites
+  version     Show version
+
+Flags:
+  -h, --help               help for kubefire
+      --log-level string   log level, options: [panic, fatal, error, warning, info, debug, trace] (default "info")
+      --output string      output format, options: [default, json, yaml] (default "default")
+
+Use "kubefire [command] --help" for more information about a command.
+
+```
+
+```
 # Show version
 kubefire version
 
