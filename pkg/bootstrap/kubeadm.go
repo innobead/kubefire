@@ -95,6 +95,7 @@ func (k *KubeadmBootstrapper) init(cluster *data.Cluster) error {
 				defer sshClient.Close()
 
 				cmds := []string{
+					"swapoff -a",
 					fmt.Sprintf("curl -sSLO %s", script.RemoteScriptUrl(script.InstallPrerequisitesKubeadm)),
 					fmt.Sprintf("chmod +x %s", script.InstallPrerequisitesKubeadm),
 					fmt.Sprintf("./%s", script.InstallPrerequisitesKubeadm),
