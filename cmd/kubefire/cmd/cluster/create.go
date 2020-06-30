@@ -22,7 +22,7 @@ func init() {
 
 	flags.StringVar(&cluster.Bootstrapper, "bootstrapper", bootstrap.KUBEADM, util.FlagsValuesUsage("bootstrapper type", bootstrap.BuiltinTypes))
 	flags.StringVar(&cluster.Pubkey, "pubkey", "", "Public key")
-	flags.StringVar(&cluster.Image, "image", "innobead/kubefire-sle15sp1:latest", "rootfs container image")
+	flags.StringVar(&cluster.Image, "image", "innobead/kubefire-sle15:latest", "rootfs container image")
 	flags.StringVar(&cluster.KernelImage, "kernel-image", "innobead/kubefire-kernel-5.4.43-amd64:latest", "kernel container image")
 	flags.StringVar(&cluster.KernelArgs, "kernel-args", "console=ttyS0 reboot=k panic=1 pci=off ip=dhcp security=apparmor apparmor=1", "kernel arguments")
 	flags.StringVar(&cluster.ExtraOptions, "extra-opts", "", "extra options (ex: key=value,...) for bootstrapper")

@@ -5,7 +5,6 @@
 		build-images \
 		build-image-% \
 		publish-images \
-		publish-image-% \
 		build-kernels \
 		build-kernel-% \
 		publish-kernels \
@@ -46,15 +45,14 @@ build-images:
 	for i in $(IMAGES); do $(MAKE) build-image-$$i; done
 
 build-image-%:
-	docker build -t innobead/$(CWD)-$*:$(COMMIT) -f build/images/$*/Dockerfile .
+	docker build --build-arg="RELEASE=$(RELEASE)" -t innobead/$(CWD)-$*:$(COMMIT) -f build/images/$*/Dockerfile .
 	docker tag innobead/$(CWD)-$*:$(COMMIT) innobead/$(CWD)-$*:latest
+	docker tag innobead/$(CWD)-$*:$(COMMIT) innobead/$(CWD)-$*:$(RELEASE)
 
 publish-image-%: build-image-%
 	docker push innobead/$(CWD)-$*:$(COMMIT)
 	docker push innobead/$(CWD)-$*:latest
-
-publish-images:
-	for i in $(IMAGES); do $(MAKE) publish-image-$$i; done
+	docker push innobead/$(CWD)-$*:$(RELEASE)
 
 build-kernel-%:
 	git clone git@github.com:weaveworks/ignite.git
@@ -65,6 +63,7 @@ build-kernel-%:
 publish-kernel-%: build-kernel-%
 	docker push innobead/$(CWD)-kernel-$*:$(COMMIT)
 	docker push innobead/$(CWD)-kernel-$*:latest
+	docker push innobead/$(CWD)-kernel-$*:$(RELEASE)
 
 publish-kernels:
 	for i in $(KERNELS); do $(MAKE) publish-kernel-$$i; done

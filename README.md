@@ -18,7 +18,7 @@ make install
 
 ## Installing Prerequisites
 
-Run the below command with root permission/sudo with no password for below things.
+Run the below command with root permission/sudo without password for below things.
 
 - Check virtualization supported
 - Install necessary components including runc, containerd, CNI plugins, and Ignite
@@ -80,8 +80,10 @@ kubefire node ssh
 Besides below prebuilt images, you can also use the images provided by [weaveworks/ignite](https://github.com/weaveworks/ignite/tree/master/images).
 
 ## RootFS images (w/ AppArmor enabled)
-- docker.io/innobead/kubefire-leapsp1:latest
-- docker.io/innobead/kubefire-sle15sp1:latest
+- docker.io/innobead/kubefire-opensuse-leap:15.1
+- docker.io/innobead/kubefire-sle15:15.1
+- docker.io/innobead/kubefire-centos:8
+- docker.io/innobead/kubefire-ubuntu:20.10
 
 ## Kernel images
 - docker.io/innobead/kubefire-kernel-5.4.43-amd64:latest
