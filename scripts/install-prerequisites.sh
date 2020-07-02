@@ -54,7 +54,14 @@ function install_containerd() {
   sudo mv $dir/bin/* /usr/local/bin/
 
   curl -sSLO "https://raw.githubusercontent.com/containerd/containerd/${CONTAINERD_VERSION}/containerd.service"
+  sudo groupadd containerd
   sudo mv containerd.service /etc/systemd/system/containerd.service
+
+#  [Service]
+#  ExecStartPre=-/sbin/modprobe overlay
+#  ExecStart=/usr/local/bin/containerd
+#  ExecStartPost=/usr/bin/chgrp containerd /run/containerd/containerd.sock
+
   sudo mkdir -p /etc/containerd
   containerd config default | sudo tee /etc/containerd/config.toml >/dev/null
   sudo systemctl enable --now containerd

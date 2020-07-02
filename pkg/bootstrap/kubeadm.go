@@ -67,6 +67,10 @@ func (k *KubeadmBootstrapper) Deploy(cluster *data.Cluster) error {
 	return nil
 }
 
+func (k *KubeadmBootstrapper) DownloadKubeConfig(cluster *data.Cluster, destDir string) error {
+	return downloadKubeConfig(k.nodeManager, cluster, destDir)
+}
+
 func (k *KubeadmBootstrapper) init(cluster *data.Cluster) error {
 	logrus.Infof("initializing cluster (%s)", cluster.Name)
 

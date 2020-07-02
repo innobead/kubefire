@@ -9,7 +9,7 @@ import (
 	"github.com/innobead/kubefire/pkg/data"
 	"github.com/innobead/kubefire/pkg/node"
 	"github.com/innobead/kubefire/pkg/util"
-	"github.com/innobead/kubefire/pkg/util/ssh"
+	utilssh "github.com/innobead/kubefire/pkg/util/ssh"
 	"github.com/pkg/errors"
 	"os/exec"
 	"path"
@@ -82,6 +82,10 @@ func (s *SkubaBootstrapper) Deploy(cluster *data.Cluster) error {
 	}
 
 	return nil
+}
+
+func (k *SkubaBootstrapper) DownloadKubeConfig(cluster *data.Cluster, destDir string) error {
+	return downloadKubeConfig(k.nodeManager, cluster, destDir)
 }
 
 func (s *SkubaBootstrapper) init(cluster *data.Cluster, master *data.Node, extraOptions *SkubaExtraOptions) (string, error) {
@@ -184,19 +188,13 @@ func (s *SkubaBootstrapper) register(cluster *data.Cluster, extraOptions *SkubaE
 			defer wgDone.Done()
 
 			_ = retry.Do(func() error {
-				sshClient, err := ssh.NewClient(
+				sshClient, err := utilssh.NewClient(
 					n.Name,
 					cluster.Spec.Prikey,
 					"root",
 					n.Status.IPAddresses,
 					nil,
 				)
-				if err != nil {
-					return err
-				}
-				defer sshClient.Close()
-
-				client, err := ssh.NewClient(n.Name, cluster.Spec.Prikey, "root", n.Status.IPAddresses, nil)
 				if err != nil {
 					chErr <- err
 					return nil
@@ -210,7 +208,7 @@ func (s *SkubaBootstrapper) register(cluster *data.Cluster, extraOptions *SkubaE
 				}
 
 				for _, c := range cmds {
-					err = client.Run(nil, nil, c)
+					err = sshClient.Run(nil, nil, c)
 					if err != nil {
 						chErr <- err
 						return nil

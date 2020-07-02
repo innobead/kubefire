@@ -50,7 +50,7 @@ var createCmd = &cobra.Command{
 	Short: "Create cluster",
 	Args:  util.Validate1thArg("name"),
 	PreRun: func(cmd *cobra.Command, args []string) {
-		config.Bootstrap = cluster.Bootstrapper
+		config.Bootstrapper = cluster.Bootstrapper
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cluster.Name = args[0]
@@ -73,7 +73,11 @@ var createCmd = &cobra.Command{
 		}
 
 		if err := di.Bootstrapper().Deploy(c); err != nil {
-			return errors.WithMessagef(err, "failed to deploy cluster (%s)", c.Spec.Bootstrapper)
+			return errors.WithMessagef(err, "failed to deploy cluster (%s)", c.Name)
+		}
+
+		if err := di.Bootstrapper().DownloadKubeConfig(c, ""); err != nil {
+			return errors.WithMessagef(err, "failed to download the kubeconfig of cluster (%s)", c.Name)
 		}
 
 		return nil

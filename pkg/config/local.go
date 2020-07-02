@@ -33,14 +33,10 @@ func NewLocalConfigManager() *LocalConfigManager {
 }
 
 func (l *LocalConfigManager) SaveCluster(name string, cluster *Cluster) error {
-	logrus.WithField("cluster", name).Infoln("Saving cluster configurations")
+	logrus.WithField("cluster", name).Infoln("saving cluster configurations")
 
-	d := LocalClusterDir(name)
-
-	if _, err := os.Stat(d); os.IsNotExist(err) {
-		if err := os.MkdirAll(LocalClusterDir(name), 0755); err != nil {
-			return errors.WithStack(err)
-		}
+	if err := os.MkdirAll(LocalClusterDir(name), 0755); err != nil && err != os.ErrExist {
+		return errors.WithStack(err)
 	}
 
 	if err := l.generateKeys(cluster); err != nil {
@@ -152,7 +148,7 @@ func (l *LocalConfigManager) generateKeys(cluster *Cluster) error {
 			return errors.WithStack(err)
 		}
 
-		if err := f.Chmod(0600); err != nil {
+		if err := f.Chmod(0755); err != nil {
 			return errors.WithStack(err)
 		}
 
@@ -197,4 +193,8 @@ func LocalClusterConfigFile(name string) string {
 
 func LocalClusterKeyFiles(name string) (string, string) {
 	return path.Join(LocalClusterDir(name), "key"), path.Join(LocalClusterDir(name), "key.pub")
+}
+
+func LocalClusterKubeConfigFile(name string) string {
+	return path.Join(LocalClusterDir(name), "admin.yaml")
 }

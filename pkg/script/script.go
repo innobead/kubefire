@@ -115,7 +115,7 @@ func downloadScript(url string, destFile string, force bool) error {
 	}
 	defer out.Close()
 
-	if err := out.Chmod(0755); err != nil {
+	if err := out.Chmod(0700); err != nil {
 		return errors.WithStack(err)
 	}
 

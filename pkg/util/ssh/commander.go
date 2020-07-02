@@ -1,16 +1,21 @@
 package ssh
 
 import (
+	"bytes"
+	"fmt"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/ssh"
+	"io/ioutil"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
 type Commander interface {
 	Init() error
 	Run(before Callback, after Callback, cmds ...string) error
+	Download(remotePath string, destPath string) error
 }
 
 type Callback func(session *ssh.Session) bool
@@ -92,6 +97,31 @@ func (c *Client) Run(before Callback, after Callback, cmds ...string) error {
 		if err != nil {
 			return errors.WithStack(err)
 		}
+	}
+
+	return nil
+}
+
+func (c *Client) Download(remotePath string, destPath string) error {
+	session, err := c.createSSHSession()
+	if err != nil {
+		return err
+	}
+	defer session.Close()
+
+	buf := &bytes.Buffer{}
+	session.Stdout = buf
+
+	if err := session.Run(fmt.Sprintf("cat %s", remotePath)); err != nil {
+		return errors.WithStack(err)
+	}
+
+	if err := os.MkdirAll(filepath.Dir(destPath), 0755); err != nil && err != os.ErrExist {
+		return errors.WithStack(err)
+	}
+
+	if err := ioutil.WriteFile(destPath, buf.Bytes(), 0755); err != nil {
+		return errors.WithStack(err)
 	}
 
 	return nil

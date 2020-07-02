@@ -95,6 +95,9 @@ kubefire cluster get
 # List clusters
 kubefire cluster list
 
+# Download cluster kubeconfig
+kubefire cluster download
+
 # SSH to a node
 kubefire node ssh
 ```

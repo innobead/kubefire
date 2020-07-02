@@ -10,6 +10,7 @@ func init() {
 		deleteCmd,
 		getCmd,
 		listCmd,
+		downloadCmd,
 	}
 
 	for _, c := range cmds {

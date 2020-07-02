@@ -105,11 +105,11 @@ func Bootstrapper() bootstrap.Bootstrapper {
 		return bootstrapper
 	}
 
-	switch config.Bootstrap {
+	switch config.Bootstrapper {
 	case bootstrap.SKUBA:
 		bootstrapper = bootstrap.NewSkubaBootstrapper(nm)
 
-	case bootstrap.KUBEADM:
+	case bootstrap.KUBEADM, "":
 		bootstrapper = bootstrap.NewKubeadmBootstrapper(nm)
 	}
 

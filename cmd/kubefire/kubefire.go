@@ -11,11 +11,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func init() {
-	rootCmd.PersistentFlags().StringVar(&config.LogLevel, "log-level", logrus.InfoLevel.String(), util.FlagsValuesUsage("log level", logrus.AllLevels))
-	rootCmd.PersistentFlags().StringVar(&config.Output, "output", string(output.DEFAULT), util.FlagsValuesUsage("output format", output.BuiltinTypes))
-}
-
 var rootCmd = &cobra.Command{
 	Use:           "kubefire",
 	Short:         "KubeFire, manage Kubernetes clusters on FireCracker microVMs",
@@ -23,6 +18,18 @@ var rootCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return cmd.Help()
 	},
+}
+
+func init() {
+	cobra.OnInitialize(initConfig)
+
+	rootCmd.PersistentFlags().StringVar(&config.LogLevel, "log-level", logrus.InfoLevel.String(), util.FlagsValuesUsage("log level", logrus.AllLevels))
+	rootCmd.PersistentFlags().StringVar(&config.Output, "output", string(output.DEFAULT), util.FlagsValuesUsage("output format", output.BuiltinTypes))
+}
+
+func initConfig() {
+	level, _ := logrus.ParseLevel(config.LogLevel)
+	logrus.SetLevel(level)
 }
 
 func main() {
