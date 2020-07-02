@@ -83,7 +83,7 @@ kubefire install
 # Uninstall ncessary components to clean up the environment
 kubefire uninstall
 
-# Cluster a cluster
+# Create a cluster
 kubefire cluster create
 
 # Delete a cluster
