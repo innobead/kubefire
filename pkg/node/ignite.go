@@ -142,7 +142,7 @@ func (i *IgniteNodeManager) DeleteNode(name string) error {
 }
 
 func (i *IgniteNodeManager) GetNode(name string) (*data.Node, error) {
-	logrus.Debugf("Getting node (%s)", name)
+	logrus.Debugf("getting node (%s)", name)
 
 	cmdArgs := strings.Split(fmt.Sprintf("ignite ps --all -f {{.ObjectMeta.Name}}=%s", name), " ")
 	cmd := exec.CommandContext(context.Background(), "sudo", cmdArgs...)

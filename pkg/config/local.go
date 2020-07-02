@@ -62,7 +62,7 @@ func (l *LocalConfigManager) DeleteCluster(name string) error {
 }
 
 func (l *LocalConfigManager) GetCluster(name string) (*Cluster, error) {
-	logrus.WithField("cluster", name).Debugln("Getting cluster configurations")
+	logrus.WithField("cluster", name).Debugln("getting cluster configurations")
 
 	bytes, err := ioutil.ReadFile(LocalClusterConfigFile(name))
 	if err != nil {
@@ -82,7 +82,7 @@ func (l *LocalConfigManager) GetCluster(name string) (*Cluster, error) {
 }
 
 func (l *LocalConfigManager) ListClusters() ([]*Cluster, error) {
-	logrus.Debugln("Getting the list of cluster configurations")
+	logrus.Debugln("getting the list of cluster configurations")
 
 	clusterDirs, err := ioutil.ReadDir(ClusterRootDir)
 	if err != nil {
