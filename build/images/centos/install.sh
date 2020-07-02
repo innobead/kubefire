@@ -4,6 +4,7 @@ yum -y install \
   iproute \
   iputils \
   openssh-server \
+  openssh-clients \
   net-tools \
   procps-ng \
   sudo \

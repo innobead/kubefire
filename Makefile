@@ -36,10 +36,10 @@ clean:
 	rm -rf $(BUILD_DIR)
 
 clean-ignite-runtime:
-	@sudo ignite rm -f $(sudo ignite ps -aq) || true
-	@sudo ignite rmi $(sudo ignite images ls | awk '{print $$1}' | sed '1d') || true
-	@sudo ignite rmk $(sudo ignite kernels ls | awk '{print $$1}' | sed '1d') || true
-	@ctr -n firecracker i rm $(ctr -n firecracker images ls | awk '{print $$1}' | sed '1d' )
+	sudo ignite rm -f $$(sudo ignite ps -aq) &>/dev/null || echo "> No VMs to delete from ignite"
+	sudo ignite rmi $$(sudo ignite images ls | awk '{print $$1}' | sed '1d') &>/dev/null || echo "> No images to delete from ignite"
+	sudo ignite rmk $$(sudo ignite kernels ls | awk '{print $$1}' | sed '1d') &>/dev/null || echo "> No kernels to delete from ignite"
+	sudo ctr -n firecracker i rm $$(sudo ctr -n firecracker images ls | awk '{print $$1}' | sed '1d') &>/dev/null
 
 build-images:
 	for i in $(IMAGES); do $(MAKE) build-image-$$i; done
