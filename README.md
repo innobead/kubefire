@@ -110,6 +110,7 @@ Besides below prebuilt images, you can also use the images provided by [weavewor
 - docker.io/innobead/kubefire-opensuse-leap:15.1
 - docker.io/innobead/kubefire-sle15:15.1
 - docker.io/innobead/kubefire-centos:8
+- docker.io/innobead/kubefire-ubuntu:18.04
 - docker.io/innobead/kubefire-ubuntu:20.10
 
 ## Kernel images (w/ AppArmor enabled)
