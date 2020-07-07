@@ -148,7 +148,7 @@ func (l *LocalConfigManager) generateKeys(cluster *Cluster) error {
 			return errors.WithStack(err)
 		}
 
-		if err := f.Chmod(0755); err != nil {
+		if err := f.Chmod(0600); err != nil {
 			return errors.WithStack(err)
 		}
 
@@ -193,8 +193,4 @@ func LocalClusterConfigFile(name string) string {
 
 func LocalClusterKeyFiles(name string) (string, string) {
 	return path.Join(LocalClusterDir(name), "key"), path.Join(LocalClusterDir(name), "key.pub")
-}
-
-func LocalClusterKubeConfigFile(name string) string {
-	return path.Join(LocalClusterDir(name), "admin.yaml")
 }

@@ -254,7 +254,7 @@ func (i *IgniteNodeManager) ListNodes(clusterName string) ([]*data.Node, error) 
 }
 
 func (i *IgniteNodeManager) LoginBySSH(name string, configManager config.Manager) error {
-	logrus.Debugf("ssh into node (%s)", name)
+	logrus.Infof("ssh into node (%s)", name)
 
 	node, err := i.GetNode(name)
 	if err != nil {
@@ -279,6 +279,8 @@ func (i *IgniteNodeManager) LoginBySSH(name string, configManager config.Manager
 }
 
 func (i *IgniteNodeManager) WaitNodesRunning(clusterName string, timeoutMin time.Duration) error {
+	logrus.Infof("waiting nodes of cluster (%s) are running", clusterName)
+
 	err := retry.Do(func() error {
 		nodes, err := i.ListNodes(clusterName)
 		if err != nil {

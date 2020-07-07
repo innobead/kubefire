@@ -9,6 +9,7 @@ yum -y install \
   procps-ng \
   sudo \
   wget \
+  which \
   e2fsprogs \
   device-mapper \
   tar \

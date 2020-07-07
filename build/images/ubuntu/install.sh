@@ -20,6 +20,7 @@ apt-get update && apt-get install -y \
   udev \
   vim-tiny \
   wget \
+  which \
   e2fsprogs \
   thin-provisioning-tools \
   lvm2 \

@@ -30,7 +30,13 @@ func NewSkubaBootstrapper(nodeManager node.Manager) *SkubaBootstrapper {
 	return &SkubaBootstrapper{nodeManager: nodeManager}
 }
 
-func (s *SkubaBootstrapper) Deploy(cluster *data.Cluster) error {
+func (s *SkubaBootstrapper) Deploy(cluster *data.Cluster, before func() error) error {
+	if before != nil {
+		if err := before(); err != nil {
+			return err
+		}
+	}
+
 	extraOptions := cluster.Spec.ParseExtraOptions(&SkubaExtraOptions{}).(SkubaExtraOptions)
 
 	if err := s.nodeManager.WaitNodesRunning(cluster.Name, 5); err != nil {
@@ -84,8 +90,8 @@ func (s *SkubaBootstrapper) Deploy(cluster *data.Cluster) error {
 	return nil
 }
 
-func (k *SkubaBootstrapper) DownloadKubeConfig(cluster *data.Cluster, destDir string) error {
-	return downloadKubeConfig(k.nodeManager, cluster, destDir)
+func (s *SkubaBootstrapper) DownloadKubeConfig(cluster *data.Cluster, destDir string) error {
+	return downloadKubeConfig(s.nodeManager, cluster, "", destDir)
 }
 
 func (s *SkubaBootstrapper) init(cluster *data.Cluster, master *data.Node, extraOptions *SkubaExtraOptions) (string, error) {

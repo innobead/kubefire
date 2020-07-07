@@ -19,7 +19,6 @@ var InstallCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		scripts := []script.Type{
 			script.InstallPrerequisites,
-			script.InstallPrerequisitesSkuba,
 		}
 
 		for _, s := range scripts {

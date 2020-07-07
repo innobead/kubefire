@@ -16,6 +16,7 @@ zypper -n install -f -y \
         udev \
         sudo \
         wget \
+        which \
         e2fsprogs \
         device-mapper \
         tar \

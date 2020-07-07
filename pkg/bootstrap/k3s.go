@@ -17,17 +17,17 @@ import (
 	"time"
 )
 
-type KubeadmBootstrapper struct {
+type K3sBootstrapper struct {
 	nodeManager node.Manager
 }
 
-func NewKubeadmBootstrapper(nodeManager node.Manager) *KubeadmBootstrapper {
-	return &KubeadmBootstrapper{
+func NewK3sBootstrapper(nodeManager node.Manager) *K3sBootstrapper {
+	return &K3sBootstrapper{
 		nodeManager: nodeManager,
 	}
 }
 
-func (k *KubeadmBootstrapper) Deploy(cluster *data.Cluster, before func() error) error {
+func (k *K3sBootstrapper) Deploy(cluster *data.Cluster, before func() error) error {
 	if err := k.nodeManager.WaitNodesRunning(cluster.Name, 5); err != nil {
 		return errors.WithMessage(err, "some nodes are not running")
 	}
@@ -43,7 +43,7 @@ func (k *KubeadmBootstrapper) Deploy(cluster *data.Cluster, before func() error)
 
 	firstMaster.Spec.Cluster = &cluster.Spec
 
-	joinCmd, err := k.bootstrap(firstMaster, len(cluster.Nodes) == 1)
+	joinToken, err := k.bootstrap(firstMaster, len(cluster.Nodes) == 1)
 	if err != nil {
 		return err
 	}
@@ -59,7 +59,7 @@ func (k *KubeadmBootstrapper) Deploy(cluster *data.Cluster, before func() error)
 		}
 		n.Spec.Cluster = &cluster.Spec
 
-		if err := k.join(n, joinCmd); err != nil {
+		if err := k.join(n, firstMaster.Status.IPAddresses, joinToken); err != nil {
 			return err
 		}
 	}
@@ -67,11 +67,11 @@ func (k *KubeadmBootstrapper) Deploy(cluster *data.Cluster, before func() error)
 	return nil
 }
 
-func (k *KubeadmBootstrapper) DownloadKubeConfig(cluster *data.Cluster, destDir string) error {
-	return downloadKubeConfig(k.nodeManager, cluster, "", destDir)
+func (k *K3sBootstrapper) DownloadKubeConfig(cluster *data.Cluster, destDir string) error {
+	return downloadKubeConfig(k.nodeManager, cluster, "/etc/rancher/k3s/k3s.yaml", destDir)
 }
 
-func (k *KubeadmBootstrapper) init(cluster *data.Cluster) error {
+func (k *K3sBootstrapper) init(cluster *data.Cluster) error {
 	logrus.Infof("initializing cluster (%s)", cluster.Name)
 
 	wgInitNodes := sync.WaitGroup{}
@@ -100,14 +100,9 @@ func (k *KubeadmBootstrapper) init(cluster *data.Cluster) error {
 
 				cmds := []string{
 					"swapoff -a",
-					fmt.Sprintf("curl -sSLO %s", script.RemoteScriptUrl(script.InstallPrerequisitesKubeadm)),
-					fmt.Sprintf("chmod +x %s", script.InstallPrerequisitesKubeadm),
-					fmt.Sprintf("./%s", script.InstallPrerequisitesKubeadm),
-					"sysctl -w net.ipv4.ip_forward=1",
-					`echo "net.ipv4.ip_forward = 1" >> /etc/sysctl.conf`,
-					`echo "0.0.0.0 $(hostname)" >> /etc/hosts`,
-					`echo "export CONTAINER_RUNTIME_ENDPOINT=unix:///enabled/containerd/containerd.sock" >> /etc/profile.d/containerd.sh`,
-					"kubeadm init phase preflight -v 5",
+					fmt.Sprintf("curl -sSLO %s", script.RemoteScriptUrl(script.InstallPrerequisitesK3s)),
+					fmt.Sprintf("chmod +x %s", script.InstallPrerequisitesK3s),
+					fmt.Sprintf("./%s", script.InstallPrerequisitesK3s),
 				}
 
 				err = sshClient.Run(nil, nil, cmds...)
@@ -143,7 +138,7 @@ func (k *KubeadmBootstrapper) init(cluster *data.Cluster) error {
 	return err
 }
 
-func (k *KubeadmBootstrapper) bootstrap(node *data.Node, isSingleNode bool) (joinCmd string, err error) {
+func (k *K3sBootstrapper) bootstrap(node *data.Node, isSingleNode bool) (token string, err error) {
 	logrus.Infof("bootstrapping the first master node (%s)", node.Name)
 
 	sshClient, err := utilssh.NewClient(
@@ -158,58 +153,42 @@ func (k *KubeadmBootstrapper) bootstrap(node *data.Node, isSingleNode bool) (joi
 	}
 	defer sshClient.Close()
 
-	joinCmdBuf := bytes.Buffer{}
+	k3sOpts := []string{
+		fmt.Sprintf("--bind-address=%s", node.Status.IPAddresses),
+	}
+	tokenBuf := bytes.Buffer{}
+
+	if !isSingleNode {
+		k3sOpts = append(k3sOpts, "--cluster-init")
+	}
 
 	cmds := []struct {
 		cmdline string
 		before  utilssh.Callback
-		after   utilssh.Callback
 	}{
 		{
-			cmdline: "kubeadm init -v 5",
-			before: func(session *ssh.Session) bool {
-				logrus.Info("running kubeadm init")
-				return true
-			},
+			cmdline: fmt.Sprintf(`INSTALL_K3S_EXEC="%s" k3s-install.sh `, strings.Join(k3sOpts, " ")),
 		},
 		{
-			cmdline: "kubeadm token create --print-join-command",
+			cmdline: "cat /var/lib/rancher/k3s/server/node-token",
 			before: func(session *ssh.Session) bool {
-				logrus.Info("creating the join command")
-				session.Stdout = &joinCmdBuf
+				session.Stdout = &tokenBuf
 				return true
-			},
-		},
-		{
-			cmdline: "KUBECONFIG=/etc/kubernetes/admin.conf kubectl create -f https://raw.githubusercontent.com/cilium/cilium/v1.8/install/kubernetes/quick-install.yaml",
-			before: func(session *ssh.Session) bool {
-				logrus.Info("applying CNI network")
-				return true
-			},
-		},
-		{
-			cmdline: "KUBECONFIG=/etc/kubernetes/admin.conf kubectl taint nodes --all node-role.kubernetes.io/master-",
-			before: func(session *ssh.Session) bool {
-				if isSingleNode {
-					logrus.Infof("untainting the master node (%s)", node.Name)
-				}
-
-				return isSingleNode
 			},
 		},
 	}
 
 	for _, c := range cmds {
-		err := sshClient.Run(c.before, c.after, c.cmdline)
+		err := sshClient.Run(c.before, nil, c.cmdline)
 		if err != nil {
 			return "", errors.WithStack(err)
 		}
 	}
 
-	return strings.TrimSuffix(joinCmdBuf.String(), "\n"), nil
+	return strings.TrimSuffix(tokenBuf.String(), "\n"), nil
 }
 
-func (k *KubeadmBootstrapper) join(node *data.Node, joinCmd string) error {
+func (k *K3sBootstrapper) join(node *data.Node, apiServerAddress string, joinToken string) error {
 	logrus.Infof("joining node (%s)", node.Name)
 
 	sshClient, err := utilssh.NewClient(
@@ -224,9 +203,16 @@ func (k *KubeadmBootstrapper) join(node *data.Node, joinCmd string) error {
 	}
 	defer sshClient.Close()
 
-	logrus.Infof("running join command (%s)", joinCmd)
+	var k3sOpts []string
+	cmd := fmt.Sprintf("K3S_URL=https://%s:6443 K3S_TOKEN=%s k3s-install.sh", apiServerAddress, joinToken)
 
-	if err := sshClient.Run(nil, nil, fmt.Sprintf("%s -v 5", joinCmd)); err != nil {
+	if node.IsMaster() {
+		k3sOpts = append(k3sOpts, "--server")
+	}
+
+	cmd = fmt.Sprintf(`INSTALL_K3S_EXEC="%s" `, strings.Join(k3sOpts, " ")) + cmd
+
+	if err := sshClient.Run(nil, nil, cmd); err != nil {
 		return errors.WithStack(err)
 	}
 

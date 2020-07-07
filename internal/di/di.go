@@ -111,6 +111,9 @@ func Bootstrapper() bootstrap.Bootstrapper {
 
 	case bootstrap.KUBEADM, "":
 		bootstrapper = bootstrap.NewKubeadmBootstrapper(nm)
+
+	case bootstrap.K3S:
+		bootstrapper = bootstrap.NewK3sBootstrapper(nm)
 	}
 
 	return bootstrapper
