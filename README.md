@@ -56,7 +56,7 @@ kubefire cluster create demo --bootstrapper=skuba --extra-opts="RegisterCode=<Pr
 
 ## Accessing Cluster
 
-During bootstrapping, the cluster folder is created at `~/.kubefire/<cluster name>`. After bootstrapping, there are several files generated in the folder.
+During bootstrapping, the cluster folder is created at `~/.kubefire/clusters/<cluster name>`. After bootstrapping, there are several files generated in the folder.
 
 - **admin.conf**
   
@@ -72,7 +72,7 @@ During bootstrapping, the cluster folder is created at `~/.kubefire/<cluster nam
   
 There are two ways to manage the cluster resources by using the below kubeconfig, then run kubectl commands as usual.
 
-1. `~/.kubefire/<cluster name>/admin.conf` at local
+1. `~/.kubefire/clusters/<cluster name>/admin.conf` at local
 2. `/etc/kubernetes/admin.conf` at the remote master nodes. For K3s, `/etc/rancher/k3s/k3s.yaml` instead.
 
 # Usage
