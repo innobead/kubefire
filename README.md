@@ -40,7 +40,8 @@ kubefire cluster create --bootstrapper=kubeadm demo
 ### K3s (K8s 1.18.4)
 
 Please note that K3s only officially supports Ubuntu 16.04 and 18.04, the kernel versions of which are 4.4 and 4.15. 
-Therefore, if using the prebuilt kernels, please use `4.19` instead of `5.4`, otherwise there will be some unexpected errors happening.  
+Therefore, if using the prebuilt kernels, please use `4.19` instead of `5.4`, otherwise there will be some unexpected errors happening. 
+For rootfs, it's no problem to use other non-Ubuntu images.
 
 ```
 kubefire cluster create demo --bootstrapper=k3s
