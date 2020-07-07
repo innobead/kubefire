@@ -7,12 +7,12 @@ set -o xtrace
 
 TMP_DIR=/tmp/kubefire
 GOARCH=$(go env GOARCH 2>/dev/null || echo "amd64")
-KUBE_VERSION="v1.18.5" # https://dl.k8s.io/release/stable.txt
-KUBE_RELEASE_VERSION="v0.2.7"
-CONTAINERD_VERSION="v1.3.4"
-CNI_VERSION="v0.8.6"
-CRICTL_VERSION="v1.17.0"
-RUNC_VERSION="v1.0.0-rc90"
+KUBE_VERSION=${KUBE_VERSION:-"v1.18.5"} # https://dl.k8s.io/release/stable.txt
+KUBE_RELEASE_VERSION=${KUBE_RELEASE_VERSION:-"v0.2.7"}
+CONTAINERD_VERSION=${CONTAINERD_VERSION:-"v1.3.4"}
+CNI_VERSION=${CNI_VERSION:-"v0.8.6"}
+CRICTL_VERSION=${CRICTL_VERSION:-"v1.17.0"}
+RUNC_VERSION=${RUNC_VERSION:-"v1.0.0-rc91"}
 
 mkdir -p $TMP_DIR
 pushd $TMP_DIR

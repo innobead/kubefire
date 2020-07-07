@@ -7,7 +7,7 @@ set -o xtrace
 
 TMP_DIR=/tmp/kubefire
 
-SKUBA_VERSION=v1.3.5 # SUSE CaaSP 4.2.1
+SKUBA_VERSION=${SKUBA_VERSION:-"v1.3.5"} # SUSE CaaSP 4.2.1
 GOARCH=$(go env GOARCH 2>/dev/null)
 GOBIN=$(go env GOPATH 2>/dev/null)/bin
 
