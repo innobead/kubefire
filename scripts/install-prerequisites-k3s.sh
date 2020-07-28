@@ -7,7 +7,7 @@ set -o xtrace
 
 TMP_DIR=/tmp/kubefire
 
-K3S_VERSION=${K3S_VERSION:-"v1.18.4"}
+K3S_VERSION=${K3S_VERSION:-"v1.18.6"}
 
 mkdir -p $TMP_DIR
 pushd $TMP_DIR
