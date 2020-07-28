@@ -8,10 +8,10 @@ cleanup() {
 }
 trap cleanup EXIT
 
-zypper ar http://download.suse.de/ibs/SUSE/Products/SLE-Product-SLES/15-SP1/x86_64/product product
-zypper ar http://download.suse.de/ibs/SUSE/Updates/SLE-Product-SLES/15-SP1/x86_64/update/ product-update
-zypper ar http://download.suse.de/ibs/SUSE/Products/SLE-Module-Basesystem/15-SP1/x86_64/product/ basesystem
-zypper ar http://download.suse.de/ibs/SUSE/Updates/SLE-Module-Basesystem/15-SP1/x86_64/update/ basesystem-update
+zypper ar http://download.suse.de/ibs/SUSE/Products/SLE-Product-SLES/15-SP2/x86_64/product product
+zypper ar http://download.suse.de/ibs/SUSE/Updates/SLE-Product-SLES/15-SP2/x86_64/update/ product-update
+zypper ar http://download.suse.de/ibs/SUSE/Products/SLE-Module-Basesystem/15-SP2/x86_64/product/ basesystem
+zypper ar http://download.suse.de/ibs/SUSE/Updates/SLE-Module-Basesystem/15-SP2/x86_64/update/ basesystem-update
 
 zypper ref
 
