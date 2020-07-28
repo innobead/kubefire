@@ -16,3 +16,9 @@ make build-image-sle15 RELEASE=15.1
 make build-kernel-4.19.125
 make build-kernel-5.4.43
 ```
+
+# Build all supported Kernel images
+
+```
+make build-kernels
+```
