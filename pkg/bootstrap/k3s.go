@@ -17,6 +17,11 @@ import (
 	"time"
 )
 
+type K3sExtraOptions struct {
+	ServerOpts string
+	AgentOpts  string
+}
+
 type K3sBootstrapper struct {
 	nodeManager node.Manager
 }
@@ -28,6 +33,14 @@ func NewK3sBootstrapper(nodeManager node.Manager) *K3sBootstrapper {
 }
 
 func (k *K3sBootstrapper) Deploy(cluster *data.Cluster, before func() error) error {
+	if before != nil {
+		if err := before(); err != nil {
+			return err
+		}
+	}
+
+	extraOptions := cluster.Spec.ParseExtraOptions(&K3sExtraOptions{}).(K3sExtraOptions)
+
 	if err := k.nodeManager.WaitNodesRunning(cluster.Name, 5); err != nil {
 		return errors.WithMessage(err, "some nodes are not running")
 	}
@@ -43,7 +56,7 @@ func (k *K3sBootstrapper) Deploy(cluster *data.Cluster, before func() error) err
 
 	firstMaster.Spec.Cluster = &cluster.Spec
 
-	joinToken, err := k.bootstrap(firstMaster, len(cluster.Nodes) == 1)
+	joinToken, err := k.bootstrap(firstMaster, len(cluster.Nodes) == 1, extraOptions)
 	if err != nil {
 		return err
 	}
@@ -59,7 +72,7 @@ func (k *K3sBootstrapper) Deploy(cluster *data.Cluster, before func() error) err
 		}
 		n.Spec.Cluster = &cluster.Spec
 
-		if err := k.join(n, firstMaster.Status.IPAddresses, joinToken); err != nil {
+		if err := k.join(n, firstMaster.Status.IPAddresses, joinToken, extraOptions); err != nil {
 			return err
 		}
 	}
@@ -138,7 +151,7 @@ func (k *K3sBootstrapper) init(cluster *data.Cluster) error {
 	return err
 }
 
-func (k *K3sBootstrapper) bootstrap(node *data.Node, isSingleNode bool) (token string, err error) {
+func (k *K3sBootstrapper) bootstrap(node *data.Node, isSingleNode bool, extraOptions K3sExtraOptions) (token string, err error) {
 	logrus.Infof("bootstrapping the first master node (%s)", node.Name)
 
 	sshClient, err := utilssh.NewClient(
@@ -160,6 +173,10 @@ func (k *K3sBootstrapper) bootstrap(node *data.Node, isSingleNode bool) (token s
 
 	if !isSingleNode {
 		k3sOpts = append(k3sOpts, "--cluster-init")
+	}
+
+	if extraOptions.ServerOpts != "" {
+		k3sOpts = append(k3sOpts, extraOptions.ServerOpts)
 	}
 
 	cmds := []struct {
@@ -188,7 +205,7 @@ func (k *K3sBootstrapper) bootstrap(node *data.Node, isSingleNode bool) (token s
 	return strings.TrimSuffix(tokenBuf.String(), "\n"), nil
 }
 
-func (k *K3sBootstrapper) join(node *data.Node, apiServerAddress string, joinToken string) error {
+func (k *K3sBootstrapper) join(node *data.Node, apiServerAddress string, joinToken string, extraOptions K3sExtraOptions) error {
 	logrus.Infof("joining node (%s)", node.Name)
 
 	sshClient, err := utilssh.NewClient(
@@ -208,6 +225,14 @@ func (k *K3sBootstrapper) join(node *data.Node, apiServerAddress string, joinTok
 
 	if node.IsMaster() {
 		k3sOpts = append(k3sOpts, "--server")
+
+		if extraOptions.ServerOpts != "" {
+			k3sOpts = append(k3sOpts, extraOptions.ServerOpts)
+		}
+	} else {
+		if extraOptions.AgentOpts != "" {
+			k3sOpts = append(k3sOpts, extraOptions.AgentOpts)
+		}
 	}
 
 	cmd = fmt.Sprintf(`INSTALL_K3S_EXEC="%s" `, strings.Join(k3sOpts, " ")) + cmd

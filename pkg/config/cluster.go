@@ -2,6 +2,7 @@ package config
 
 import (
 	"reflect"
+	"regexp"
 	"strconv"
 	"strings"
 )
@@ -37,12 +38,15 @@ func (c *Cluster) ParseExtraOptions(obj interface{}) interface{} {
 	optionList := strings.Split(c.ExtraOptions, ",")
 
 	for _, option := range optionList {
-		values := strings.Split(option, "=")
+		values := strings.SplitN(option, "=", 2)
 		if len(values) == 2 {
 			field := value.FieldByName(values[0])
 
 			switch field.Kind() {
 			case reflect.String:
+				pattern := regexp.MustCompile(`^["'](.+)["']$`)
+				values[1] = pattern.ReplaceAllString(values[1], "$1")
+
 				field.SetString(values[1])
 
 			case reflect.Int:

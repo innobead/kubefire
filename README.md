@@ -44,7 +44,20 @@ Therefore, if using the prebuilt kernels, please use `4.19` instead of `5.4`, ot
 For rootfs, it's no problem to use other non-Ubuntu images.
 
 ```
-kubefire cluster create demo --bootstrapper=k3s
+kubefire cluster create demo --bootstrapper=k3s --kernel-image=innobead/kubefire-kernel-4.19.125-amd64:latest
+```
+
+#### Add extra K3s installation options
+
+To add extra installation options of the server or agent nodes, use `--extra-options` of `cluster create` command to provide `ServerOpts` or `AgentOpts` key-value pairs as the below example. 
+
+> The key-value pairs in `--extra-options` are separated by comma.
+
+- Add any options of `k3s server` into `ServerOpts='<k3s server option1>, <k3s server option2>, ...'`.
+- Add any options of `k3s agent` into `AgentOpts='<k3s agent option1>, <k3s agent option2>, ...'`.
+
+```
+kubefire cluster create demo-k3s --bootstrapper k3s --kernel-image innobead/kubefire-kernel-4.19.125-amd64:latest --extra-opts="ServerOpts='--disable=traefik --disable=metrics-server'"
 ```
 
 [![asciicast](https://asciinema.org/a/hKW8WffFKxdRztG0NSiWM6Opx.svg)](https://asciinema.org/a/hKW8WffFKxdRztG0NSiWM6Opx)

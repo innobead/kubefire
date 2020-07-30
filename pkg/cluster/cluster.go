@@ -59,6 +59,10 @@ func (d *DefaultManager) Create(name string) error {
 		node.Worker: &cluster.Worker,
 	}
 	for t, c := range nodeTypeConfigs {
+		if c.Count == 0 {
+			continue
+		}
+
 		if err := d.NodeManager.CreateNodes(t, c); err != nil {
 			return err
 		}

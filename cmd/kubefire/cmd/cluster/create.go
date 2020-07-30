@@ -76,7 +76,11 @@ var createCmd = &cobra.Command{
 		err = di.Bootstrapper().Deploy(
 			c,
 			func() error {
-				return installSkuba()
+				if _, ok := di.Bootstrapper().(*bootstrap.SkubaBootstrapper); ok {
+					return installSkuba()
+				}
+
+				return nil
 			},
 		)
 		if err != nil {

@@ -28,6 +28,12 @@ func NewKubeadmBootstrapper(nodeManager node.Manager) *KubeadmBootstrapper {
 }
 
 func (k *KubeadmBootstrapper) Deploy(cluster *data.Cluster, before func() error) error {
+	if before != nil {
+		if err := before(); err != nil {
+			return err
+		}
+	}
+
 	if err := k.nodeManager.WaitNodesRunning(cluster.Name, 5); err != nil {
 		return errors.WithMessage(err, "some nodes are not running")
 	}

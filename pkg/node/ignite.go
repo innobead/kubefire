@@ -33,7 +33,7 @@ func NewIgniteNodeManager() *IgniteNodeManager {
 }
 
 func (i *IgniteNodeManager) CreateNodes(nodeType Type, node *config.Node) error {
-	logrus.Infof("creating nodes of cluster (%s)", node.Cluster.Name)
+	logrus.Infof("creating %s nodes of cluster (%s)", nodeType, node.Cluster.Name)
 
 	tmp, err := template.New("create").Parse(RunCmd)
 	if err != nil {
@@ -99,7 +99,7 @@ func (i *IgniteNodeManager) CreateNodes(nodeType Type, node *config.Node) error 
 }
 
 func (i *IgniteNodeManager) DeleteNodes(nodeType Type, node *config.Node) error {
-	logrus.Infof("deleting nodes of type (%s)", nodeType)
+	logrus.Infof("deleting %s nodes", nodeType)
 
 	for j := 1; j <= node.Count; j++ {
 		name := NodeName(node.Cluster.Name, nodeType, j)
