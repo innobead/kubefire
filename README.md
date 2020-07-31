@@ -40,11 +40,11 @@ kubefire cluster create --bootstrapper=kubeadm demo
 ### K3s (K8s 1.18.6)
 
 Please note that K3s only officially supports Ubuntu 16.04 and 18.04, the kernel versions of which are 4.4 and 4.15. 
-Therefore, if using the prebuilt kernels, please use `4.19` instead of `5.4`, otherwise there will be some unexpected errors happening. 
+Therefore, if using the prebuilt kernels, please use `4.19` (which is the default kernel used) instead of `5.4`, otherwise there will be some unexpected errors happening. 
 For rootfs, it's no problem to use other non-Ubuntu images.
 
 ```
-kubefire cluster create demo --bootstrapper=k3s --kernel-image=innobead/kubefire-kernel-4.19.125-amd64:latest
+kubefire cluster create demo --bootstrapper=k3s
 ```
 
 #### Add extra K3s installation options
@@ -57,7 +57,7 @@ To add extra installation options of the server or agent nodes, use `--extra-opt
 - Add any options of `k3s agent` into `AgentOpts='<k3s agent option1>, <k3s agent option2>, ...'`.
 
 ```
-kubefire cluster create demo-k3s --bootstrapper k3s --kernel-image innobead/kubefire-kernel-4.19.125-amd64:latest --extra-opts="ServerOpts='--disable=traefik --disable=metrics-server'"
+kubefire cluster create demo-k3s --bootstrapper k3s --extra-opts="ServerOpts='--disable=traefik --disable=metrics-server'"
 ```
 
 [![asciicast](https://asciinema.org/a/hKW8WffFKxdRztG0NSiWM6Opx.svg)](https://asciinema.org/a/hKW8WffFKxdRztG0NSiWM6Opx)
@@ -161,7 +161,7 @@ Besides below prebuilt images, you can also use the images provided by [weavewor
 
 ## Kernel images (w/ AppArmor enabled)
 - docker.io/innobead/kubefire-kernel-5.4.43-amd64:latest
-- docker.io/innobead/kubefire-kernel-4.19.125-amd64:latest
+- docker.io/innobead/kubefire-kernel-4.19.125-amd64:latest (default)
 
 ## References
 
