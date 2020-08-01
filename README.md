@@ -10,7 +10,7 @@ KubeFire is to manage Kubernetes clusters running on FireCracker microVMs via **
 
 ## Installing KubeFire
 
-There is no official release, so please make sure go 1.14 installed, then build and install kubefire in the `GOBIN` path.
+There is no official release, so please make sure go 1.14 installed, then build and install `kubefire` in the `GOBIN` path.
 
 ```
 make install
@@ -18,14 +18,12 @@ make install
 
 ## Installing Prerequisites
 
-Run the below command with root permission/sudo without password for below things.
+To be able to run kubefire commands w/o issues like node/cluster management, there are some prerequisites to have. Please run `kubefire install` command with root permission (or sudo without password) to have these prerequisites via the below steps.
 
 - Check virtualization supported
 - Install necessary components including runc, containerd, CNI plugins, and Ignite
 
-```
-kubefire install
-```
+> Note: to uninstall the prerequisites, run `kubefire uninstall`.
 
 ## Bootstrapping Cluster
 
@@ -51,7 +49,7 @@ kubefire cluster create demo --bootstrapper=k3s
 
 To add extra installation options of the server or agent nodes, use `--extra-options` of `cluster create` command to provide `ServerOpts` or `AgentOpts` key-value pairs as the below example. 
 
-> The key-value pairs in `--extra-options` are separated by comma.
+> Note: the key-value pairs in `--extra-options` are separated by comma.
 
 - Add any options of `k3s server` into `ServerOpts='<k3s server option1>, <k3s server option2>, ...'`.
 - Add any options of `k3s agent` into `AgentOpts='<k3s agent option1>, <k3s agent option2>, ...'`.
@@ -123,10 +121,10 @@ Use "kubefire [command] --help" for more information about a command.
 # Show version
 kubefire version
 
-# Install necessary components for cluster management
+# Install prerequisites
 kubefire install 
 
-# Uninstall ncessary components to clean up the environment
+# Uninstall prerequisites
 kubefire uninstall
 
 # Create a cluster
