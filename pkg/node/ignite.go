@@ -153,7 +153,7 @@ func (i *IgniteNodeManager) GetNode(name string) (*data.Node, error) {
 
 	node := &data.Node{
 		Name:   name,
-		Spec:   config.Node{Cluster: &config.Cluster{}},
+		Spec:   config.Node{Cluster: config.NewCluster()},
 		Status: data.NodeStatus{},
 	}
 
@@ -221,7 +221,7 @@ func (i *IgniteNodeManager) ListNodes(clusterName string) ([]*data.Node, error) 
 		cmdArgs = append(
 			cmdArgs,
 			"-f",
-			fmt.Sprintf("{{.ObjectMeta.Name}}=~%s", clusterName),
+			fmt.Sprintf("{{.ObjectMeta.Name}}=~%s-", clusterName),
 			"-t",
 			"{{.ObjectMeta.Name}}",
 		)

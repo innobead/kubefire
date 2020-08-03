@@ -69,7 +69,7 @@ func (l *LocalConfigManager) GetCluster(name string) (*Cluster, error) {
 		return nil, errors.WithStack(err)
 	}
 
-	c := &Cluster{}
+	c := NewCluster()
 	if err := yaml.Unmarshal(bytes, c); err != nil {
 		return nil, errors.WithStack(err)
 	}

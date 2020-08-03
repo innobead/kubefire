@@ -87,8 +87,8 @@ func (d *DefaultManager) Delete(name string, force bool) error {
 		node.Master: &cluster.Master,
 		node.Worker: &cluster.Worker,
 	}
-	for t, c := range nodeTypeConfigs {
-		if err := d.NodeManager.DeleteNodes(t, c); err != nil {
+	for t, n := range nodeTypeConfigs {
+		if err := d.NodeManager.DeleteNodes(t, n); err != nil {
 			if !force {
 				return err
 			}

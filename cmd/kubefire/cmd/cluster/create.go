@@ -11,10 +11,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var cluster = pkgconfig.Cluster{
-	Master: pkgconfig.Node{},
-	Worker: pkgconfig.Node{},
-}
+var cluster = pkgconfig.NewCluster()
 
 var forceCreate bool
 
@@ -60,7 +57,7 @@ var createCmd = &cobra.Command{
 			_ = di.ClusterManager().Delete(cluster.Name, true)
 		}
 
-		if err := di.ClusterManager().Init(&cluster); err != nil {
+		if err := di.ClusterManager().Init(cluster); err != nil {
 			return errors.WithMessagef(err, "failed to init cluster (%s)", cluster.Name)
 		}
 

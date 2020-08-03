@@ -24,6 +24,16 @@ type Cluster struct {
 	ExtraOptions string `json:"extra_options"`
 }
 
+func NewCluster() *Cluster {
+	c := Cluster{Admin: Node{}, Master: Node{}, Worker: Node{}}
+
+	c.Admin.Cluster = &c
+	c.Master.Cluster = &c
+	c.Worker.Cluster = &c
+
+	return &c
+}
+
 type Node struct {
 	Count    int      `json:"count"`
 	Memory   string   `json:"memory,omitempty"`
