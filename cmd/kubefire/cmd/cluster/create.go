@@ -47,8 +47,14 @@ var createCmd = &cobra.Command{
 	Use:   "create [name]",
 	Short: "Create cluster",
 	Args:  util.Validate1thArg("name"),
-	PreRun: func(cmd *cobra.Command, args []string) {
+	PreRunE: func(cmd *cobra.Command, args []string) error {
+		if !bootstrap.IsValid(cluster.Bootstrapper) {
+			return errors.Errorf("%s unsupported bootstrapper", cluster.Bootstrapper)
+		}
+
 		config.Bootstrapper = cluster.Bootstrapper
+
+		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cluster.Name = args[0]

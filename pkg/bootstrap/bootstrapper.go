@@ -26,6 +26,15 @@ type Bootstrapper interface {
 	DownloadKubeConfig(cluster *data.Cluster, destDir string) error
 }
 
+func IsValid(bootstrapper string) bool {
+	switch bootstrapper {
+	case KUBEADM, SKUBA, K3S:
+		return true
+	default:
+		return false
+	}
+}
+
 func downloadKubeConfig(nodeManager node.Manager, cluster *data.Cluster, remoteKubeConfigPath string, destDir string) error {
 	logrus.Infof("downloading the kubeconfig of cluster (%s)", cluster.Name)
 

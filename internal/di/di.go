@@ -114,6 +114,9 @@ func Bootstrapper() bootstrap.Bootstrapper {
 
 	case bootstrap.K3S:
 		bootstrapper = bootstrap.NewK3sBootstrapper(nm)
+
+	default:
+		panic("no supported bootstrapper")
 	}
 
 	return bootstrapper
