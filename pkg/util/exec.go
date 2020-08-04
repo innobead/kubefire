@@ -6,9 +6,14 @@ import (
 	"os/exec"
 )
 
-func UpdateDefaultCmdPipes(cmd *exec.Cmd) *exec.Cmd {
+func UpdateCommandDefaultLogWithInfo(cmd *exec.Cmd) *exec.Cmd {
+	return UpdateCommandDefaultLog(cmd, logrus.InfoLevel)
+}
+
+func UpdateCommandDefaultLog(cmd *exec.Cmd, logLevel logrus.Level) *exec.Cmd {
 	log := NewLogWriter(
 		logrus.NewEntry(logrus.StandardLogger()),
+		logLevel,
 		"",
 	)
 

@@ -144,6 +144,7 @@ func (c *Client) createSSHSession() (*ssh.Session, error) {
 
 	log := util.NewLogWriter(
 		logrus.NewEntry(logrus.StandardLogger()),
+		logrus.InfoLevel,
 		c.sshClient.RemoteAddr().String(),
 	)
 

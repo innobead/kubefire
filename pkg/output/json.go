@@ -16,7 +16,7 @@ func (j *JsonOutput) Print(obj interface{}, filters []string, title string) erro
 		return errors.WithStack(err)
 	}
 
-	fmt.Println(string(bytes))
+	fmt.Print(string(bytes))
 
 	return nil
 }

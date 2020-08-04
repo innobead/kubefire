@@ -132,8 +132,9 @@ func runScript(script string) error {
 		return errors.WithStack(err)
 	}
 
-	cmd := exec.CommandContext(context.Background(), "sudo", script)
-	util.UpdateDefaultCmdPipes(cmd)
+	cmd := util.UpdateCommandDefaultLogWithInfo(
+		exec.CommandContext(context.Background(), "sudo", script),
+	)
 
 	if err := cmd.Run(); err != nil {
 		return errors.WithStack(err)

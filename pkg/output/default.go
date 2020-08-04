@@ -2,6 +2,7 @@ package output
 
 import (
 	"fmt"
+	"github.com/innobead/kubefire/pkg/config"
 	"github.com/innobead/kubefire/pkg/data"
 	"github.com/olekukonko/tablewriter"
 	"io"
@@ -34,7 +35,7 @@ func (d *DefaultOutput) Print(obj interface{}, filters []string, title string) e
 		}
 
 		if title != "" {
-			fmt.Printf("# %s #\n", title)
+			fmt.Printf("### %s\n", title)
 		}
 
 		for i := 0; i < value.Len(); i++ {
@@ -54,7 +55,7 @@ func (d *DefaultOutput) Print(obj interface{}, filters []string, title string) e
 		} else {
 			switch value.Interface().(type) {
 			case data.Cluster:
-				fmt.Println("# Cluster Configuration #")
+				fmt.Println("### Cluster Configuration")
 
 				specField := value.FieldByName("Spec")
 
@@ -75,7 +76,7 @@ func (d *DefaultOutput) Print(obj interface{}, filters []string, title string) e
 
 			default:
 				if title != "" {
-					fmt.Printf("# %s #\n", title)
+					fmt.Printf("### %s\n", title)
 				}
 
 				d.parse(value, filters, &tableHeaders, &tableData)
@@ -100,9 +101,9 @@ func (d *DefaultOutput) Print(obj interface{}, filters []string, title string) e
 	table.AppendBulk(tableData) // Add Bulk Data
 	table.Render()
 
-	fmt.Println("")
-
 	for _, o := range subObjs {
+		fmt.Println("")
+
 		if err := d.Print(o.obj, nil, o.title); err != nil {
 			return err
 		}
@@ -122,6 +123,19 @@ func (d *DefaultOutput) parse(v reflect.Value, filters []string, tableHeaders *[
 			"Status.Image",
 			"Status.Kernel",
 		)
+
+	case config.Cluster:
+		if len(filters) == 0 {
+			filters = append(
+				filters,
+				"Name",
+				"Bootstrapper",
+				"Image",
+				"KernelImage",
+				"KernelArgs",
+				"ExtraOptions",
+			)
+		}
 	}
 
 	updateTableData := func(f reflect.Value, subTableData *[]string) {

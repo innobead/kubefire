@@ -11,6 +11,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"html/template"
+	"os"
 	"os/exec"
 	"reflect"
 	"strconv"
@@ -71,7 +72,13 @@ func (i *IgniteNodeManager) CreateNodes(nodeType Type, node *config.Node) error 
 		cmdArgs := strings.Split(tmpBuffer.String(), " ")
 		cmdArgs = append(cmdArgs, fmt.Sprintf("--kernel-args=%s", node.Cluster.KernelArgs))
 
-		cmd := util.UpdateDefaultCmdPipes(exec.CommandContext(context.Background(), "sudo", cmdArgs...))
+		cmd := util.UpdateCommandDefaultLogWithInfo(
+			exec.CommandContext(
+				context.Background(),
+				"sudo",
+				cmdArgs...,
+			),
+		)
 
 		logrus.Infof("creating node (%s)", n.Name)
 
@@ -128,7 +135,13 @@ func (i *IgniteNodeManager) DeleteNode(name string) error {
 		return errors.WithStack(err)
 	}
 
-	cmd := util.UpdateDefaultCmdPipes(exec.CommandContext(context.Background(), "sudo", strings.Split(tmpBuffer.String(), " ")...))
+	cmd := util.UpdateCommandDefaultLogWithInfo(
+		exec.CommandContext(
+			context.Background(),
+			"sudo",
+			strings.Split(tmpBuffer.String(), " ")...,
+		),
+	)
 
 	if err := cmd.Run(); err != nil {
 		return errors.WithStack(err)
@@ -141,7 +154,14 @@ func (i *IgniteNodeManager) GetNode(name string) (*data.Node, error) {
 	logrus.Debugf("getting node (%s)", name)
 
 	cmdArgs := strings.Split(fmt.Sprintf("ignite ps --all -f {{.ObjectMeta.Name}}=%s", name), " ")
-	cmd := util.UpdateDefaultCmdPipes(exec.CommandContext(context.Background(), "sudo", cmdArgs...))
+	cmd := util.UpdateCommandDefaultLog(
+		exec.CommandContext(
+			context.Background(),
+			"sudo",
+			cmdArgs...,
+		),
+		logrus.DebugLevel,
+	)
 
 	if err := cmd.Run(); err != nil {
 		return nil, err
@@ -274,7 +294,14 @@ func (i *IgniteNodeManager) LoginBySSH(name string, configManager config.Manager
 
 	cmdArgs := strings.Split(fmt.Sprintf("ignite ssh -i %s %s", cluster.Prikey, name), " ")
 
-	cmd := util.UpdateDefaultCmdPipes(exec.CommandContext(context.Background(), "sudo", cmdArgs...))
+	cmd := exec.CommandContext(
+		context.Background(),
+		"sudo",
+		cmdArgs...,
+	)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Stdin = os.Stdin
 
 	if err := cmd.Run(); err != nil {
 		return errors.WithStack(err)

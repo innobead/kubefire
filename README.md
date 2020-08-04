@@ -130,7 +130,7 @@ kubefire uninstall
 # Create a cluster
 kubefire cluster create
 
-# Delete a cluster
+# Delete clusters
 kubefire cluster delete
 
 # Get a cluster info
