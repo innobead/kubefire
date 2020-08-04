@@ -9,7 +9,7 @@ import (
 var sshCmd = &cobra.Command{
 	Use:   "ssh [name]",
 	Short: "SSH into node",
-	Args:  util.Validate1thArg("name"),
+	Args:  util.ValidateOneArg("name"),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return di.ClusterManager().GetNodeManager().LoginBySSH(
 			args[0],

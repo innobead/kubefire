@@ -11,7 +11,7 @@ import (
 var envCmd = &cobra.Command{
 	Use:   "env [name]",
 	Short: "Print environment values of cluster",
-	Args:  util.Validate1thArg("name"),
+	Args:  util.ValidateOneArg("name"),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		name := args[0]
 

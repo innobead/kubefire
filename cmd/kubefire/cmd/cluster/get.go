@@ -10,7 +10,7 @@ import (
 var getCmd = &cobra.Command{
 	Use:   "get [name]",
 	Short: "Get cluster",
-	Args:  util.Validate1thArg("name"),
+	Args:  util.ValidateOneArg("name"),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		name := args[0]
 

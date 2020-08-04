@@ -82,7 +82,7 @@ func (k *KubeadmBootstrapper) DownloadKubeConfig(cluster *data.Cluster, destDir 
 }
 
 func (k *KubeadmBootstrapper) Prepare(force bool) error {
-	panic("implement me")
+	return nil
 }
 
 func (k *KubeadmBootstrapper) init(cluster *data.Cluster) error {

@@ -29,7 +29,7 @@ func (d *DefaultOutput) Print(obj interface{}, filters []string, title string) e
 
 	if value.Kind() == reflect.Slice {
 		if value.Len() == 0 {
-			fmt.Println("Not found")
+			fmt.Println("No clusters created")
 			return nil
 		}
 
