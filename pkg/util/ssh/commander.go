@@ -3,6 +3,7 @@ package ssh
 import (
 	"bytes"
 	"fmt"
+	"github.com/innobead/kubefire/pkg/util"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/ssh"
@@ -141,9 +142,14 @@ func (c *Client) createSSHSession() (*ssh.Session, error) {
 		return nil, err
 	}
 
+	log := util.NewLogWriter(
+		logrus.NewEntry(logrus.StandardLogger()),
+		c.sshClient.RemoteAddr().String(),
+	)
+
 	session.Stdin = os.Stdin
-	session.Stdout = os.Stdout
-	session.Stderr = os.Stderr
+	session.Stdout = log
+	session.Stderr = log
 
 	return session, nil
 }

@@ -59,6 +59,10 @@ func (k *KubeadmBootstrapper) Deploy(cluster *data.Cluster, before func() error)
 		return err
 	}
 
+	if len(nodes) == 0 {
+		return errors.New("no nodes available")
+	}
+
 	for _, n := range nodes {
 		if n.Name == firstMaster.Name {
 			continue

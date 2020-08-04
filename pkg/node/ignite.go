@@ -11,7 +11,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"html/template"
-	"os"
 	"os/exec"
 	"reflect"
 	"strconv"
@@ -72,8 +71,7 @@ func (i *IgniteNodeManager) CreateNodes(nodeType Type, node *config.Node) error 
 		cmdArgs := strings.Split(tmpBuffer.String(), " ")
 		cmdArgs = append(cmdArgs, fmt.Sprintf("--kernel-args=%s", node.Cluster.KernelArgs))
 
-		cmd := exec.CommandContext(context.Background(), "sudo", cmdArgs...)
-		util.UpdateDefaultCmdPipes(cmd)
+		cmd := util.UpdateDefaultCmdPipes(exec.CommandContext(context.Background(), "sudo", cmdArgs...))
 
 		logrus.Infof("creating node (%s)", n.Name)
 
@@ -130,9 +128,7 @@ func (i *IgniteNodeManager) DeleteNode(name string) error {
 		return errors.WithStack(err)
 	}
 
-	cmd := exec.CommandContext(context.Background(), "sudo", strings.Split(tmpBuffer.String(), " ")...)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+	cmd := util.UpdateDefaultCmdPipes(exec.CommandContext(context.Background(), "sudo", strings.Split(tmpBuffer.String(), " ")...))
 
 	if err := cmd.Run(); err != nil {
 		return errors.WithStack(err)
@@ -145,7 +141,7 @@ func (i *IgniteNodeManager) GetNode(name string) (*data.Node, error) {
 	logrus.Debugf("getting node (%s)", name)
 
 	cmdArgs := strings.Split(fmt.Sprintf("ignite ps --all -f {{.ObjectMeta.Name}}=%s", name), " ")
-	cmd := exec.CommandContext(context.Background(), "sudo", cmdArgs...)
+	cmd := util.UpdateDefaultCmdPipes(exec.CommandContext(context.Background(), "sudo", cmdArgs...))
 
 	if err := cmd.Run(); err != nil {
 		return nil, err
@@ -182,11 +178,16 @@ func (i *IgniteNodeManager) GetNode(name string) (*data.Node, error) {
 			newCmdArgs = append(newCmdArgs, "-t "+filter)
 
 			cmd := exec.CommandContext(context.Background(), "sudo", newCmdArgs...)
-			cmd.Stderr = os.Stderr
+
+			logrus.Debugf("%+v", cmd.Args)
 
 			output, err := cmd.Output()
 			if err != nil {
 				return nil, errors.WithStack(err)
+			}
+
+			if len(output) == 0 {
+				return nil, errors.Errorf("%s node available", name)
 			}
 
 			fieldValue := strings.TrimSuffix(strings.TrimSpace(string(output)), "\n")
@@ -228,7 +229,8 @@ func (i *IgniteNodeManager) ListNodes(clusterName string) ([]*data.Node, error) 
 	}
 
 	cmd := exec.CommandContext(context.Background(), "sudo", cmdArgs...)
-	cmd.Stderr = os.Stderr
+
+	logrus.Debugf("%+v", cmd.Args)
 
 	output, err := cmd.Output()
 	if err != nil {
@@ -268,8 +270,7 @@ func (i *IgniteNodeManager) LoginBySSH(name string, configManager config.Manager
 
 	cmdArgs := strings.Split(fmt.Sprintf("ignite ssh -i %s %s", cluster.Prikey, name), " ")
 
-	cmd := exec.CommandContext(context.Background(), "sudo", cmdArgs...)
-	util.UpdateDefaultCmdPipes(cmd)
+	cmd := util.UpdateDefaultCmdPipes(exec.CommandContext(context.Background(), "sudo", cmdArgs...))
 
 	if err := cmd.Run(); err != nil {
 		return errors.WithStack(err)

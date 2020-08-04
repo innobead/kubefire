@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/innobead/kubefire/cmd/kubefire/cmd"
 	"github.com/innobead/kubefire/cmd/kubefire/cmd/cluster"
 	"github.com/innobead/kubefire/cmd/kubefire/cmd/node"
@@ -9,6 +10,8 @@ import (
 	"github.com/innobead/kubefire/pkg/util"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"path"
+	"runtime"
 )
 
 var rootCmd = &cobra.Command{
@@ -30,6 +33,19 @@ func init() {
 func initConfig() {
 	level, _ := logrus.ParseLevel(config.LogLevel)
 	logrus.SetLevel(level)
+
+	formatter := &logrus.TextFormatter{
+		FullTimestamp: true,
+		CallerPrettyfier: func(frame *runtime.Frame) (function string, file string) {
+			filename := path.Base(frame.File)
+			return fmt.Sprintf("%s()", frame.Function), fmt.Sprintf("%12s:%-4d", filename, frame.Line)
+		},
+	}
+	logrus.SetFormatter(formatter)
+
+	if level >= logrus.TraceLevel {
+		logrus.SetReportCaller(true)
+	}
 }
 
 func main() {

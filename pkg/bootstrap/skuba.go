@@ -64,6 +64,10 @@ func (s *SkubaBootstrapper) Deploy(cluster *data.Cluster, before func() error) e
 		return err
 	}
 
+	if len(nodes) == 0 {
+		return errors.New("no nodes available")
+	}
+
 	for _, n := range nodes {
 		if n.Name == firstMaster.Name {
 			continue
@@ -107,13 +111,12 @@ func (s *SkubaBootstrapper) init(cluster *data.Cluster, master *data.Node, extra
 	for _, c := range cmds {
 		cmdArgs := strings.Split(c, " ")
 
-		cmd := exec.CommandContext(
+		cmd := util.UpdateDefaultCmdPipes(exec.CommandContext(
 			context.Background(),
 			cmdArgs[0],
 			cmdArgs[1:]...,
-		)
+		))
 		cmd.Dir = config.LocalClusterDir(cluster.Name)
-		util.UpdateDefaultCmdPipes(cmd)
 
 		if err := cmd.Run(); err != nil {
 			return "", errors.WithStack(err)
@@ -145,9 +148,8 @@ func (s *SkubaBootstrapper) bootstrap(master *data.Node, clusterDir string, isSi
 
 		cmdArgs := strings.Split(c.cmdline, " ")
 
-		cmd := exec.CommandContext(context.Background(), cmdArgs[0], cmdArgs[1:]...)
+		cmd := util.UpdateDefaultCmdPipes(exec.CommandContext(context.Background(), cmdArgs[0], cmdArgs[1:]...))
 		cmd.Dir = clusterDir
-		util.UpdateDefaultCmdPipes(cmd)
 
 		if err := cmd.Run(); err != nil {
 			return errors.WithStack(err)
@@ -165,9 +167,8 @@ func (s *SkubaBootstrapper) join(node *data.Node, nodeType node.Type, clusterDir
 	for _, c := range cmds {
 		cmdArgs := strings.Split(c, " ")
 
-		cmd := exec.CommandContext(context.Background(), cmdArgs[0], cmdArgs[1:]...)
+		cmd := util.UpdateDefaultCmdPipes(exec.CommandContext(context.Background(), cmdArgs[0], cmdArgs[1:]...))
 		cmd.Dir = clusterDir
-		util.UpdateDefaultCmdPipes(cmd)
 
 		if err := cmd.Run(); err != nil {
 			return errors.WithStack(err)

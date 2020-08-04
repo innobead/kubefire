@@ -66,6 +66,10 @@ func (k *K3sBootstrapper) Deploy(cluster *data.Cluster, before func() error) err
 		return err
 	}
 
+	if len(nodes) == 0 {
+		return errors.New("no nodes available")
+	}
+
 	for _, n := range nodes {
 		if n.Name == firstMaster.Name {
 			continue
