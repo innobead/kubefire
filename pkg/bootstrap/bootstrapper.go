@@ -1,12 +1,11 @@
 package bootstrap
 
 import (
-	"github.com/innobead/kubefire/pkg/config"
 	"github.com/innobead/kubefire/pkg/data"
 	"github.com/innobead/kubefire/pkg/node"
 	utilssh "github.com/innobead/kubefire/pkg/util/ssh"
 	"github.com/sirupsen/logrus"
-	"path/filepath"
+	"path"
 )
 
 const (
@@ -23,7 +22,7 @@ var BuiltinTypes = []string{
 
 type Bootstrapper interface {
 	Deploy(cluster *data.Cluster, before func() error) error
-	DownloadKubeConfig(cluster *data.Cluster, destDir string) error
+	DownloadKubeConfig(cluster *data.Cluster, destDir string) (string, error)
 }
 
 func IsValid(bootstrapper string) bool {
@@ -35,12 +34,28 @@ func IsValid(bootstrapper string) bool {
 	}
 }
 
-func downloadKubeConfig(nodeManager node.Manager, cluster *data.Cluster, remoteKubeConfigPath string, destDir string) error {
+func New(bootstrapper string, nodeManager node.Manager) Bootstrapper {
+	switch bootstrapper {
+	case SKUBA:
+		return NewSkubaBootstrapper(nodeManager)
+
+	case KUBEADM, "":
+		return NewKubeadmBootstrapper(nodeManager)
+
+	case K3S:
+		return NewK3sBootstrapper(nodeManager)
+
+	default:
+		return nil
+	}
+}
+
+func downloadKubeConfig(nodeManager node.Manager, cluster *data.Cluster, remoteKubeConfigPath string, destDir string) (string, error) {
 	logrus.Infof("downloading the kubeconfig of cluster (%s)", cluster.Name)
 
-	firstMaster, err := nodeManager.GetNode(node.NodeName(cluster.Name, node.Master, 1))
+	firstMaster, err := nodeManager.GetNode(node.Name(cluster.Name, node.Master, 1))
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	sshClient, err := utilssh.NewClient(
@@ -51,15 +66,16 @@ func downloadKubeConfig(nodeManager node.Manager, cluster *data.Cluster, remoteK
 		nil,
 	)
 	if err != nil {
-		return err
+		return "", err
 	}
 	defer sshClient.Close()
 
-	if destDir == "" {
-		destDir = config.LocalClusterDir(cluster.Name)
+	destPath := cluster.Spec.LocalKubeConfig()
+
+	if destDir != "" {
+		destPath = path.Join(destDir, "admin.conf")
 	}
 
-	destPath := filepath.Join(destDir, "admin.conf")
 	logrus.Infof("saved the kubeconfig of cluster (%s) to %s", cluster.Name, destPath)
 
 	if remoteKubeConfigPath == "" {
@@ -67,8 +83,8 @@ func downloadKubeConfig(nodeManager node.Manager, cluster *data.Cluster, remoteK
 	}
 
 	if err := sshClient.Download(remoteKubeConfigPath, destPath); err != nil {
-		return err
+		return "", err
 	}
 
-	return nil
+	return destPath, nil
 }

@@ -32,10 +32,10 @@ func NewLocalConfigManager() *LocalConfigManager {
 	return &LocalConfigManager{}
 }
 
-func (l *LocalConfigManager) SaveCluster(name string, cluster *Cluster) error {
-	logrus.WithField("cluster", name).Infoln("saving cluster configurations")
+func (l *LocalConfigManager) SaveCluster(cluster *Cluster) error {
+	logrus.WithField("cluster", cluster.Name).Infoln("saving cluster configurations")
 
-	if err := os.MkdirAll(LocalClusterDir(name), 0755); err != nil && err != os.ErrExist {
+	if err := os.MkdirAll(cluster.LocalClusterDir(), 0755); err != nil && err != os.ErrExist {
 		return errors.WithStack(err)
 	}
 
@@ -48,28 +48,30 @@ func (l *LocalConfigManager) SaveCluster(name string, cluster *Cluster) error {
 		return err
 	}
 
-	if err := ioutil.WriteFile(LocalClusterConfigFile(name), bytes, 0755); err != nil {
+	if err := ioutil.WriteFile(cluster.LocalClusterConfigFile(), bytes, 0755); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (l *LocalConfigManager) DeleteCluster(name string) error {
-	logrus.Infof("deleting cluster (%s) configurations", name)
+func (l *LocalConfigManager) DeleteCluster(cluster *Cluster) error {
+	logrus.Infof("deleting cluster (%s) configurations", cluster.Name)
 
-	return errors.WithStack(os.RemoveAll(LocalClusterDir(name)))
+	return errors.WithStack(os.RemoveAll(cluster.LocalClusterDir()))
 }
 
 func (l *LocalConfigManager) GetCluster(name string) (*Cluster, error) {
 	logrus.WithField("cluster", name).Debugln("getting cluster configurations")
 
-	bytes, err := ioutil.ReadFile(LocalClusterConfigFile(name))
+	c := NewCluster()
+	c.Name = name
+
+	bytes, err := ioutil.ReadFile(c.LocalClusterConfigFile())
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
 
-	c := NewCluster()
 	if err := yaml.Unmarshal(bytes, c); err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -113,7 +115,7 @@ func (l *LocalConfigManager) generateKeys(cluster *Cluster) error {
 		return errors.WithStack(err)
 	}
 
-	cluster.Prikey, cluster.Pubkey = LocalClusterKeyFiles(cluster.Name)
+	cluster.Prikey, cluster.Pubkey = cluster.LocalClusterKeyFiles()
 
 	_ = os.Remove(cluster.Prikey)
 	_ = os.Remove(cluster.Pubkey)
@@ -181,16 +183,4 @@ func (l *LocalConfigManager) generateKeys(cluster *Cluster) error {
 	}
 
 	return nil
-}
-
-func LocalClusterDir(name string) string {
-	return path.Join(ClusterRootDir, name)
-}
-
-func LocalClusterConfigFile(name string) string {
-	return path.Join(LocalClusterDir(name), "cluster.yaml")
-}
-
-func LocalClusterKeyFiles(name string) (string, string) {
-	return path.Join(LocalClusterDir(name), "key"), path.Join(LocalClusterDir(name), "key.pub")
 }

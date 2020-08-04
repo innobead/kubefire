@@ -90,7 +90,7 @@ var createCmd = &cobra.Command{
 			return errors.WithMessagef(err, "failed to deploy cluster (%s)", c.Name)
 		}
 
-		if err := di.Bootstrapper().DownloadKubeConfig(c, ""); err != nil {
+		if _, err := di.Bootstrapper().DownloadKubeConfig(c, ""); err != nil {
 			return errors.WithMessagef(err, "failed to download the kubeconfig of cluster (%s)", c.Name)
 		}
 

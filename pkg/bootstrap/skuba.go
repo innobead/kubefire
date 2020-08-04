@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/avast/retry-go"
 	"github.com/hashicorp/go-multierror"
-	"github.com/innobead/kubefire/pkg/config"
 	"github.com/innobead/kubefire/pkg/data"
 	"github.com/innobead/kubefire/pkg/node"
 	"github.com/innobead/kubefire/pkg/util"
@@ -43,7 +42,7 @@ func (s *SkubaBootstrapper) Deploy(cluster *data.Cluster, before func() error) e
 		return errors.WithMessage(err, "some nodes are not running")
 	}
 
-	firstMaster, err := s.nodeManager.GetNode(node.NodeName(cluster.Name, node.Master, 1))
+	firstMaster, err := s.nodeManager.GetNode(node.Name(cluster.Name, node.Master, 1))
 	if err != nil {
 		return err
 	}
@@ -94,7 +93,7 @@ func (s *SkubaBootstrapper) Deploy(cluster *data.Cluster, before func() error) e
 	return nil
 }
 
-func (s *SkubaBootstrapper) DownloadKubeConfig(cluster *data.Cluster, destDir string) error {
+func (s *SkubaBootstrapper) DownloadKubeConfig(cluster *data.Cluster, destDir string) (string, error) {
 	return downloadKubeConfig(s.nodeManager, cluster, "", destDir)
 }
 
@@ -116,14 +115,14 @@ func (s *SkubaBootstrapper) init(cluster *data.Cluster, master *data.Node, extra
 			cmdArgs[0],
 			cmdArgs[1:]...,
 		))
-		cmd.Dir = config.LocalClusterDir(cluster.Name)
+		cmd.Dir = cluster.Spec.LocalClusterDir()
 
 		if err := cmd.Run(); err != nil {
 			return "", errors.WithStack(err)
 		}
 	}
 
-	return path.Join(config.LocalClusterDir(cluster.Name), cluster.Name), nil
+	return path.Join(cluster.Spec.LocalClusterDir(), cluster.Name), nil
 }
 
 func (s *SkubaBootstrapper) bootstrap(master *data.Node, clusterDir string, isSingleNode bool) error {

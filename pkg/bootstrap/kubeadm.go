@@ -42,7 +42,7 @@ func (k *KubeadmBootstrapper) Deploy(cluster *data.Cluster, before func() error)
 		return err
 	}
 
-	firstMaster, err := k.nodeManager.GetNode(node.NodeName(cluster.Name, node.Master, 1))
+	firstMaster, err := k.nodeManager.GetNode(node.Name(cluster.Name, node.Master, 1))
 	if err != nil {
 		return err
 	}
@@ -77,7 +77,7 @@ func (k *KubeadmBootstrapper) Deploy(cluster *data.Cluster, before func() error)
 	return nil
 }
 
-func (k *KubeadmBootstrapper) DownloadKubeConfig(cluster *data.Cluster, destDir string) error {
+func (k *KubeadmBootstrapper) DownloadKubeConfig(cluster *data.Cluster, destDir string) (string, error) {
 	return downloadKubeConfig(k.nodeManager, cluster, "", destDir)
 }
 

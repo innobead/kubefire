@@ -49,7 +49,7 @@ func (k *K3sBootstrapper) Deploy(cluster *data.Cluster, before func() error) err
 		return err
 	}
 
-	firstMaster, err := k.nodeManager.GetNode(node.NodeName(cluster.Name, node.Master, 1))
+	firstMaster, err := k.nodeManager.GetNode(node.Name(cluster.Name, node.Master, 1))
 	if err != nil {
 		return err
 	}
@@ -84,7 +84,7 @@ func (k *K3sBootstrapper) Deploy(cluster *data.Cluster, before func() error) err
 	return nil
 }
 
-func (k *K3sBootstrapper) DownloadKubeConfig(cluster *data.Cluster, destDir string) error {
+func (k *K3sBootstrapper) DownloadKubeConfig(cluster *data.Cluster, destDir string) (string, error) {
 	return downloadKubeConfig(k.nodeManager, cluster, "/etc/rancher/k3s/k3s.yaml", destDir)
 }
 

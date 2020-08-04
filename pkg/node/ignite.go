@@ -54,7 +54,7 @@ func (i *IgniteNodeManager) CreateNodes(nodeType Type, node *config.Node) error 
 			Memory      string
 			DiskSize    string
 		}{
-			Name:        NodeName(node.Cluster.Name, nodeType, i),
+			Name:        Name(node.Cluster.Name, nodeType, i),
 			Cluster:     node.Cluster.Name,
 			Image:       node.Cluster.Image,
 			KernelImage: node.Cluster.KernelImage,
@@ -100,7 +100,7 @@ func (i *IgniteNodeManager) DeleteNodes(nodeType Type, node *config.Node) error 
 	logrus.Infof("deleting %s nodes", nodeType)
 
 	for j := 1; j <= node.Count; j++ {
-		name := NodeName(node.Cluster.Name, nodeType, j)
+		name := Name(node.Cluster.Name, nodeType, j)
 		if err := i.DeleteNode(name); err != nil {
 			return err
 		}
@@ -243,6 +243,10 @@ func (i *IgniteNodeManager) ListNodes(clusterName string) ([]*data.Node, error) 
 		names := strings.Split(strings.TrimSpace(string(output)), "\n")
 
 		for _, n := range names {
+			if !IsValidNodeName(n, clusterName) {
+				continue
+			}
+
 			node, err := i.GetNode(n)
 			if err != nil {
 				return nil, err

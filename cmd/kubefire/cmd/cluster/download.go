@@ -2,6 +2,7 @@ package cluster
 
 import (
 	"github.com/innobead/kubefire/internal/di"
+	"github.com/innobead/kubefire/pkg/bootstrap"
 	"github.com/innobead/kubefire/pkg/util"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -21,7 +22,7 @@ var downloadCmd = &cobra.Command{
 		}
 
 		wd, _ := os.Getwd()
-		if err := di.Bootstrapper().DownloadKubeConfig(cluster, wd); err != nil {
+		if _, err := bootstrap.New(cluster.Spec.Bootstrapper, di.NodeManager()).DownloadKubeConfig(cluster, wd); err != nil {
 			return errors.WithMessagef(err, "failed to download kubeconfig of cluster (%s)", name)
 		}
 

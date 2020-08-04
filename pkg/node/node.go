@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/innobead/kubefire/pkg/config"
 	"github.com/innobead/kubefire/pkg/data"
+	"regexp"
 	"strconv"
 	"time"
 )
@@ -14,7 +15,12 @@ const (
 	Admin  Type = "admin"
 	Master Type = "master"
 	Worker Type = "worker"
+
+	//NameFormat node name format: <cluster name>-<node type>-<node index>
+	NameFormat = "%s-%s-%s"
 )
+
+var namePattern = fmt.Sprintf(`%%s-(%s|%s|%s)-\d+`, Admin, Master, Worker)
 
 type Manager interface {
 	CreateNodes(nodeType Type, node *config.Node) error
@@ -26,6 +32,11 @@ type Manager interface {
 	WaitNodesRunning(clusterName string, timeoutMin time.Duration) error
 }
 
-func NodeName(clusterName string, nodeType Type, index int) string {
-	return fmt.Sprintf("%s-%s-%s", clusterName, nodeType, strconv.Itoa(index))
+func Name(clusterName string, nodeType Type, index int) string {
+	return fmt.Sprintf(NameFormat, clusterName, nodeType, strconv.Itoa(index))
+}
+
+func IsValidNodeName(nodeName string, clusterName string) bool {
+	re, _ := regexp.Compile(fmt.Sprintf(namePattern, clusterName))
+	return re.MatchString(nodeName)
 }

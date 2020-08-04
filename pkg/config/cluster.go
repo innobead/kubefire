@@ -1,6 +1,7 @@
 package config
 
 import (
+	"path"
 	"reflect"
 	"regexp"
 	"strconv"
@@ -71,4 +72,20 @@ func (c *Cluster) ParseExtraOptions(obj interface{}) interface{} {
 	}
 
 	return value.Interface()
+}
+
+func (c *Cluster) LocalClusterDir() string {
+	return path.Join(ClusterRootDir, c.Name)
+}
+
+func (c *Cluster) LocalKubeConfig() string {
+	return path.Join(c.LocalClusterDir(), "admin.conf")
+}
+
+func (c *Cluster) LocalClusterConfigFile() string {
+	return path.Join(c.LocalClusterDir(), "cluster.yaml")
+}
+
+func (c *Cluster) LocalClusterKeyFiles() (string, string) {
+	return path.Join(c.LocalClusterDir(), "key"), path.Join(c.LocalClusterDir(), "key.pub")
 }

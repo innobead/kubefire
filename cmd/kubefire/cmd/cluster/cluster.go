@@ -11,6 +11,7 @@ func init() {
 		getCmd,
 		listCmd,
 		downloadCmd,
+		envCmd,
 	}
 
 	for _, c := range cmds {

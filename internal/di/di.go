@@ -105,17 +105,8 @@ func Bootstrapper() bootstrap.Bootstrapper {
 		return bootstrapper
 	}
 
-	switch config.Bootstrapper {
-	case bootstrap.SKUBA:
-		bootstrapper = bootstrap.NewSkubaBootstrapper(nm)
-
-	case bootstrap.KUBEADM, "":
-		bootstrapper = bootstrap.NewKubeadmBootstrapper(nm)
-
-	case bootstrap.K3S:
-		bootstrapper = bootstrap.NewK3sBootstrapper(nm)
-
-	default:
+	bootstrapper = bootstrap.New(config.Bootstrapper, nm)
+	if bootstrapper == nil {
 		panic("no supported bootstrapper")
 	}
 

@@ -42,7 +42,7 @@ func (d *DefaultManager) Init(cluster *pkgconfig.Cluster) error {
 		return errors.New(fmt.Sprintf("cluster (%s) configuration already exists", cluster.Name))
 	}
 
-	return d.ConfigManager.SaveCluster(cluster.Name, cluster)
+	return d.ConfigManager.SaveCluster(cluster)
 }
 
 func (d *DefaultManager) Create(name string) error {
@@ -97,7 +97,7 @@ func (d *DefaultManager) Delete(name string, force bool) error {
 		}
 	}
 
-	if err := d.ConfigManager.DeleteCluster(name); err != nil {
+	if err := d.ConfigManager.DeleteCluster(cluster); err != nil {
 		return err
 	}
 
