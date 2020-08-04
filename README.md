@@ -142,6 +142,9 @@ kubefire cluster list
 # Download cluster kubeconfig
 kubefire cluster download
 
+# Print environment variables of cluster (ex: KUBECONFIG)
+kubefire cluster env
+
 # SSH to a node
 kubefire node ssh
 ```
