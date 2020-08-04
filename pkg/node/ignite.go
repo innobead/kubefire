@@ -33,7 +33,7 @@ func NewIgniteNodeManager() *IgniteNodeManager {
 }
 
 func (i *IgniteNodeManager) CreateNodes(nodeType Type, node *config.Node) error {
-	logrus.Infof("creating %s nodes of cluster (%s)", nodeType, node.Cluster.Name)
+	logrus.WithField("cluster", node.Cluster.Name).Infof("creating %s nodes of cluster", nodeType)
 
 	tmp, err := template.New("create").Parse(RunCmd)
 	if err != nil {
@@ -80,7 +80,7 @@ func (i *IgniteNodeManager) CreateNodes(nodeType Type, node *config.Node) error 
 			),
 		)
 
-		logrus.Infof("creating node (%s)", n.Name)
+		logrus.WithField("node", n.Name).Infoln("creating node")
 
 		err := cmd.Start()
 		if err != nil {
@@ -93,7 +93,7 @@ func (i *IgniteNodeManager) CreateNodes(nodeType Type, node *config.Node) error 
 			defer wgCreateNode.Done()
 
 			if err := cmd.Wait(); err != nil {
-				logrus.WithError(err).Errorf("failed to create node (%s)", name)
+				logrus.WithField("node", name).WithError(err).Errorln("failed to create node")
 			}
 		}(n.Name)
 	}
@@ -104,7 +104,7 @@ func (i *IgniteNodeManager) CreateNodes(nodeType Type, node *config.Node) error 
 }
 
 func (i *IgniteNodeManager) DeleteNodes(nodeType Type, node *config.Node) error {
-	logrus.Infof("deleting %s nodes", nodeType)
+	logrus.WithField("cluster", node.Cluster.Name).Infof("deleting %s nodes", nodeType)
 
 	for j := 1; j <= node.Count; j++ {
 		name := Name(node.Cluster.Name, nodeType, j)
@@ -117,7 +117,7 @@ func (i *IgniteNodeManager) DeleteNodes(nodeType Type, node *config.Node) error 
 }
 
 func (i *IgniteNodeManager) DeleteNode(name string) error {
-	logrus.Infof("deleting node (%s)", name)
+	logrus.WithField("node", name).Infoln("deleting node")
 
 	tmp, err := template.New("delete").Parse(DeleteCmd)
 	if err != nil {
@@ -151,7 +151,7 @@ func (i *IgniteNodeManager) DeleteNode(name string) error {
 }
 
 func (i *IgniteNodeManager) GetNode(name string) (*data.Node, error) {
-	logrus.Debugf("getting node (%s)", name)
+	logrus.WithField("node", name).Debugln("getting node")
 
 	cmdArgs := strings.Split(fmt.Sprintf("ignite ps --all -f {{.ObjectMeta.Name}}=%s", name), " ")
 	cmd := util.UpdateCommandDefaultLog(
@@ -234,7 +234,7 @@ func (i *IgniteNodeManager) GetNode(name string) (*data.Node, error) {
 }
 
 func (i *IgniteNodeManager) ListNodes(clusterName string) ([]*data.Node, error) {
-	logrus.Debugf("listing nodes of cluster (%s)", clusterName)
+	logrus.WithField("cluster", clusterName).Debugln("listing nodes of cluster")
 
 	cmdArgs := strings.Split("ignite ps --all", " ")
 
@@ -280,7 +280,7 @@ func (i *IgniteNodeManager) ListNodes(clusterName string) ([]*data.Node, error) 
 }
 
 func (i *IgniteNodeManager) LoginBySSH(name string, configManager config.Manager) error {
-	logrus.Infof("ssh into node (%s)", name)
+	logrus.WithField("node", name).Infoln("ssh into node")
 
 	node, err := i.GetNode(name)
 	if err != nil {
@@ -311,7 +311,7 @@ func (i *IgniteNodeManager) LoginBySSH(name string, configManager config.Manager
 }
 
 func (i *IgniteNodeManager) WaitNodesRunning(clusterName string, timeoutMin time.Duration) error {
-	logrus.Infof("waiting nodes of cluster (%s) are running", clusterName)
+	logrus.WithField("cluster", clusterName).Infoln("waiting nodes of cluster are running")
 
 	err := retry.Do(func() error {
 		nodes, err := i.ListNodes(clusterName)

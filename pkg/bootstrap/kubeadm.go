@@ -86,7 +86,7 @@ func (k *KubeadmBootstrapper) Prepare(force bool) error {
 }
 
 func (k *KubeadmBootstrapper) init(cluster *data.Cluster) error {
-	logrus.Infof("initializing cluster (%s)", cluster.Name)
+	logrus.WithField("cluster", cluster.Name).Infoln("initializing cluster")
 
 	wgInitNodes := sync.WaitGroup{}
 	wgInitNodes.Add(len(cluster.Nodes))
@@ -94,7 +94,7 @@ func (k *KubeadmBootstrapper) init(cluster *data.Cluster) error {
 	chErr := make(chan error, len(cluster.Nodes))
 
 	for _, n := range cluster.Nodes {
-		logrus.Infof("initializing node (%s)", n.Name)
+		logrus.WithField("node", n.Name).Infoln("initializing node")
 
 		go func(n *data.Node) {
 			defer wgInitNodes.Done()
@@ -158,7 +158,7 @@ func (k *KubeadmBootstrapper) init(cluster *data.Cluster) error {
 }
 
 func (k *KubeadmBootstrapper) bootstrap(node *data.Node, isSingleNode bool) (joinCmd string, err error) {
-	logrus.Infof("bootstrapping the first master node (%s)", node.Name)
+	logrus.WithField("node", node.Name).Infoln("bootstrapping the first master node")
 
 	sshClient, err := utilssh.NewClient(
 		node.Name,
@@ -205,7 +205,7 @@ func (k *KubeadmBootstrapper) bootstrap(node *data.Node, isSingleNode bool) (joi
 			cmdline: "KUBECONFIG=/etc/kubernetes/admin.conf kubectl taint nodes --all node-role.kubernetes.io/master-",
 			before: func(session *ssh.Session) bool {
 				if isSingleNode {
-					logrus.Infof("untainting the master node (%s)", node.Name)
+					logrus.WithField("node", node.Name).Infoln("untainting the master node")
 				}
 
 				return isSingleNode
@@ -224,7 +224,7 @@ func (k *KubeadmBootstrapper) bootstrap(node *data.Node, isSingleNode bool) (joi
 }
 
 func (k *KubeadmBootstrapper) join(node *data.Node, joinCmd string) error {
-	logrus.Infof("joining node (%s)", node.Name)
+	logrus.WithField("node", node.Name).Infoln("joining node")
 
 	sshClient, err := utilssh.NewClient(
 		node.Name,

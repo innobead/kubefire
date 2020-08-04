@@ -56,7 +56,7 @@ func (l *LocalConfigManager) SaveCluster(cluster *Cluster) error {
 }
 
 func (l *LocalConfigManager) DeleteCluster(cluster *Cluster) error {
-	logrus.Infof("deleting cluster (%s) configurations", cluster.Name)
+	logrus.WithField("cluster", cluster.Name).Infoln("deleting cluster configurations")
 
 	return errors.WithStack(os.RemoveAll(cluster.LocalClusterDir()))
 }

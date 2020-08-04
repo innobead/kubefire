@@ -93,7 +93,7 @@ func (k *K3sBootstrapper) Prepare(force bool) error {
 }
 
 func (k *K3sBootstrapper) init(cluster *data.Cluster) error {
-	logrus.Infof("initializing cluster (%s)", cluster.Name)
+	logrus.WithField("cluster", cluster.Name).Infoln("initializing cluster")
 
 	wgInitNodes := sync.WaitGroup{}
 	wgInitNodes.Add(len(cluster.Nodes))
@@ -101,7 +101,7 @@ func (k *K3sBootstrapper) init(cluster *data.Cluster) error {
 	chErr := make(chan error, len(cluster.Nodes))
 
 	for _, n := range cluster.Nodes {
-		logrus.Infof("initializing node (%s)", n.Name)
+		logrus.WithField("node", n.Name).Infoln("initializing node")
 
 		go func(n *data.Node) {
 			defer wgInitNodes.Done()
@@ -160,7 +160,7 @@ func (k *K3sBootstrapper) init(cluster *data.Cluster) error {
 }
 
 func (k *K3sBootstrapper) bootstrap(node *data.Node, isSingleNode bool, extraOptions K3sExtraOptions) (token string, err error) {
-	logrus.Infof("bootstrapping the first master node (%s)", node.Name)
+	logrus.WithField("node", node.Name).Infoln("bootstrapping the first master node")
 
 	sshClient, err := utilssh.NewClient(
 		node.Name,
@@ -214,7 +214,7 @@ func (k *K3sBootstrapper) bootstrap(node *data.Node, isSingleNode bool, extraOpt
 }
 
 func (k *K3sBootstrapper) join(node *data.Node, apiServerAddress string, joinToken string, extraOptions K3sExtraOptions) error {
-	logrus.Infof("joining node (%s)", node.Name)
+	logrus.WithField("node", node.Name).Infoln("joining node")
 
 	sshClient, err := utilssh.NewClient(
 		node.Name,

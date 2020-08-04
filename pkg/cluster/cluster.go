@@ -35,7 +35,7 @@ func NewDefaultManager(nodeManager node.Manager, bootstrapper bootstrap.Bootstra
 }
 
 func (d *DefaultManager) Init(cluster *pkgconfig.Cluster) error {
-	logrus.WithField("cluster", cluster.Name).Infof("initializing cluster configuration")
+	logrus.WithField("cluster", cluster.Name).Infoln("initializing cluster configuration")
 	logrus.Debugf("%+v", cluster)
 
 	if _, err := d.ConfigManager.GetCluster(cluster.Name); err == nil {
@@ -46,7 +46,7 @@ func (d *DefaultManager) Init(cluster *pkgconfig.Cluster) error {
 }
 
 func (d *DefaultManager) Create(name string) error {
-	logrus.Infof("creating cluster (%s)", name)
+	logrus.WithField("cluster", name).Infoln("creating cluster")
 
 	cluster, err := d.ConfigManager.GetCluster(name)
 	if err != nil {
@@ -105,7 +105,7 @@ func (d *DefaultManager) Delete(name string, force bool) error {
 }
 
 func (d *DefaultManager) Get(name string) (*data.Cluster, error) {
-	logrus.Debugf("getting cluster (%s)", name)
+	logrus.WithField("cluster", name).Debugln("getting cluster")
 
 	configCluster, err := d.ConfigManager.GetCluster(name)
 	if err != nil {
