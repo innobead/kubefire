@@ -81,6 +81,10 @@ func (k *KubeadmBootstrapper) DownloadKubeConfig(cluster *data.Cluster, destDir 
 	return downloadKubeConfig(k.nodeManager, cluster, "", destDir)
 }
 
+func (k *KubeadmBootstrapper) Prepare(force bool) error {
+	panic("implement me")
+}
+
 func (k *KubeadmBootstrapper) init(cluster *data.Cluster) error {
 	logrus.Infof("initializing cluster (%s)", cluster.Name)
 

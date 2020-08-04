@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"github.com/avast/retry-go"
 	"github.com/hashicorp/go-multierror"
+	"github.com/innobead/kubefire/internal/config"
 	"github.com/innobead/kubefire/pkg/data"
 	"github.com/innobead/kubefire/pkg/node"
+	"github.com/innobead/kubefire/pkg/script"
 	"github.com/innobead/kubefire/pkg/util"
 	utilssh "github.com/innobead/kubefire/pkg/util/ssh"
 	"github.com/pkg/errors"
@@ -27,6 +29,24 @@ type SkubaBootstrapper struct {
 
 func NewSkubaBootstrapper(nodeManager node.Manager) *SkubaBootstrapper {
 	return &SkubaBootstrapper{nodeManager: nodeManager}
+}
+
+func installSkuba(force bool) error {
+	scripts := []script.Type{
+		script.InstallPrerequisitesSkuba,
+	}
+
+	for _, s := range scripts {
+		if err := script.Download(s, config.TagVersion, force); err != nil {
+			return err
+		}
+
+		if err := script.Run(s, config.TagVersion); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (s *SkubaBootstrapper) Deploy(cluster *data.Cluster, before func() error) error {
@@ -95,6 +115,10 @@ func (s *SkubaBootstrapper) Deploy(cluster *data.Cluster, before func() error) e
 
 func (s *SkubaBootstrapper) DownloadKubeConfig(cluster *data.Cluster, destDir string) (string, error) {
 	return downloadKubeConfig(s.nodeManager, cluster, "", destDir)
+}
+
+func (s *SkubaBootstrapper) Prepare(force bool) error {
+	return installSkuba(force)
 }
 
 func (s *SkubaBootstrapper) init(cluster *data.Cluster, master *data.Node, extraOptions *SkubaExtraOptions) (string, error) {

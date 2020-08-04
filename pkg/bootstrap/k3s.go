@@ -88,6 +88,10 @@ func (k *K3sBootstrapper) DownloadKubeConfig(cluster *data.Cluster, destDir stri
 	return downloadKubeConfig(k.nodeManager, cluster, "/etc/rancher/k3s/k3s.yaml", destDir)
 }
 
+func (k *K3sBootstrapper) Prepare(force bool) error {
+	panic("implement me")
+}
+
 func (k *K3sBootstrapper) init(cluster *data.Cluster) error {
 	logrus.Infof("initializing cluster (%s)", cluster.Name)
 

@@ -23,6 +23,7 @@ var BuiltinTypes = []string{
 type Bootstrapper interface {
 	Deploy(cluster *data.Cluster, before func() error) error
 	DownloadKubeConfig(cluster *data.Cluster, destDir string) (string, error)
+	Prepare(force bool) error
 }
 
 func IsValid(bootstrapper string) bool {

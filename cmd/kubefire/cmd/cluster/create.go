@@ -5,7 +5,6 @@ import (
 	"github.com/innobead/kubefire/internal/di"
 	"github.com/innobead/kubefire/pkg/bootstrap"
 	pkgconfig "github.com/innobead/kubefire/pkg/config"
-	"github.com/innobead/kubefire/pkg/script"
 	"github.com/innobead/kubefire/pkg/util"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -79,11 +78,7 @@ var createCmd = &cobra.Command{
 		err = di.Bootstrapper().Deploy(
 			c,
 			func() error {
-				if _, ok := di.Bootstrapper().(*bootstrap.SkubaBootstrapper); ok {
-					return installSkuba()
-				}
-
-				return nil
+				return di.Bootstrapper().Prepare(forceCreate)
 			},
 		)
 		if err != nil {
@@ -96,22 +91,4 @@ var createCmd = &cobra.Command{
 
 		return nil
 	},
-}
-
-func installSkuba() error {
-	scripts := []script.Type{
-		script.InstallPrerequisitesSkuba,
-	}
-
-	for _, s := range scripts {
-		if err := script.Download(s, config.TagVersion, forceCreate); err != nil {
-			return err
-		}
-
-		if err := script.Run(s, config.TagVersion); err != nil {
-			return err
-		}
-	}
-
-	return nil
 }
