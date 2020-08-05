@@ -10,7 +10,7 @@ function ask() {
   echo
   if [[ $REPLY =~ ^[Yy]$ ]]; then
     # shellcheck disable=SC2086
-    uninstsall_$1
+    uninstall_$1
   else
     echo "Ignored to uninstall $1"
   fi
