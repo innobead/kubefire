@@ -17,7 +17,7 @@ function ask() {
 }
 
 function uninstall_containerd() {
-  sudo rm -f /usr/loca/bin/containerd* /usr/local/bin/ctr
+  sudo rm -f /usr/local/bin/containerd* /usr/local/bin/ctr
 }
 
 function uninstall_runc() {
@@ -30,7 +30,7 @@ function uninstall_cni() {
 
 function uninstall_ignite() {
   # shellcheck disable=SC2046
-  sudo ignite rm -f $(sudo ignite ps -aq)
+  sudo ignite rm -f $(sudo ignite ps -aq) &>/dev/null || true
   sudo rm -rf /var/lib/firecracker
   sudo rm -f /usr/local/bin/ignite{,d}
 }

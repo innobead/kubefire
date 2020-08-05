@@ -56,7 +56,7 @@ function install_containerd() {
   sudo mv $dir/bin/* /usr/local/bin/
 
   curl -sSLO "https://raw.githubusercontent.com/containerd/containerd/${CONTAINERD_VERSION}/containerd.service"
-  sudo groupadd containerd
+  sudo groupadd containerd || true
   sudo mv containerd.service /etc/systemd/system/containerd.service
 
 #  [Service]

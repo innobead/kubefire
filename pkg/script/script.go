@@ -45,18 +45,12 @@ func Download(script Type, version string, force bool) error {
 			"force":   force,
 		},
 	)
-	log.Infof("downloading script (%s)", script)
-
-	if version == "master" {
-		log.Infof("changing to force download script (%s) because tag version is master", script)
-		force = true
-		log = log.WithField("force", force)
-	}
 
 	url := RemoteScriptUrl(script)
 	destFile := LocalScriptFile(version, script)
 
 	log.Infof("downloading %s to save %s", url, destFile)
+
 	err := downloadScript(
 		url,
 		destFile,
@@ -90,7 +84,7 @@ func Run(script Type, version string, beforeCallback func(cmd *exec.Cmd) error) 
 }
 
 func downloadScript(url string, destFile string, force bool) error {
-	if _, err := os.Stat(destFile); os.IsExist(err) {
+	if _, err := os.Stat(destFile); !os.IsNotExist(err) {
 		if !force {
 			return nil
 		}
@@ -103,6 +97,8 @@ func downloadScript(url string, destFile string, force bool) error {
 	if err := os.MkdirAll(filepath.Dir(destFile), 0755); err != nil && err != os.ErrExist {
 		return errors.WithStack(err)
 	}
+
+	logrus.Infof("downloading %s", url)
 
 	resp, err := http.Get(url)
 	if err != nil {
