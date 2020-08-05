@@ -27,6 +27,8 @@ To be able to run kubefire commands w/o issues like node/cluster management, the
 > - To uninstall the prerequisites, run `kubefire uninstall`.
 > - To check the installation status, run `kubefire info`. 
 
+[![asciicast](https://asciinema.org/a/tQKqYjojnsgZOjZqrGbF9Zqh0.svg)](https://asciinema.org/a/tQKqYjojnsgZOjZqrGbF9Zqh0)
+
 ## Bootstrapping Cluster
 
 ### Kubeadm (K8s 1.18.6)
@@ -35,7 +37,7 @@ To be able to run kubefire commands w/o issues like node/cluster management, the
 kubefire cluster create --bootstrapper=kubeadm demo
 ```
 
-[![asciicast](https://asciinema.org/a/345836.svg)](https://asciinema.org/a/345836)
+[![asciicast](https://asciinema.org/a/lQfFfMa1zCXWvz321eUqhNyxB.svg)](https://asciinema.org/a/lQfFfMa1zCXWvz321eUqhNyxB)
 
 ### K3s (K8s 1.18.6)
 
@@ -60,7 +62,7 @@ To add extra installation options of the server or agent nodes, use `--extra-opt
 kubefire cluster create demo-k3s --bootstrapper k3s --extra-opts="ServerOpts='--disable=traefik --disable=metrics-server'"
 ```
 
-[![asciicast](https://asciinema.org/a/hKW8WffFKxdRztG0NSiWM6Opx.svg)](https://asciinema.org/a/hKW8WffFKxdRztG0NSiWM6Opx)
+[![asciicast](https://asciinema.org/a/HqmfS4wZP7pPVS3E7M7gwAzmA.svg)](https://asciinema.org/a/HqmfS4wZP7pPVS3E7M7gwAzmA)
 
 ### SUSE Skuba (K8s 1.17.4)
 
