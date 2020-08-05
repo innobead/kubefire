@@ -8,6 +8,8 @@ set -o xtrace
 
 TMP_DIR=/tmp/kubefire
 GOARCH=$(go env GOARCH 2>/dev/null || echo "amd64")
+
+# FIXME: below versions should come from kubefire, remove the versions in near future
 CONTAINERD_VERSION=${CONTAINERD_VERSION:-"v1.3.4"}
 IGNITE_VERION=${IGNITE_VERION:-"v0.7.1"}
 CNI_VERSION=${CNI_VERSION:-"v0.8.6"}

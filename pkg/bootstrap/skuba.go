@@ -41,7 +41,7 @@ func installSkuba(force bool) error {
 			return err
 		}
 
-		if err := script.Run(s, config.TagVersion); err != nil {
+		if err := script.Run(s, config.TagVersion, nil); err != nil {
 			return err
 		}
 	}

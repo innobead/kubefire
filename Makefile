@@ -17,7 +17,19 @@ IMAGES:=centos:8 ubuntu:18.04 ubuntu:20.10 opensuse-leap:15.1 sle15:15.1 opensus
 KERNELS:=$(shell ls ./build/kernels | sed 's/config-amd64-//; /README.md/d;')
 GOBIN:=$(shell go env GOBIN)
 
-GO_LDFLAGS:=-ldflags "-X=github.com/innobead/kubefire/internal/config.BuildVersion=$(COMMIT) -X=github.com/innobead/kubefire/internal/config.TagVersion=$(TAG)"
+ContainerdVersion := v1.3.4
+IgniteVersion := v0.7.1
+CniVersion := v0.8.6
+RuncVersion := v1.0.0-rc91
+
+GO_LINKFLAGS:=-X=github.com/innobead/kubefire/internal/config.BuildVersion=$(COMMIT)
+GO_LINKFLAGS:=-X=github.com/innobead/kubefire/internal/config.TagVersion=$(TAG) $(GO_LINKFLAGS)
+GO_LINKFLAGS:=-X=github.com/innobead/kubefire/internal/config.ContainerdVersion=$(ContainerdVersion) $(GO_LINKFLAGS)
+GO_LINKFLAGS:=-X=github.com/innobead/kubefire/internal/config.IgniteVersion=$(IgniteVersion) $(GO_LINKFLAGS)
+GO_LINKFLAGS:=-X=github.com/innobead/kubefire/internal/config.CniVersion=$(CniVersion) $(GO_LINKFLAGS)
+GO_LINKFLAGS:=-X=github.com/innobead/kubefire/internal/config.RuncVersion=$(RuncVersion) $(GO_LINKFLAGS)
+GO_LDFLAGS:=-ldflags "$(GO_LINKFLAGS)"
+
 BUILD_DIR:=target
 
 help:

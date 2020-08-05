@@ -9,10 +9,6 @@ import (
 
 var forceDelete bool
 
-func init() {
-	deleteCmd.Flags().BoolVar(&forceDelete, "force", false, "force to delete")
-}
-
 var deleteCmd = &cobra.Command{
 	Use:   "delete [name, ...]",
 	Short: "Delete clusters",
@@ -26,4 +22,8 @@ var deleteCmd = &cobra.Command{
 
 		return nil
 	},
+}
+
+func init() {
+	deleteCmd.Flags().BoolVar(&forceDelete, "force", false, "force to delete")
 }

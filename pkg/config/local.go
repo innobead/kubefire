@@ -21,11 +21,11 @@ var (
 	BinDir         = path.Join(RootDir, "bin")
 )
 
-func init() {
-	_ = os.MkdirAll(RootDir, 0755)
+type LocalConfigManager struct {
 }
 
-type LocalConfigManager struct {
+func init() {
+	_ = os.MkdirAll(RootDir, 0755)
 }
 
 func NewLocalConfigManager() *LocalConfigManager {

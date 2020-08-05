@@ -69,7 +69,7 @@ func Download(script Type, version string, force bool) error {
 	return nil
 }
 
-func Run(script Type, version string) error {
+func Run(script Type, version string, beforeCallback func(cmd *exec.Cmd) error) error {
 	log := logrus.WithFields(
 		logrus.Fields{
 			"version": version,
@@ -80,7 +80,7 @@ func Run(script Type, version string) error {
 	f := LocalScriptFile(version, script)
 
 	log.Infof("running %s", f)
-	err := runScript(f)
+	err := runScript(f, beforeCallback)
 
 	if err != nil {
 		return errors.WithMessagef(err, "failed to run script (%s)", script)
@@ -127,14 +127,20 @@ func downloadScript(url string, destFile string, force bool) error {
 	return nil
 }
 
-func runScript(script string) error {
+func runScript(script string, beforeCallback func(cmd *exec.Cmd) error) error {
 	if _, err := os.Stat(script); os.IsNotExist(err) {
 		return errors.WithStack(err)
 	}
 
 	cmd := util.UpdateCommandDefaultLogWithInfo(
-		exec.CommandContext(context.Background(), "sudo", script),
+		exec.CommandContext(context.Background(), "sudo", "-E", script),
 	)
+
+	if beforeCallback != nil {
+		if err := beforeCallback(cmd); err != nil {
+			return errors.WithStack(err)
+		}
+	}
 
 	if err := cmd.Run(); err != nil {
 		return errors.WithStack(err)

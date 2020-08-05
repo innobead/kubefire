@@ -23,7 +23,9 @@ To be able to run kubefire commands w/o issues like node/cluster management, the
 - Check virtualization supported
 - Install necessary components including runc, containerd, CNI plugins, and Ignite
 
-> Note: to uninstall the prerequisites, run `kubefire uninstall`.
+> Note: 
+> - To uninstall the prerequisites, run `kubefire uninstall`.
+> - To check the installation status, run `kubefire info`. 
 
 ## Bootstrapping Cluster
 
@@ -120,6 +122,9 @@ Use "kubefire [command] --help" for more information about a command.
 ```
 # Show version
 kubefire version
+
+# Show runtime information
+kubefire info
 
 # Install prerequisites
 kubefire install 

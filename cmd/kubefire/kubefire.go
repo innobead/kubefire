@@ -53,6 +53,7 @@ func main() {
 		cmd.VersionCmd,
 		cmd.InstallCmd,
 		cmd.UninstallCmd,
+		cmd.InfoCmd,
 		cluster.Cmd,
 		node.Cmd,
 	}

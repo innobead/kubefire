@@ -6,11 +6,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func init() {
-	flags := UninstallCmd.Flags()
-	flags.BoolVar(&forceDownload, "force", false, "force to download")
-}
-
 var UninstallCmd = &cobra.Command{
 	Use:   "uninstall",
 	Short: "Uninstall prerequisites",
@@ -19,10 +14,15 @@ var UninstallCmd = &cobra.Command{
 			return err
 		}
 
-		if err := script.Run(script.UninstallPrerequisites, config.TagVersion); err != nil {
+		if err := script.Run(script.UninstallPrerequisites, config.TagVersion, CreateSetupInstallCommandEnvsFunc()); err != nil {
 			return err
 		}
 
 		return nil
 	},
+}
+
+func init() {
+	flags := UninstallCmd.Flags()
+	flags.BoolVar(&forceDownload, "force", false, "force to download")
 }

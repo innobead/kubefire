@@ -11,36 +11,7 @@ import (
 )
 
 var cluster = pkgconfig.NewCluster()
-
 var forceCreate bool
-
-func init() {
-	flags := createCmd.Flags()
-
-	flags.StringVar(&cluster.Bootstrapper, "bootstrapper", bootstrap.KUBEADM, util.FlagsValuesUsage("bootstrapper type", bootstrap.BuiltinTypes))
-	flags.StringVar(&cluster.Pubkey, "pubkey", "", "Public key")
-	flags.StringVar(&cluster.Image, "image", "innobead/kubefire-opensuse-leap:15.2", "rootfs container image")
-	flags.StringVar(&cluster.KernelImage, "kernel-image", "innobead/kubefire-kernel-4.19.125-amd64:latest", "kernel container image")
-	flags.StringVar(&cluster.KernelArgs, "kernel-args", "console=ttyS0 reboot=k panic=1 pci=off ip=dhcp security=apparmor apparmor=1", "kernel arguments")
-	flags.StringVar(&cluster.ExtraOptions, "extra-opts", "", "extra options (ex: key=value,...) for bootstrapper")
-
-	flags.IntVar(&cluster.Admin.Count, "admin-count", 0, "count of admin node")
-	flags.IntVar(&cluster.Admin.Cpus, "admin-cpu", 1, "CPUs of admin node")
-	flags.StringVar(&cluster.Admin.Memory, "admin-memory", "512MB", "memory of admin node")
-	flags.StringVar(&cluster.Admin.DiskSize, "admin-size", "2GB", "disk size of admin node")
-
-	flags.IntVar(&cluster.Master.Count, "master-count", 1, "count of master node")
-	flags.IntVar(&cluster.Master.Cpus, "master-cpu", 2, "CPUs of master node")
-	flags.StringVar(&cluster.Master.Memory, "master-memory", "2GB", "memory of master node")
-	flags.StringVar(&cluster.Master.DiskSize, "master-size", "10GB", "disk size of master node")
-
-	flags.IntVar(&cluster.Worker.Count, "worker-count", 0, "count of worker node")
-	flags.IntVar(&cluster.Worker.Cpus, "worker-cpu", 2, "CPUs of worker node")
-	flags.StringVar(&cluster.Worker.Memory, "worker-memory", "2GB", "memory of worker node")
-	flags.StringVar(&cluster.Worker.DiskSize, "worker-size", "10GB", "disk size of worker node")
-
-	flags.BoolVar(&forceCreate, "force", false, "force to recreate")
-}
 
 var createCmd = &cobra.Command{
 	Use:   "create [name]",
@@ -91,4 +62,32 @@ var createCmd = &cobra.Command{
 
 		return nil
 	},
+}
+
+func init() {
+	flags := createCmd.Flags()
+
+	flags.StringVar(&cluster.Bootstrapper, "bootstrapper", bootstrap.KUBEADM, util.FlagsValuesUsage("bootstrapper type", bootstrap.BuiltinTypes))
+	flags.StringVar(&cluster.Pubkey, "pubkey", "", "Public key")
+	flags.StringVar(&cluster.Image, "image", "innobead/kubefire-opensuse-leap:15.2", "rootfs container image")
+	flags.StringVar(&cluster.KernelImage, "kernel-image", "innobead/kubefire-kernel-4.19.125-amd64:latest", "kernel container image")
+	flags.StringVar(&cluster.KernelArgs, "kernel-args", "console=ttyS0 reboot=k panic=1 pci=off ip=dhcp security=apparmor apparmor=1", "kernel arguments")
+	flags.StringVar(&cluster.ExtraOptions, "extra-opts", "", "extra options (ex: key=value,...) for bootstrapper")
+
+	flags.IntVar(&cluster.Admin.Count, "admin-count", 0, "count of admin node")
+	flags.IntVar(&cluster.Admin.Cpus, "admin-cpu", 1, "CPUs of admin node")
+	flags.StringVar(&cluster.Admin.Memory, "admin-memory", "512MB", "memory of admin node")
+	flags.StringVar(&cluster.Admin.DiskSize, "admin-size", "2GB", "disk size of admin node")
+
+	flags.IntVar(&cluster.Master.Count, "master-count", 1, "count of master node")
+	flags.IntVar(&cluster.Master.Cpus, "master-cpu", 2, "CPUs of master node")
+	flags.StringVar(&cluster.Master.Memory, "master-memory", "2GB", "memory of master node")
+	flags.StringVar(&cluster.Master.DiskSize, "master-size", "10GB", "disk size of master node")
+
+	flags.IntVar(&cluster.Worker.Count, "worker-count", 0, "count of worker node")
+	flags.IntVar(&cluster.Worker.Cpus, "worker-cpu", 2, "CPUs of worker node")
+	flags.StringVar(&cluster.Worker.Memory, "worker-memory", "2GB", "memory of worker node")
+	flags.StringVar(&cluster.Worker.DiskSize, "worker-size", "10GB", "disk size of worker node")
+
+	flags.BoolVar(&forceCreate, "force", false, "force to recreate")
 }
