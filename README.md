@@ -86,10 +86,10 @@ During bootstrapping, the cluster folder is created at `~/.kubefire/clusters/<cl
   
   The private and public keys for SSH authentication to all nodes in the cluster.
   
-There are two ways to manage the cluster resources by using the below kubeconfig, then run kubectl commands as usual.
+There are two ways below to operate the deployed cluster. After having a valid KUBECONFIG setup, run kubectl commands as usual.
 
-1. `~/.kubefire/clusters/<cluster name>/admin.conf` at local
-2. `/etc/kubernetes/admin.conf` at the remote master nodes. For K3s, `/etc/rancher/k3s/k3s.yaml` instead.
+1. run `eval $(kubefire cluster env <cluster name>)` to update KUBECONFIG pointing to `~/.kubefire/clusters/<cluster name>/admin.conf`.
+2. run `kubefire node ssh <master node name>` to ssh to one of master nodes, then update KUBECONFIG pointing to `/etc/kubernetes/admin.conf`. For K3s, the kubeconfig is `/etc/rancher/k3s/k3s.yaml` instead.
 
 # Usage
 
