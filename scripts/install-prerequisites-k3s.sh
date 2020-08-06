@@ -21,7 +21,7 @@ trap cleanup EXIT ERR INT TERM
 
 function install_k3s() {
   # https://get.k3s.io
-  curl -sfL "https://raw.githubusercontent.com/rancher/k3s/${K3S_VERSION}+k3s1/install.sh" -o k3s-install.sh
+  curl -sSL "https://raw.githubusercontent.com/rancher/k3s/${K3S_VERSION}+k3s1/install.sh" -o k3s-install.sh
   chmod +x k3s-install.sh && sudo mv k3s-install.sh /usr/local/bin/
 }
 

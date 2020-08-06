@@ -87,7 +87,7 @@ function install_cni() {
   fi
 
   mkdir -p /opt/cni/bin
-  curl -L "https://github.com/containernetworking/plugins/releases/download/${CNI_VERSION}/cni-plugins-linux-amd64-${CNI_VERSION}.tgz" | tar -C /opt/cni/bin -xz
+  curl -sSL "https://github.com/containernetworking/plugins/releases/download/${CNI_VERSION}/cni-plugins-linux-amd64-${CNI_VERSION}.tgz" | tar -C /opt/cni/bin -xz
 }
 
 function install_ignite() {
@@ -98,7 +98,7 @@ function install_ignite() {
 
   for binary in ignite ignited; do
     echo "Installing $binary..."
-    curl -sfLo $binary "https://github.com/weaveworks/ignite/releases/download/${IGNITE_VERION}/${binary}-${GOARCH}"
+    curl -sSLo $binary "https://github.com/weaveworks/ignite/releases/download/${IGNITE_VERION}/${binary}-${GOARCH}"
     chmod +x $binary
     sudo mv $binary /usr/local/bin
   done

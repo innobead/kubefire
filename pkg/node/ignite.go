@@ -207,7 +207,7 @@ func (i *IgniteNodeManager) GetNode(name string) (*data.Node, error) {
 			}
 
 			if len(output) == 0 {
-				return nil, errors.Errorf("%s node available", name)
+				return nil, errors.Errorf("%s node unavailable", name)
 			}
 
 			fieldValue := strings.TrimSuffix(strings.TrimSpace(string(output)), "\n")
