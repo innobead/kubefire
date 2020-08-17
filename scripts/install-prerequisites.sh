@@ -93,6 +93,7 @@ function install_cni() {
 
 function install_cni_patches() {
     curl -sSLO "https://github.com/innobead/kubefire/releases/download/${KUBEFIRE_VERSION}/host-local-rev"
+    chmod +x host-local-rev
     sudo mv host-local-rev /opt/cni/bin/
 }
 
