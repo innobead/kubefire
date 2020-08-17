@@ -12,13 +12,13 @@ KubeFire is to manage Kubernetes clusters running on FireCracker microVMs via **
 
 For official releases, please install the latest release as below command.
 
-```
+```console
 curl -LO https://github.com/innobead/kubefire/releases/download/v0.1.0/kubefire && chmod +x kubefire && sudo mv kubefire /usr/local/bin 
 ```
 
 For development purpose, please make sure go 1.14 installed, then build and install `kubefire` in the `GOBIN` path.
 
-```
+```console
 make install
 ```
 
@@ -39,7 +39,7 @@ To be able to run kubefire commands w/o issues like node/cluster management, the
 
 ### Kubeadm (K8s 1.18.8)
 
-```
+```console
 kubefire cluster create --bootstrapper=kubeadm demo
 ```
 
@@ -51,7 +51,7 @@ Please note that K3s only officially supports Ubuntu 16.04 and 18.04, the kernel
 Therefore, if using the prebuilt kernels, please use `4.19` (which is the default kernel used) instead of `5.4`, otherwise there will be some unexpected errors happening. 
 For rootfs, it's no problem to use other non-Ubuntu images.
 
-```
+```console
 kubefire cluster create demo --bootstrapper=k3s
 ```
 
@@ -64,7 +64,7 @@ To add extra installation options of the server or agent nodes, use `--extra-opt
 - Add any options of `k3s server` into `ServerOpts='<k3s server option1>, <k3s server option2>, ...'`.
 - Add any options of `k3s agent` into `AgentOpts='<k3s agent option1>, <k3s agent option2>, ...'`.
 
-```
+```console
 kubefire cluster create demo-k3s --bootstrapper k3s --extra-opts="ServerOpts='--disable=traefik --disable=metrics-server'"
 ```
 
@@ -72,7 +72,7 @@ kubefire cluster create demo-k3s --bootstrapper k3s --extra-opts="ServerOpts='--
 
 ### SUSE Skuba (K8s 1.17.9)
 
-```
+```console
 kubefire cluster create demo --bootstrapper=skuba --extra-opts="RegisterCode=<Product Register Code>"
 ```
 
@@ -103,7 +103,7 @@ There are two ways below to operate the deployed cluster. After having a valid K
 
 Make sure to run kubefire commands with root permission or sudo without password, because ignite needs root permission to manage Firecracker VMs for now, but it is planned to improve in the future release.
 
-```
+```console
 KubeFire, manage Kubernetes clusters on FireCracker microVMs
 
 Usage:
@@ -124,10 +124,9 @@ Flags:
       --output string      output format, options: [default, json, yaml] (default "default")
 
 Use "kubefire [command] --help" for more information about a command.
-
 ```
 
-```
+```console
 # Show version
 kubefire version
 
@@ -149,6 +148,12 @@ kubefire cluster delete
 # Get a cluster info
 kubefire cluster get
 
+# Stop a cluster
+kubefire cluster stop
+
+# Start a cluster
+kubefire cluster start
+
 # List clusters
 kubefire cluster list
 
@@ -161,6 +166,16 @@ kubefire cluster env
 # SSH to a node
 kubefire node ssh
 ```
+
+# Troubleshooting
+
+If encountering any unexpected behavior like ignite can't allocate valid IPs to the created VMs. 
+Please try to clean up the environment, then verify again. If the issues still cannot be resolved by environment cleanup, please help create issues. 
+
+```console
+kubefire unisntall
+kubefire install
+```  
  
 # Supported Container Images for RootFS and Kernel
 
