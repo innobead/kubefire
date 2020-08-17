@@ -92,8 +92,8 @@ function install_cni() {
 }
 
 function install_cni_patches() {
-    # TODO download `host-loca-rev` from kubefire release
-    :
+    curl -sSLO "https://github.com/innobead/kubefire/releases/download/${KUBEFIRE_VERSION}/host-local-rev"
+    sudo mv host-local-rev /opt/cni/bin/
 }
 
 function install_ignite() {

@@ -33,7 +33,6 @@ jobs:
           release_name: Release ${{ github.ref }}
           body: ""
           draft: true
-          prerelease: false
 
       - name: Upload released artifacts
         id: upload-release-asset
