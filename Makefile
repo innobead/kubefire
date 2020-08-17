@@ -1,4 +1,5 @@
-.PHONY: build-all \
+.PHONY: env \
+		build-all \
 		build \
 		build-cni \
 		format \
@@ -36,6 +37,7 @@ GO_LDFLAGS:=-ldflags "$(GO_LINKFLAGS)"
 BUILD_DIR:=$(CURDIR)/target
 BUILD_CNI_DIR:=$(BUILD_DIR)/cni
 BUILD_TMP_DIR:=$(CURDIR)/.build
+BUILD_CACHE_DIR:=$(CURDIR)/.cache
 
 help:
 	@grep -E '^[a-zA-Z%_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
@@ -43,13 +45,22 @@ help:
 install: build ## Build and Install executables
 	cp $(BUILD_DIR)/kubefire $(GOBIN)
 
-build-all: build build-cni ## Build all
+build-all: clean clean-cni env build build-cni ## Build all
 
-build: clean format ## Build executables (linux/amd64 supported only)
+env: ## Prepare build env
+	 [[ ! -x "$(BUILD_CACHE_DIR)/golangci-lint" ]] && \
+			mkdir -p $(BUILD_CACHE_DIR) && \
+			curl -sfLO https://github.com/golangci/golangci-lint/releases/download/v1.30.0/golangci-lint-1.30.0-linux-amd64.tar.gz && \
+			tar -zxvf golangci-lint-1.30.0-linux-amd64.tar.gz && \
+			mv ./golangci-lint-1.30.0-linux-amd64/golangci-lint $(BUILD_CACHE_DIR)/ && \
+			rm -rf ./golangci-lint-1.30.0-linux-amd64* || true
+
+
+build: format ## Build executables (linux/amd64 supported only)
 	mkdir -p $(BUILD_DIR)
 	GOOS=linux GOARCH=amd64 go build -o $(BUILD_DIR) $(GO_LDFLAGS) ./cmd/...
 
-build-cni: clean-cni ## Build CNI executables
+build-cni: ## Build CNI executables
 	# build `host-local-rev`
 	mkdir -p $(BUILD_TMP_DIR) || true
 	mkdir -p $(BUILD_CNI_DIR)
@@ -63,11 +74,12 @@ format: ## Format source code
 	go fmt ./...
 	go vet ./...
 	go mod tidy
-	golangci-lint run ./...
+	$(BUILD_CACHE_DIR)/golangci-lint run ./...
 
 clean: ## Clean build caches
 	rm -rf $(BUILD_DIR)
 	rm -rf $(BUILD_TMP_DIR)
+	rm -rf $(BUILD_CACHE_DIR)
 
 clean-cni: ## CLean build CNI caches
 	rm -rf $(BUILD_CNI_DIR)

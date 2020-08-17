@@ -1,6 +1,7 @@
 *.iml
 .idea
 .build
+.cache
 
 target
 ignite
