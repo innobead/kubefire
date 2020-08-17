@@ -7,9 +7,16 @@ import (
 	"os/exec"
 )
 
+var forceDownload bool
+
 var InstallCmd = &cobra.Command{
 	Use:   "install",
 	Short: "Install prerequisites",
+	PreRun: func(cmd *cobra.Command, args []string) {
+		if !forceDownload {
+			forceDownload = config.TagVersion == "master"
+		}
+	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		// download install script
 		scripts := []script.Type{
@@ -17,7 +24,7 @@ var InstallCmd = &cobra.Command{
 		}
 
 		for _, s := range scripts {
-			if err := script.Download(s, config.TagVersion, true); err != nil {
+			if err := script.Download(s, config.TagVersion, forceDownload); err != nil {
 				return err
 			}
 
@@ -28,6 +35,11 @@ var InstallCmd = &cobra.Command{
 
 		return nil
 	},
+}
+
+func init() {
+	flags := InstallCmd.Flags()
+	flags.BoolVar(&forceDownload, "force", false, "force to install")
 }
 
 func createSetupInstallCommandEnvsFunc() func(cmd *exec.Cmd) error {
