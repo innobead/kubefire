@@ -26,7 +26,7 @@ make install
 
 Running below commands is to quickly have a cluster deployed by kubeadm running in minutes.
 
-```
+```console
 kubefire install
 kubefire cluster create demo
 ```
