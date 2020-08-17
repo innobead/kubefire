@@ -17,6 +17,11 @@ jobs:
         with:
           go-version: ^1.14
 
+      - name: Setup golangci-lint
+        uses: golangci/golangci-lint-action@v1
+        with:
+          version: v1.29
+
       - name: Checkout code
         uses: actions/checkout@v2
 
