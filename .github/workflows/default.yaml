@@ -20,7 +20,7 @@ jobs:
       - name: Setup golangci-lint
         run: |
           curl -sfLO https://github.com/golangci/golangci-lint/releases/download/v1.30.0/golangci-lint-1.30.0-linux-amd64.tar.gz && \
-            tar -zxvf --strip-components 1 golangci-lint-1.30.0-linux-amd64.tar.gz && \
+            tar -zxvf golangci-lint-1.30.0-linux-amd64.tar.gz --strip-components 1 && \
             mv golanci-lint /usr/loca/bin/
 
       - name: Checkout code
