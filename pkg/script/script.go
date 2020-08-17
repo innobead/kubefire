@@ -3,6 +3,7 @@ package script
 import (
 	"context"
 	"fmt"
+	intconfig "github.com/innobead/kubefire/internal/config"
 	"github.com/innobead/kubefire/pkg/config"
 	"github.com/innobead/kubefire/pkg/util"
 	"github.com/pkg/errors"
@@ -26,8 +27,8 @@ const (
 	InstallPrerequisitesSkuba   Type = "install-prerequisites-skuba.sh" //FIXME planned to remove
 )
 
-const (
-	DownloadScriptEndpointFormat = "https://raw.githubusercontent.com/innobead/kubefire/master/scripts/%s"
+var (
+	downloadScriptEndpointFormat = fmt.Sprintf("https://raw.githubusercontent.com/innobead/kubefire/%s/scripts/%%s", intconfig.TagVersion)
 )
 
 func LocalScriptFile(version string, t Type) string {
@@ -35,7 +36,7 @@ func LocalScriptFile(version string, t Type) string {
 }
 
 func RemoteScriptUrl(script Type) string {
-	return fmt.Sprintf(DownloadScriptEndpointFormat, script)
+	return fmt.Sprintf(downloadScriptEndpointFormat, script)
 }
 
 func Download(script Type, version string, force bool) error {
