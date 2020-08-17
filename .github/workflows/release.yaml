@@ -1,27 +1,24 @@
 name: Build, Release
 
 on:
-  pull_request:
   push:
-    branches:
-      - master
     tags:
       - 'v*'
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Setup Go environment
-        uses: actions/setup-go@v2
-        with:
-          go-version: ^1.14
-
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Build all artifacts
-        run: make build-all
+#  build:
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: Setup Go environment
+#        uses: actions/setup-go@v2
+#        with:
+#          go-version: ^1.14
+#
+#      - name: Checkout code
+#        uses: actions/checkout@v2
+#
+#      - name: Build all artifacts
+#        run: make build-all
 
   release:
     name: Release
@@ -40,10 +37,7 @@ jobs:
         with:
           tag_name: ${{ github.ref }}
           release_name: Release ${{ github.ref }}
-          body: |
-            Changes in this Release
-            - First Change
-            - Second Change
+          body: TBU
           draft: true
           prerelease: false
 
