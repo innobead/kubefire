@@ -14,7 +14,7 @@ if [ -z "$K3S_VERSION" ]; then
   exit 1
 fi
 
-mkdir -p $TMP_DIR
+rm -rf $TMP_DIR && mkdir -p $TMP_DIR
 pushd $TMP_DIR
 
 function cleanup() {

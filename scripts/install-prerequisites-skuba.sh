@@ -11,7 +11,7 @@ GOBIN=$(go env GOPATH 2>/dev/null)/bin
 
 SKUBA_VERSION=${SKUBA_VERSION:-}
 
-mkdir -p $TMP_DIR
+rm -rf $TMP_DIR && mkdir -p $TMP_DIR
 pushd $TMP_DIR
 
 function cleanup() {

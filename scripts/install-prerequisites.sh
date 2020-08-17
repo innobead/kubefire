@@ -20,7 +20,7 @@ if [ -z "$KUBEFIRE_VERSION" ] || [ -z "$CONTAINERD_VERSION" ] || [ -z "$IGNITE_V
   exit 1
 fi
 
-mkdir -p $TMP_DIR
+rm -rf $TMP_DIR && mkdir -p $TMP_DIR
 pushd $TMP_DIR
 
 function cleanup() {
