@@ -22,8 +22,8 @@ const (
 	UninstallPrerequisites Type = "uninstall-prerequisites.sh"
 
 	InstallPrerequisitesKubeadm Type = "install-prerequisites-kubeadm.sh"
-	InstallPrerequisitesSkuba   Type = "install-prerequisites-skuba.sh"
 	InstallPrerequisitesK3s     Type = "install-prerequisites-k3s.sh"
+	InstallPrerequisitesSkuba   Type = "install-prerequisites-skuba.sh" //FIXME planned to remove
 )
 
 const (

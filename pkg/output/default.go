@@ -140,6 +140,16 @@ func (d *DefaultOutput) parse(v reflect.Value, filters []string, tableHeaders *[
 
 	updateTableData := func(f reflect.Value, subTableData *[]string) {
 		switch f.Kind() {
+		case reflect.Struct:
+			v := f
+			if f.CanAddr() {
+				v = f.Addr()
+			}
+
+			if v, ok := v.Interface().(fmt.Stringer); ok {
+				*subTableData = append(*subTableData, v.String())
+			}
+
 		case reflect.String:
 			*subTableData = append(*subTableData, f.String())
 

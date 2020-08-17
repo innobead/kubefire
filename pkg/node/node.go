@@ -23,13 +23,17 @@ const (
 var namePattern = fmt.Sprintf(`%%s-(%s|%s|%s)-\d+`, Admin, Master, Worker)
 
 type Manager interface {
-	CreateNodes(nodeType Type, node *config.Node) error
+	CreateNodes(nodeType Type, node *config.Node, started bool) error
 	DeleteNodes(nodeType Type, node *config.Node) error
 	DeleteNode(name string) error
 	GetNode(name string) (*data.Node, error)
 	ListNodes(clusterName string) ([]*data.Node, error)
 	LoginBySSH(name string, configManager config.Manager) error
 	WaitNodesRunning(clusterName string, timeoutMin time.Duration) error
+	StartNodes(clusterName string) error
+	StarNode(name string) error
+	StopNodes(clusterName string) error
+	StopNode(name string) error
 }
 
 func Name(clusterName string, nodeType Type, index int) string {

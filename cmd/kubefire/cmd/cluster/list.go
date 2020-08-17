@@ -1,6 +1,7 @@
 package cluster
 
 import (
+	"fmt"
 	"github.com/innobead/kubefire/internal/di"
 	"github.com/innobead/kubefire/pkg/config"
 	"github.com/pkg/errors"
@@ -10,10 +11,20 @@ import (
 var listCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List clusters",
-	RunE: func(cmd *cobra.Command, args []string) error {
-		clusters, err := di.ClusterManager().List()
+	PreRunE: func(cmd *cobra.Command, args []string) error {
+		_, err := di.ClusterManager().List()
 		if err != nil {
 			return errors.WithMessagef(err, "failed to list clusters info")
+		}
+
+		return nil
+	},
+	RunE: func(cmd *cobra.Command, args []string) error {
+		clusters, _ := di.ClusterManager().List()
+
+		if len(clusters) == 0 {
+			fmt.Println("No clusters found")
+			return nil
 		}
 
 		var configClusters []*config.Cluster

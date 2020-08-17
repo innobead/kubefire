@@ -1,6 +1,9 @@
-.PHONY: build \
+.PHONY: build-all \
+		build \
+		build-cni \
 		format \
 		clean \
+		clean-cni \
 		clean-ignite-runtime \
 		build-images \
 		build-image-% \
@@ -17,10 +20,10 @@ IMAGES:=centos:8 ubuntu:18.04 ubuntu:20.10 opensuse-leap:15.1 sle15:15.1 opensus
 KERNELS:=$(shell ls ./build/kernels | sed 's/config-amd64-//; /README.md/d;')
 GOBIN:=$(shell go env GOBIN)
 
-ContainerdVersion := v1.3.4
+ContainerdVersion := v1.3.7
 IgniteVersion := v0.7.1
 CniVersion := v0.8.6
-RuncVersion := v1.0.0-rc91
+RuncVersion := v1.0.0-rc92
 
 GO_LINKFLAGS:=-X=github.com/innobead/kubefire/internal/config.BuildVersion=$(COMMIT)
 GO_LINKFLAGS:=-X=github.com/innobead/kubefire/internal/config.TagVersion=$(TAG) $(GO_LINKFLAGS)
@@ -30,7 +33,9 @@ GO_LINKFLAGS:=-X=github.com/innobead/kubefire/internal/config.CniVersion=$(CniVe
 GO_LINKFLAGS:=-X=github.com/innobead/kubefire/internal/config.RuncVersion=$(RuncVersion) $(GO_LINKFLAGS)
 GO_LDFLAGS:=-ldflags "$(GO_LINKFLAGS)"
 
-BUILD_DIR:=target
+BUILD_DIR:=$(CURDIR)/target
+BUILD_CNI_DIR:=$(BUILD_DIR)/cni
+BUILD_TMP_DIR:=$(CURDIR)/.build
 
 help:
 	@grep -E '^[a-zA-Z%_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
@@ -38,17 +43,35 @@ help:
 install: build ## Build and Install executables
 	cp $(BUILD_DIR)/kubefire $(GOBIN)
 
-build: clean format ## Build executables
+build-all: build build-cni ## Build all
+
+build: clean format ## Build executables (linux/amd64 supported only)
 	mkdir -p $(BUILD_DIR)
-	go build -o $(BUILD_DIR) $(GO_LDFLAGS) ./cmd/...
+	GOOS=linux GOARCH=amd64 go build -o $(BUILD_DIR) $(GO_LDFLAGS) ./cmd/...
+
+build-cni: clean-cni ## Build CNI executables
+	# build `host-local-rev`
+	mkdir -p $(BUILD_TMP_DIR) || true
+	mkdir -p $(BUILD_CNI_DIR)
+	cd $(BUILD_TMP_DIR); \
+		TAG=v0.8.6-patch; \
+		git clone --branch $${TAG} https://github.com/innobead/plugins; \
+        ./plugins/build_linux.sh -ldflags "-extldflags -static -X github.com/containernetworking/plugins/pkg/utils/buildversion.BuildVersion=$${TAG}"; \
+		mv ./plugins/bin/host-local $(BUILD_CNI_DIR)/host-local-rev
 
 format: ## Format source code
 	go fmt ./...
 	go vet ./...
+	go mod tidy
 	golangci-lint run ./...
 
 clean: ## Clean build caches
 	rm -rf $(BUILD_DIR)
+	rm -rf $(BUILD_TMP_DIR)
+
+clean-cni: ## CLean build CNI caches
+	rm -rf $(BUILD_CNI_DIR)
+	rm -rf $(BUILD_TMP_DIR)/plugins
 
 clean-ignite: ## Clean ignite caches
 	sudo ignite rm -f $$(sudo ignite ps -aq) &>/dev/null || echo "> No VMs to delete from ignite"

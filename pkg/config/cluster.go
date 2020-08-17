@@ -23,6 +23,8 @@ type Cluster struct {
 	Worker Node `json:"worker"`
 
 	ExtraOptions string `json:"extra_options"`
+
+	Deployed bool `json:"deployed"` // the only status property
 }
 
 func NewCluster() *Cluster {

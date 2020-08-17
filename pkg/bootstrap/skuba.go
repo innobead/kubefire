@@ -41,10 +41,28 @@ func installSkuba(force bool) error {
 			return err
 		}
 
-		if err := script.Run(s, config.TagVersion, nil); err != nil {
+		if err := script.Run(s, config.TagVersion, func(cmd *exec.Cmd) error {
+			cmd.Env = append(
+				cmd.Env,
+				config.SkubaVersionsEnvVars()...,
+			)
+
+			return nil
+		}); err != nil {
 			return err
 		}
 	}
+
+	//func createSetupInstallCommandEnvsFunc() func(cmd *exec.Cmd) error {
+	//	return func(cmd *exec.Cmd) error {
+	//		cmd.Env = append(
+	//			cmd.Env,
+	//			config.ExpectedPrerequisiteVersionsEnvVars()...,
+	//		)
+	//
+	//		return nil
+	//	}
+	//}
 
 	return nil
 }

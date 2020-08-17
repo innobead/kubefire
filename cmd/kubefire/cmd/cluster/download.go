@@ -2,8 +2,8 @@ package cluster
 
 import (
 	"github.com/innobead/kubefire/internal/di"
+	"github.com/innobead/kubefire/internal/validate"
 	"github.com/innobead/kubefire/pkg/bootstrap"
-	"github.com/innobead/kubefire/pkg/util"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"os"
@@ -12,7 +12,10 @@ import (
 var downloadCmd = &cobra.Command{
 	Use:   "download [name]",
 	Short: "Download the kubeconfig of cluster",
-	Args:  util.ValidateOneArg("name"),
+	Args:  validate.OneArg("name"),
+	PreRunE: func(cmd *cobra.Command, args []string) error {
+		return validate.ClusterExist(args[0])
+	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		name := args[0]
 

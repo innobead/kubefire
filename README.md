@@ -31,7 +31,7 @@ To be able to run kubefire commands w/o issues like node/cluster management, the
 
 ## Bootstrapping Cluster
 
-### Kubeadm (K8s 1.18.6)
+### Kubeadm (K8s 1.18.8)
 
 ```
 kubefire cluster create --bootstrapper=kubeadm demo
@@ -39,7 +39,7 @@ kubefire cluster create --bootstrapper=kubeadm demo
 
 [![asciicast](https://asciinema.org/a/lQfFfMa1zCXWvz321eUqhNyxB.svg)](https://asciinema.org/a/lQfFfMa1zCXWvz321eUqhNyxB)
 
-### K3s (K8s 1.18.6)
+### K3s (K8s 1.18.8)
 
 Please note that K3s only officially supports Ubuntu 16.04 and 18.04, the kernel versions of which are 4.4 and 4.15. 
 Therefore, if using the prebuilt kernels, please use `4.19` (which is the default kernel used) instead of `5.4`, otherwise there will be some unexpected errors happening. 
@@ -64,7 +64,7 @@ kubefire cluster create demo-k3s --bootstrapper k3s --extra-opts="ServerOpts='--
 
 [![asciicast](https://asciinema.org/a/HqmfS4wZP7pPVS3E7M7gwAzmA.svg)](https://asciinema.org/a/HqmfS4wZP7pPVS3E7M7gwAzmA)
 
-### SUSE Skuba (K8s 1.17.4)
+### SUSE Skuba (K8s 1.17.9)
 
 ```
 kubefire cluster create demo --bootstrapper=skuba --extra-opts="RegisterCode=<Product Register Code>"

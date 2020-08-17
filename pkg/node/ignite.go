@@ -22,7 +22,10 @@ import (
 
 const (
 	RunCmd    = `ignite run {{.Image}} --name={{.Name}} --label=cluster={{.Cluster}} --ssh={{.Pubkey}} --kernel-image={{.KernelImage}} --kernel-image={{.KernelImage}} --cpus={{.Cpus}} --memory={{.Memory}} --size={{.DiskSize}}`
+	CreateCmd = `ignite create {{.Image}} --name={{.Name}} --label=cluster={{.Cluster}} --ssh={{.Pubkey}} --kernel-image={{.KernelImage}} --kernel-image={{.KernelImage}} --cpus={{.Cpus}} --memory={{.Memory}} --size={{.DiskSize}}`
 	DeleteCmd = "ignite rm {{.Name}} --force"
+	StartCmd  = "ignite start {{.Name}}"
+	StopCmd   = "ignite stop {{.Name}}"
 )
 
 type IgniteNodeManager struct {
@@ -32,10 +35,18 @@ func NewIgniteNodeManager() *IgniteNodeManager {
 	return &IgniteNodeManager{}
 }
 
-func (i *IgniteNodeManager) CreateNodes(nodeType Type, node *config.Node) error {
-	logrus.WithField("cluster", node.Cluster.Name).Infof("creating %s nodes of cluster", nodeType)
+func (i *IgniteNodeManager) CreateNodes(nodeType Type, node *config.Node, started bool) error {
+	logrus.WithFields(logrus.Fields{
+		"cluster": node.Cluster.Name,
+		"started": started,
+	}).Infof("creating %s nodes of cluster", nodeType)
 
-	tmp, err := template.New("create").Parse(RunCmd)
+	templateContent := CreateCmd
+	if started {
+		templateContent = RunCmd
+	}
+
+	tmp, err := template.New("create").Parse(templateContent)
 	if err != nil {
 		return errors.WithStack(err)
 	}
@@ -119,35 +130,15 @@ func (i *IgniteNodeManager) DeleteNodes(nodeType Type, node *config.Node) error 
 func (i *IgniteNodeManager) DeleteNode(name string) error {
 	logrus.WithField("node", name).Infoln("deleting node")
 
-	tmp, err := template.New("delete").Parse(DeleteCmd)
-	if err != nil {
-		return errors.WithStack(err)
-	}
-
-	tmpBuffer := &bytes.Buffer{}
-
-	c := &struct {
-		Name string
-	}{
-		Name: name,
-	}
-	if err := tmp.Execute(tmpBuffer, c); err != nil {
-		return errors.WithStack(err)
-	}
-
-	cmd := util.UpdateCommandDefaultLogWithInfo(
-		exec.CommandContext(
-			context.Background(),
-			"sudo",
-			strings.Split(tmpBuffer.String(), " ")...,
-		),
+	return i.runCmd(
+		"delete",
+		DeleteCmd,
+		struct {
+			Name string
+		}{
+			Name: name,
+		},
 	)
-
-	if err := cmd.Run(); err != nil {
-		return errors.WithStack(err)
-	}
-
-	return nil
 }
 
 func (i *IgniteNodeManager) GetNode(name string) (*data.Node, error) {
@@ -311,7 +302,7 @@ func (i *IgniteNodeManager) LoginBySSH(name string, configManager config.Manager
 }
 
 func (i *IgniteNodeManager) WaitNodesRunning(clusterName string, timeoutMin time.Duration) error {
-	logrus.WithField("cluster", clusterName).Infoln("waiting nodes of cluster are running")
+	logrus.WithField("cluster", clusterName).Infoln("waiting nodes of cluster running")
 
 	err := retry.Do(func() error {
 		nodes, err := i.ListNodes(clusterName)
@@ -329,6 +320,101 @@ func (i *IgniteNodeManager) WaitNodesRunning(clusterName string, timeoutMin time
 	}, retry.Delay(5*time.Second), retry.MaxDelay(timeoutMin*time.Minute))
 
 	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	return nil
+}
+
+func (i *IgniteNodeManager) StartNodes(clusterName string) error {
+	logrus.WithField("cluster", clusterName).Infoln("starting nodes of cluster running")
+
+	nodes, err := i.ListNodes(clusterName)
+	if err != nil {
+		return err
+	}
+
+	for _, n := range nodes {
+		if n.Status.Running {
+			logrus.WithField("node", n.Name).Infoln("node is already running")
+			continue
+		}
+
+		if err := i.StarNode(n.Name); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (i *IgniteNodeManager) StarNode(name string) error {
+	logrus.WithField("node", name).Infoln("starting node")
+
+	return i.runCmd(
+		"start",
+		StartCmd,
+		struct {
+			Name string
+		}{
+			Name: name,
+		},
+	)
+
+}
+
+func (i *IgniteNodeManager) StopNodes(clusterName string) error {
+	logrus.WithField("cluster", clusterName).Infoln("stopping nodes of cluster running")
+
+	nodes, err := i.ListNodes(clusterName)
+	if err != nil {
+		return err
+	}
+
+	for _, n := range nodes {
+		if err := i.StopNode(n.Name); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (i *IgniteNodeManager) StopNode(name string) error {
+	logrus.WithField("node", name).Infoln("stopping node")
+
+	return i.runCmd(
+		"stop",
+		StopCmd,
+		struct {
+			Name string
+		}{
+			Name: name,
+		},
+	)
+}
+
+func (i *IgniteNodeManager) runCmd(templateName string, templateContent string, templateVars interface{}) error {
+	tmp, err := template.New(templateName).Parse(templateContent)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	tmpBuffer := &bytes.Buffer{}
+
+	if err := tmp.Execute(tmpBuffer, templateVars); err != nil {
+		return errors.WithStack(err)
+	}
+
+	cmd := util.UpdateCommandDefaultLogWithInfo(
+		exec.CommandContext(
+			context.Background(),
+			"sudo",
+			strings.Split(tmpBuffer.String(), " ")...,
+		),
+	)
+
+	if err := cmd.Run(); err != nil {
 		return errors.WithStack(err)
 	}
 

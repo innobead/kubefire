@@ -1,12 +1,16 @@
 package cluster
 
 import (
+	"github.com/innobead/kubefire/internal/validate"
 	"github.com/spf13/cobra"
 )
 
 var Cmd = &cobra.Command{
 	Use:   "cluster",
 	Short: "Manage cluster",
+	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		return validate.RequiredPrerequisites()
+	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return cmd.Help()
 	},
@@ -15,6 +19,8 @@ var Cmd = &cobra.Command{
 func init() {
 	cmds := []*cobra.Command{
 		createCmd,
+		startCmd,
+		stopCmd,
 		deleteCmd,
 		getCmd,
 		listCmd,

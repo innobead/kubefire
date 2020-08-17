@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/avast/retry-go"
 	"github.com/hashicorp/go-multierror"
+	"github.com/innobead/kubefire/internal/config"
 	"github.com/innobead/kubefire/pkg/data"
 	"github.com/innobead/kubefire/pkg/node"
 	"github.com/innobead/kubefire/pkg/script"
@@ -18,8 +19,9 @@ import (
 )
 
 type K3sExtraOptions struct {
-	ServerOpts string
-	AgentOpts  string
+	ServerInstallOpts string
+	AgentInstallOpts  string
+	ExtraOptions      string
 }
 
 type K3sBootstrapper struct {
@@ -39,7 +41,9 @@ func (k *K3sBootstrapper) Deploy(cluster *data.Cluster, before func() error) err
 		}
 	}
 
-	extraOptions := cluster.Spec.ParseExtraOptions(&K3sExtraOptions{}).(K3sExtraOptions)
+	extraOptions := cluster.Spec.ParseExtraOptions(&K3sExtraOptions{
+		ExtraOptions: config.K3sVersionsEnvVars().String(),
+	}).(K3sExtraOptions)
 
 	if err := k.nodeManager.WaitNodesRunning(cluster.Name, 5); err != nil {
 		return errors.WithMessage(err, "some nodes are not running")
@@ -123,7 +127,7 @@ func (k *K3sBootstrapper) init(cluster *data.Cluster) error {
 					"swapoff -a",
 					fmt.Sprintf("curl -sSLO %s", script.RemoteScriptUrl(script.InstallPrerequisitesK3s)),
 					fmt.Sprintf("chmod +x %s", script.InstallPrerequisitesK3s),
-					fmt.Sprintf("./%s", script.InstallPrerequisitesK3s),
+					fmt.Sprintf("%s ./%s", config.K3sVersionsEnvVars().String(), script.InstallPrerequisitesK3s),
 				}
 
 				err = sshClient.Run(nil, nil, cmds...)
@@ -183,8 +187,8 @@ func (k *K3sBootstrapper) bootstrap(node *data.Node, isSingleNode bool, extraOpt
 		k3sOpts = append(k3sOpts, "--cluster-init")
 	}
 
-	if extraOptions.ServerOpts != "" {
-		k3sOpts = append(k3sOpts, extraOptions.ServerOpts)
+	if extraOptions.ServerInstallOpts != "" {
+		k3sOpts = append(k3sOpts, extraOptions.ServerInstallOpts)
 	}
 
 	cmds := []struct {
@@ -192,7 +196,7 @@ func (k *K3sBootstrapper) bootstrap(node *data.Node, isSingleNode bool, extraOpt
 		before  utilssh.Callback
 	}{
 		{
-			cmdline: fmt.Sprintf(`INSTALL_K3S_EXEC="%s" k3s-install.sh `, strings.Join(k3sOpts, " ")),
+			cmdline: fmt.Sprintf(`INSTALL_K3S_EXEC="%s" %s k3s-install.sh `, strings.Join(k3sOpts, " "), extraOptions.ExtraOptions),
 		},
 		{
 			cmdline: "cat /var/lib/rancher/k3s/server/node-token",
@@ -234,16 +238,16 @@ func (k *K3sBootstrapper) join(node *data.Node, apiServerAddress string, joinTok
 	if node.IsMaster() {
 		k3sOpts = append(k3sOpts, "--server")
 
-		if extraOptions.ServerOpts != "" {
-			k3sOpts = append(k3sOpts, extraOptions.ServerOpts)
+		if extraOptions.ServerInstallOpts != "" {
+			k3sOpts = append(k3sOpts, extraOptions.ServerInstallOpts)
 		}
 	} else {
-		if extraOptions.AgentOpts != "" {
-			k3sOpts = append(k3sOpts, extraOptions.AgentOpts)
+		if extraOptions.AgentInstallOpts != "" {
+			k3sOpts = append(k3sOpts, extraOptions.AgentInstallOpts)
 		}
 	}
 
-	cmd = fmt.Sprintf(`INSTALL_K3S_EXEC="%s" `, strings.Join(k3sOpts, " ")) + cmd
+	cmd = fmt.Sprintf(`INSTALL_K3S_EXEC="%s" %s`, strings.Join(k3sOpts, " "), extraOptions.ExtraOptions) + cmd
 
 	if err := sshClient.Run(nil, nil, cmd); err != nil {
 		return errors.WithStack(err)

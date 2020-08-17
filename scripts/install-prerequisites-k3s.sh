@@ -7,7 +7,12 @@ set -o xtrace
 
 TMP_DIR=/tmp/kubefire
 
-K3S_VERSION=${K3S_VERSION:-"v1.18.6"}
+K3S_VERSION=${K3S_VERSION:-}
+
+if [ -z "$K3S_VERSION" ]; then
+  echo "incorrect versions provided!" >/dev/stderr
+  exit 1
+fi
 
 mkdir -p $TMP_DIR
 pushd $TMP_DIR

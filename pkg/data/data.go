@@ -17,13 +17,13 @@ type Node struct {
 	Status NodeStatus
 }
 
-func (n Node) IsMaster() bool {
-	return strings.Contains(n.Name, "master")
-}
-
 type NodeStatus struct {
 	Running     bool
 	IPAddresses string
 	Image       string
 	Kernel      string
+}
+
+func (n Node) IsMaster() bool {
+	return strings.Contains(n.Name, "master")
 }

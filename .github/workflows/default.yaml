@@ -1,0 +1,62 @@
+name: Build, Release
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Go environment
+        uses: actions/setup-go@v2
+        with:
+          go-version: ^1.14
+
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Build all artifacts
+        run: make build-all
+
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+      - name: Checkout code
+        id: checkout-code
+        uses: actions/checkout@v2
+
+      - name: Create release
+        id: create-release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          body: |
+            Changes in this Release
+            - First Change
+            - Second Change
+          draft: true
+          prerelease: false
+
+      - name: Upload released artifacts
+        id: upload-release-asset
+        run: |
+          set -x
+
+          assets=()
+          assets+=("-a" "./target/kubefire")
+          assets+=("-a" "./target/cni/host-local-rev")
+
+          tag_name="${GITHUB_REF##*/}"
+          hub release create "${assets[@]}" -m "$tag_name" "$tag_name"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

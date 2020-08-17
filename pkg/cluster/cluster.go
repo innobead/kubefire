@@ -12,7 +12,7 @@ import (
 
 type Manager interface {
 	Init(cluster *pkgconfig.Cluster) error
-	Create(name string) error
+	Create(name string, started bool) error
 	Delete(name string, force bool) error
 	Get(name string) (*data.Cluster, error)
 	List() ([]*data.Cluster, error)
@@ -45,7 +45,7 @@ func (d *DefaultManager) Init(cluster *pkgconfig.Cluster) error {
 	return d.ConfigManager.SaveCluster(cluster)
 }
 
-func (d *DefaultManager) Create(name string) error {
+func (d *DefaultManager) Create(name string, started bool) error {
 	logrus.WithField("cluster", name).Infoln("creating cluster")
 
 	cluster, err := d.ConfigManager.GetCluster(name)
@@ -63,7 +63,7 @@ func (d *DefaultManager) Create(name string) error {
 			continue
 		}
 
-		if err := d.NodeManager.CreateNodes(t, c); err != nil {
+		if err := d.NodeManager.CreateNodes(t, c, started); err != nil {
 			return err
 		}
 	}

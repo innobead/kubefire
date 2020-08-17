@@ -64,7 +64,6 @@ func main() {
 
 	if err := rootCmd.Execute(); err != nil {
 		logrus.Tracef("%+v", err)
-
 		logrus.WithError(err).Fatalf("failed to run kubefire")
 	}
 }

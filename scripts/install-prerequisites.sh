@@ -9,11 +9,16 @@ set -o xtrace
 TMP_DIR=/tmp/kubefire
 GOARCH=$(go env GOARCH 2>/dev/null || echo "amd64")
 
-# FIXME: below versions should come from kubefire, remove the versions in near future
-CONTAINERD_VERSION=${CONTAINERD_VERSION:-"v1.3.4"}
-IGNITE_VERION=${IGNITE_VERION:-"v0.7.1"}
-CNI_VERSION=${CNI_VERSION:-"v0.8.6"}
-RUNC_VERSION=${RUNC_VERSION:-"v1.0.0-rc91"}
+KUBEFIRE_VERSION=${KUBEFIRE_VERSION:-}
+CONTAINERD_VERSION=${CONTAINERD_VERSION:-""}
+IGNITE_VERION=${IGNITE_VERION:-""}
+CNI_VERSION=${CNI_VERSION:-""}
+RUNC_VERSION=${RUNC_VERSION:-""}
+
+if [ -z "$KUBEFIRE_VERSION" ] || [ -z "$CONTAINERD_VERSION" ] || [ -z "$IGNITE_VERION" ] || [ -z "$CNI_VERSION" ] || [ -z "$RUNC_VERSION" ]; then
+  echo "incorrect versions provided!" >/dev/stderr
+  exit 1
+fi
 
 mkdir -p $TMP_DIR
 pushd $TMP_DIR
@@ -49,7 +54,7 @@ function install_containerd() {
   local version="${CONTAINERD_VERSION:1}"
   local dir=containerd-$version
 
-  curl -sSLO "https://github.com/containerd/containerd/releases/download/${CONTAINERD_VERSION}/containerd-${version}.linux-${GOARCH}.tar.gz"
+  curl -sSLO "https://github.com/containerd/containerd/releases/download/${CONTAINERD_VERSION}/containerd-${version}-linux-${GOARCH}.tar.gz"
   mkdir -p $dir
   tar -zxvf $dir*.tar.gz -C $dir
   chmod +x $dir/bin/*
@@ -58,11 +63,7 @@ function install_containerd() {
   curl -sSLO "https://raw.githubusercontent.com/containerd/containerd/${CONTAINERD_VERSION}/containerd.service"
   sudo groupadd containerd || true
   sudo mv containerd.service /etc/systemd/system/containerd.service
-
-#  [Service]
-#  ExecStartPre=-/sbin/modprobe overlay
-#  ExecStart=/usr/local/bin/containerd
-#  ExecStartPost=/usr/bin/chgrp containerd /run/containerd/containerd.sock
+  sudo sed -i -E "s#(ExecStart=/usr/local/bin/containerd)#\1\nExecStartPost=/usr/bin/chgrp containerd /run/containerd/containerd.sock#g" /etc/systemd/system/containerd.service
 
   sudo mkdir -p /etc/containerd
   containerd config default | sudo tee /etc/containerd/config.toml >/dev/null
@@ -90,6 +91,11 @@ function install_cni() {
   curl -sSL "https://github.com/containernetworking/plugins/releases/download/${CNI_VERSION}/cni-plugins-linux-amd64-${CNI_VERSION}.tgz" | tar -C /opt/cni/bin -xz
 }
 
+function install_cni_patches() {
+    # TODO download `host-loca-rev` from kubefire release
+    :
+}
+
 function install_ignite() {
   if _check_version /usr/local/bin/ignite version $IGNITE_VERION; then
     echo "ignite (${IGNITE_VERION}) installed already!"
@@ -108,12 +114,47 @@ function check_ignite() {
   ignite version
 }
 
+function create_cni_default_config() {
+  mkdir -p /etc/cni/net.d/ || true
+  cat <<'EOF' > /etc/cni/net.d/00-kubefire.conflist
+{
+	"cniVersion": "0.4.0",
+	"name": "kubefire-cni-bridge",
+	"plugins": [
+		{
+			"type": "bridge",
+			"bridge": "kubefire0",
+			"isGateway": true,
+			"isDefaultGateway": true,
+			"promiscMode": true,
+			"ipMasq": true,
+			"ipam": {
+				"type": "host-local-rev",
+				"subnet": "10.62.0.0/16"
+			}
+		},
+		{
+			"type": "portmap",
+			"capabilities": {
+				"portMappings": true
+			}
+		},
+		{
+			"type": "firewall"
+		}
+	]
+}
+EOF
+}
+
 check_virtualization
 
 install_runc
 install_containerd
 install_cni
+#install_cni_patches
 install_ignite
 check_ignite
+#create_cni_default_config
 
 popd

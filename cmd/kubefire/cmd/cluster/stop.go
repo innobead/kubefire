@@ -7,9 +7,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var getCmd = &cobra.Command{
-	Use:   "get [name]",
-	Short: "Get cluster",
+var stopCmd = &cobra.Command{
+	Use:   "stop [name]",
+	Short: "Stop cluster",
 	Args:  validate.OneArg("name"),
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		return validate.ClusterExist(args[0])
@@ -17,13 +17,8 @@ var getCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		name := args[0]
 
-		cluster, err := di.ClusterManager().Get(name)
-		if err != nil {
-			return errors.WithMessagef(err, "failed to get cluster (%s) info", name)
-		}
-
-		if err := di.Output().Print(cluster, nil, ""); err != nil {
-			return errors.WithMessagef(err, "failed to print output of cluster (%s)", name)
+		if err := di.NodeManager().StopNodes(name); err != nil {
+			return errors.WithMessagef(err, "failed to stop all nodes cluster (%s)", name)
 		}
 
 		return nil

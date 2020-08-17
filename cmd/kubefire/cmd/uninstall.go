@@ -14,7 +14,7 @@ var UninstallCmd = &cobra.Command{
 			return err
 		}
 
-		if err := script.Run(script.UninstallPrerequisites, config.TagVersion, CreateSetupInstallCommandEnvsFunc()); err != nil {
+		if err := script.Run(script.UninstallPrerequisites, config.TagVersion, createSetupInstallCommandEnvsFunc()); err != nil {
 			return err
 		}
 

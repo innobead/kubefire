@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/avast/retry-go"
 	"github.com/hashicorp/go-multierror"
+	"github.com/innobead/kubefire/internal/config"
 	"github.com/innobead/kubefire/pkg/data"
 	"github.com/innobead/kubefire/pkg/node"
 	"github.com/innobead/kubefire/pkg/script"
@@ -116,7 +117,7 @@ func (k *KubeadmBootstrapper) init(cluster *data.Cluster) error {
 					"swapoff -a",
 					fmt.Sprintf("curl -sSLO %s", script.RemoteScriptUrl(script.InstallPrerequisitesKubeadm)),
 					fmt.Sprintf("chmod +x %s", script.InstallPrerequisitesKubeadm),
-					fmt.Sprintf("./%s", script.InstallPrerequisitesKubeadm),
+					fmt.Sprintf("%s ./%s", config.KubeadmVersionsEnvVars().String(), script.InstallPrerequisitesKubeadm),
 					"sysctl -w net.ipv4.ip_forward=1",
 					`echo "net.ipv4.ip_forward = 1" >> /etc/sysctl.conf`,
 					`echo "0.0.0.0 $(hostname)" >> /etc/hosts`,

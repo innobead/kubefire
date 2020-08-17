@@ -39,8 +39,10 @@ func (l *LocalConfigManager) SaveCluster(cluster *Cluster) error {
 		return errors.WithStack(err)
 	}
 
-	if err := l.generateKeys(cluster); err != nil {
-		return errors.WithStack(err)
+	if _, err := os.Stat(cluster.Pubkey); os.IsNotExist(err) {
+		if err := l.generateKeys(cluster); err != nil {
+			return errors.WithStack(err)
+		}
 	}
 
 	bytes, err := yaml.Marshal(cluster)

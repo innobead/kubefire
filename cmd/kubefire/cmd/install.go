@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"github.com/innobead/kubefire/internal/config"
-	"github.com/innobead/kubefire/internal/info"
 	"github.com/innobead/kubefire/pkg/script"
 	"github.com/spf13/cobra"
 	"os/exec"
@@ -14,6 +13,7 @@ var InstallCmd = &cobra.Command{
 	Use:   "install",
 	Short: "Install prerequisites",
 	RunE: func(cmd *cobra.Command, args []string) error {
+		// download install script
 		scripts := []script.Type{
 			script.InstallPrerequisites,
 		}
@@ -23,7 +23,7 @@ var InstallCmd = &cobra.Command{
 				return err
 			}
 
-			if err := script.Run(s, config.TagVersion, CreateSetupInstallCommandEnvsFunc()); err != nil {
+			if err := script.Run(s, config.TagVersion, createSetupInstallCommandEnvsFunc()); err != nil {
 				return err
 			}
 		}
@@ -37,11 +37,11 @@ func init() {
 	flags.BoolVar(&forceDownload, "force", false, "force to install")
 }
 
-func CreateSetupInstallCommandEnvsFunc() func(cmd *exec.Cmd) error {
+func createSetupInstallCommandEnvsFunc() func(cmd *exec.Cmd) error {
 	return func(cmd *exec.Cmd) error {
 		cmd.Env = append(
 			cmd.Env,
-			info.CurrentRuntimeVersionInfo().ExpectedEnvVars()...,
+			config.ExpectedPrerequisiteVersionsEnvVars()...,
 		)
 
 		return nil
