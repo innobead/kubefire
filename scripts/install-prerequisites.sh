@@ -152,9 +152,9 @@ check_virtualization
 install_runc
 install_containerd
 install_cni
-#install_cni_patches
+install_cni_patches
 install_ignite
 check_ignite
-#create_cni_default_config
+create_cni_default_config
 
 popd
