@@ -48,7 +48,7 @@ install: build ## Build and Install executables
 build-all: clean clean-cni env build build-cni ## Build all
 
 env: ## Prepare build env
-	 [[ ! -x "$(BUILD_CACHE_DIR)/golangci-lint" ]] && \
+	 [ ! -x "$(BUILD_CACHE_DIR)/golangci-lint" ] && \
 			mkdir -p $(BUILD_CACHE_DIR) && \
 			curl -sfLO https://github.com/golangci/golangci-lint/releases/download/v1.30.0/golangci-lint-1.30.0-linux-amd64.tar.gz && \
 			tar -zxvf golangci-lint-1.30.0-linux-amd64.tar.gz && \
