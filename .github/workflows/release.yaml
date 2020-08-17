@@ -23,18 +23,7 @@ jobs:
       - name: Build all artifacts
         run: make build-all
 
-      - name: Create release
-        id: create-release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          body: ""
-          draft: true
-
-      - name: Upload released artifacts
+      - name: Create release and upload artifacts
         id: upload-release-asset
         run: |
           set -x
@@ -44,6 +33,6 @@ jobs:
           assets+=("-a" "./target/cni/host-local-rev")
 
           tag_name="${GITHUB_REF##*/}"
-          hub release create "${assets[@]}" -m "$tag_name" "$tag_name"
+          hub release create -d "${assets[@]}" -m "$tag_name" "$tag_name"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

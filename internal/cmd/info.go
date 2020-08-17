@@ -70,7 +70,7 @@ func CurrentPrerequisitesInfos() *PrerequisitesInfos {
 		Ignite:     prerequisiteVersion("ignite version -o short", `(v\d+.\d+.\d+)`, config.IgniteVersion),
 		Cni:        prerequisiteVersion("/opt/cni/bin/loopback", `(v\d+.\d+.\d+)`, config.CniVersion),
 		Runc:       prerequisiteVersion("runc -v", `runc version (\d+.\d+.\d+[-\w\d]+)`, strings.TrimPrefix(config.RuncVersion, "v")),
-		CniPlugin:  cniVersion("0.4.0/ignite-cni-bridge"), //FIXME 0.4.0/kubefire-cni-bridge
+		CniPlugin:  cniVersion("0.4.0/kubefire-cni-bridge"),
 	}
 }
 
