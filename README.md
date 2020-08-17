@@ -1,4 +1,4 @@
-# What is KubeFire?
+# What is KubeFire?:fire: 
 
 KubeFire is to manage Kubernetes clusters running on FireCracker microVMs via **weaveworks/ignite**. 
 
