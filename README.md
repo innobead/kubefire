@@ -22,6 +22,15 @@ For development purpose, please make sure go 1.14 installed, then build and inst
 make install
 ```
 
+## Quickstart
+
+Running below commands is to quickly have a cluster deployed by kubeadm running in minutes.
+
+```
+kubefire install
+kubefire cluster create demo
+```
+
 ## Installing Prerequisites
 
 To be able to run kubefire commands w/o issues like node/cluster management, there are some prerequisites to have. Please run `kubefire install` command with root permission (or sudo without password) to have these prerequisites via the below steps.
@@ -40,7 +49,7 @@ To be able to run kubefire commands w/o issues like node/cluster management, the
 ### Kubeadm (K8s 1.18.8)
 
 ```console
-kubefire cluster create --bootstrapper=kubeadm demo
+kubefire cluster create demo --bootstrapper=kubeadm
 ```
 
 [![asciicast](https://asciinema.org/a/lQfFfMa1zCXWvz321eUqhNyxB.svg)](https://asciinema.org/a/lQfFfMa1zCXWvz321eUqhNyxB)
@@ -65,7 +74,7 @@ To add extra installation options of the server or agent nodes, use `--extra-opt
 - Add any options of `k3s agent` into `AgentOpts='<k3s agent option1>, <k3s agent option2>, ...'`.
 
 ```console
-kubefire cluster create demo-k3s --bootstrapper k3s --extra-opts="ServerOpts='--disable=traefik --disable=metrics-server'"
+kubefire cluster create demo --bootstrapper=k3s --extra-opts="ServerOpts='--disable=traefik --disable=metrics-server'"
 ```
 
 [![asciicast](https://asciinema.org/a/HqmfS4wZP7pPVS3E7M7gwAzmA.svg)](https://asciinema.org/a/HqmfS4wZP7pPVS3E7M7gwAzmA)
