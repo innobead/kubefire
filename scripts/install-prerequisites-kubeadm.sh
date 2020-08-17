@@ -46,7 +46,7 @@ function install_containerd() {
   local version="${CONTAINERD_VERSION:1}"
   local dir=containerd-$version
 
-  curl -sSLO "https://github.com/containerd/containerd/releases/download/${CONTAINERD_VERSION}/containerd-${version}.linux-${GOARCH}.tar.gz"
+  curl -sSLO "https://github.com/containerd/containerd/releases/download/${CONTAINERD_VERSION}/containerd-${version}-linux-${GOARCH}.tar.gz"
   mkdir -p $dir
   tar -zxvf $dir*.tar.gz -C $dir
   chmod +x $dir/bin/*
