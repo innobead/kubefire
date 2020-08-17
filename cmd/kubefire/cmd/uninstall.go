@@ -10,7 +10,7 @@ var UninstallCmd = &cobra.Command{
 	Use:   "uninstall",
 	Short: "Uninstall prerequisites",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if err := script.Download(script.UninstallPrerequisites, config.TagVersion, forceDownload); err != nil {
+		if err := script.Download(script.UninstallPrerequisites, config.TagVersion, true); err != nil {
 			return err
 		}
 
@@ -20,9 +20,4 @@ var UninstallCmd = &cobra.Command{
 
 		return nil
 	},
-}
-
-func init() {
-	flags := UninstallCmd.Flags()
-	flags.BoolVar(&forceDownload, "force", false, "force to uninstall")
 }
