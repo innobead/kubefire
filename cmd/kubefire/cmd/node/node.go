@@ -19,6 +19,10 @@ var Cmd = &cobra.Command{
 func init() {
 	cmds := []*cobra.Command{
 		sshCmd,
+		getCmd,
+		startCmd,
+		stopCmd,
+		restartCmd,
 	}
 
 	for _, c := range cmds {

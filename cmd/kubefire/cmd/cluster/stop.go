@@ -15,12 +15,14 @@ var stopCmd = &cobra.Command{
 		return validate.ClusterExist(args[0])
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		name := args[0]
-
-		if err := di.NodeManager().StopNodes(name); err != nil {
-			return errors.WithMessagef(err, "failed to stop all nodes cluster (%s)", name)
-		}
-
-		return nil
+		return stopCluster(args[0])
 	},
+}
+
+func stopCluster(name string) error {
+	if err := di.NodeManager().StopNodes(name); err != nil {
+		return errors.WithMessagef(err, "failed to stop all nodes cluster (%s)", name)
+	}
+
+	return nil
 }

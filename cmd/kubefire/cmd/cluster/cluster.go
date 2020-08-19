@@ -21,6 +21,7 @@ func init() {
 		createCmd,
 		startCmd,
 		stopCmd,
+		restartCmd,
 		deleteCmd,
 		getCmd,
 		listCmd,

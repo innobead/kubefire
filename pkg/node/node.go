@@ -31,7 +31,7 @@ type Manager interface {
 	LoginBySSH(name string, configManager config.Manager) error
 	WaitNodesRunning(clusterName string, timeoutMin time.Duration) error
 	StartNodes(clusterName string) error
-	StarNode(name string) error
+	StartNode(name string) error
 	StopNodes(clusterName string) error
 	StopNode(name string) error
 }

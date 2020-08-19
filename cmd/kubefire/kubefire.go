@@ -27,7 +27,7 @@ func init() {
 	cobra.OnInitialize(initConfig)
 
 	rootCmd.PersistentFlags().StringVar(&config.LogLevel, "log-level", logrus.InfoLevel.String(), util.FlagsValuesUsage("log level", logrus.AllLevels))
-	rootCmd.PersistentFlags().StringVar(&config.Output, "output", string(output.DEFAULT), util.FlagsValuesUsage("output format", output.BuiltinTypes))
+	rootCmd.PersistentFlags().StringVarP(&config.Output, "output", "o", string(output.DEFAULT), util.FlagsValuesUsage("output format", output.BuiltinTypes))
 }
 
 func initConfig() {

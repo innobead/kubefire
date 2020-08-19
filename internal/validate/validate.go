@@ -25,6 +25,14 @@ func ClusterExist(name string) error {
 	return nil
 }
 
+func NodeExist(name string) error {
+	if _, err := di.NodeManager().GetNode(name); err != nil {
+		return errors.WithMessage(interr.NodeNotFoundError, field("node", name))
+	}
+
+	return nil
+}
+
 func field(key, value string) string {
 	return fmt.Sprintf("%s = %s", key, value)
 }

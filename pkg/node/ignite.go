@@ -340,7 +340,7 @@ func (i *IgniteNodeManager) StartNodes(clusterName string) error {
 			continue
 		}
 
-		if err := i.StarNode(n.Name); err != nil {
+		if err := i.StartNode(n.Name); err != nil {
 			return err
 		}
 	}
@@ -348,7 +348,7 @@ func (i *IgniteNodeManager) StartNodes(clusterName string) error {
 	return nil
 }
 
-func (i *IgniteNodeManager) StarNode(name string) error {
+func (i *IgniteNodeManager) StartNode(name string) error {
 	logrus.WithField("node", name).Infoln("starting node")
 
 	return i.runCmd(
@@ -372,6 +372,11 @@ func (i *IgniteNodeManager) StopNodes(clusterName string) error {
 	}
 
 	for _, n := range nodes {
+		if !n.Status.Running {
+			logrus.WithField("node", n.Name).Infoln("node is already stopped")
+			continue
+		}
+
 		if err := i.StopNode(n.Name); err != nil {
 			return err
 		}
