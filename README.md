@@ -139,7 +139,7 @@ Use "kubefire [command] --help" for more information about a command.
 # Show version
 kubefire version
 
-# Show runtime information
+# Show prerequisites information
 kubefire info
 
 # Install prerequisites
@@ -163,6 +163,9 @@ kubefire cluster stop
 # Start a cluster
 kubefire cluster start
 
+# Restart a cluster
+kubefire cluster restart
+
 # List clusters
 kubefire cluster list
 
@@ -174,6 +177,19 @@ kubefire cluster env
 
 # SSH to a node
 kubefire node ssh
+
+# Get a node info
+kubefire node get
+
+# Stop a node
+kubefire node stop
+
+# Start a node
+kubefire node start
+
+# Restart a node
+kubefire node restart
+
 ```
 
 # Troubleshooting
