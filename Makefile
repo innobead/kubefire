@@ -3,6 +3,7 @@
 		build \
 		build-cni \
 		format \
+		checksum \
 		clean \
 		clean-cni \
 		clean-ignite-runtime \
@@ -14,7 +15,7 @@
 		publish-kernels \
 		publish-kernel-%
 
-CWD:=$(shell basename $(CURDIR))
+PROJECT:=$(shell basename $(CURDIR))
 COMMIT:=$(shell git rev-parse --short HEAD)-$(shell date "+%Y%m%d%H%M%S")
 TAG:=$(shell git name-rev --tags --name-only $$(git rev-parse HEAD) | sed s/undefined/master/)
 IMAGES:=centos:8 ubuntu:18.04 ubuntu:20.10 opensuse-leap:15.1 sle15:15.1 opensuse-leap:15.2 sle15:15.2
@@ -45,7 +46,7 @@ help:
 install: build ## Build and Install executables
 	cp $(BUILD_DIR)/kubefire $(GOBIN)
 
-build-all: clean clean-cni env build build-cni ## Build all
+build-all: clean clean-cni env build build-cni checksum ## Build all
 
 env: ## Prepare build env
 	 [ ! -x "$(BUILD_CACHE_DIR)/golangci-lint" ] && \
@@ -54,7 +55,6 @@ env: ## Prepare build env
 			tar -zxvf golangci-lint-1.30.0-linux-amd64.tar.gz && \
 			mv ./golangci-lint-1.30.0-linux-amd64/golangci-lint $(BUILD_CACHE_DIR)/ && \
 			rm -rf ./golangci-lint-1.30.0-linux-amd64* || true
-
 
 build: format ## Build executables (linux/amd64 supported only)
 	mkdir -p $(BUILD_DIR)
@@ -76,6 +76,9 @@ format: ## Format source code
 	go mod tidy
 	$(BUILD_CACHE_DIR)/golangci-lint run ./...
 
+checksum: ## Generate checksum files for built executables
+	$(CURDIR)/hack/generate-checksum.sh $(BUILD_DIR)
+
 clean: ## Clean build caches
 	rm -rf $(BUILD_DIR)
 	rm -rf $(BUILD_TMP_DIR)
@@ -86,21 +89,18 @@ clean-cni: ## CLean build CNI caches
 	rm -rf $(BUILD_TMP_DIR)/plugins
 
 clean-ignite: ## Clean ignite caches
-	sudo ignite rm -f $$(sudo ignite ps -aq) &>/dev/null || echo "> No VMs to delete from ignite"
-	sudo ignite rmi $$(sudo ignite images ls | awk '{print $$1}' | sed '1d') &>/dev/null || echo "> No images to delete from ignite"
-	sudo ignite rmk $$(sudo ignite kernels ls | awk '{print $$1}' | sed '1d') &>/dev/null || echo "> No kernels to delete from ignite"
-	sudo ctr -n firecracker i rm $$(sudo ctr -n firecracker images ls | awk '{print $$1}' | sed '1d') &>/dev/null
+	$(CURDIR)/hack/clean-ignite.sh
 
 build-image-%: ## Build a root image
-	docker build --build-arg="RELEASE=$(RELEASE)" -t innobead/$(CWD)-$*:$(COMMIT) -f build/images/$*/Dockerfile .
-	docker tag innobead/$(CWD)-$*:$(COMMIT) innobead/$(CWD)-$*:$(RELEASE)
+	docker build --build-arg="RELEASE=$(RELEASE)" -t innobead/$(PROJECT)-$*:$(COMMIT) -f build/images/$*/Dockerfile .
+	docker tag innobead/$(PROJECT)-$*:$(COMMIT) innobead/$(PROJECT)-$*:$(RELEASE)
 
 build-images: ## Build all rootfs images
 	for i in $(IMAGES); do $(MAKE) build-image-$$(echo $$i | awk -F: '{print $$1}') RELEASE=$$(echo $$i | awk -F: '{print $$2}'); done
 
 publish-image-%: build-image-% ## Publish a rootfs image
-	docker push innobead/$(CWD)-$*:$(COMMIT)
-	docker push innobead/$(CWD)-$*:$(RELEASE)
+	docker push innobead/$(PROJECT)-$*:$(COMMIT)
+	docker push innobead/$(PROJECT)-$*:$(RELEASE)
 
 publish-images: ## Publish rootfs images
 	for i in $(IMAGES); do $(MAKE) publish-image-$$(echo $$i | awk -F: '{print $$1}') RELEASE=$$(echo $$i | awk -F: '{print $$2}'); done
@@ -115,8 +115,8 @@ build-kernel-%: ## Build a kernel image
  	make build-$*
 
 publish-kernel-%: build-kernel-% ## Publish a kernel image
-	docker push innobead/$(CWD)-kernel-$*:$(COMMIT)
-	docker push innobead/$(CWD)-kernel-$*:latest
+	docker push innobead/$(PROJECT)-kernel-$*:$(COMMIT)
+	docker push innobead/$(PROJECT)-kernel-$*:latest
 
 publish-kernels: ## Publish all kernel images
 	for i in $(KERNELS); do $(MAKE) publish-kernel-$$i; done

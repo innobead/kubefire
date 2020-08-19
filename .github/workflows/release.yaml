@@ -30,7 +30,9 @@ jobs:
 
           assets=()
           assets+=("-a" "./target/kubefire")
+          assets+=("-a" "./target/kubefire.sha256")
           assets+=("-a" "./target/cni/host-local-rev")
+          assets+=("-a" "./target/cni/host-local-rev.sha256")
 
           tag_name="${GITHUB_REF##*/}"
           hub release create -d "${assets[@]}" -m "$tag_name" "$tag_name"
