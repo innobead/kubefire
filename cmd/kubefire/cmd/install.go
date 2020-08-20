@@ -10,8 +10,9 @@ import (
 var forceDownload bool
 
 var InstallCmd = &cobra.Command{
-	Use:   "install",
-	Short: "Install prerequisites",
+	Use:     "install",
+	Aliases: []string{"in"},
+	Short:   "Install prerequisites",
 	PreRun: func(cmd *cobra.Command, args []string) {
 		if !forceDownload {
 			forceDownload = !config.IsReleasedTagVersion(config.TagVersion)

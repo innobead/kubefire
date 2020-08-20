@@ -7,8 +7,9 @@ import (
 )
 
 var UninstallCmd = &cobra.Command{
-	Use:   "uninstall",
-	Short: "Uninstall prerequisites",
+	Use:     "uninstall",
+	Aliases: []string{"un"},
+	Short:   "Uninstall prerequisites",
 	PreRun: func(cmd *cobra.Command, args []string) {
 		if !forceDownload {
 			forceDownload = !config.IsReleasedTagVersion(config.TagVersion)

@@ -6,8 +6,9 @@ import (
 )
 
 var Cmd = &cobra.Command{
-	Use:   "node",
-	Short: "Manage node",
+	Use:     "node",
+	Aliases: []string{"n"},
+	Short:   "Manage node",
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		return validate.RequiredPrerequisites()
 	},

@@ -9,8 +9,9 @@ import (
 )
 
 var listCmd = &cobra.Command{
-	Use:   "list",
-	Short: "List clusters",
+	Use:     "list",
+	Aliases: []string{"ls"},
+	Short:   "List clusters",
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		_, err := di.ClusterManager().List()
 		if err != nil {

@@ -8,8 +8,9 @@ import (
 )
 
 var InfoCmd = &cobra.Command{
-	Use:   "info",
-	Short: "Show runtime info",
+	Use:     "info",
+	Aliases: []string{"i"},
+	Short:   "Show runtime info",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		versionsInfo := intcmd.CurrentPrerequisitesInfos()
 		if err := di.Output().Print(versionsInfo, nil, ""); err != nil {

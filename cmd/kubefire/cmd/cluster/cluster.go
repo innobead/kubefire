@@ -6,8 +6,9 @@ import (
 )
 
 var Cmd = &cobra.Command{
-	Use:   "cluster",
-	Short: "Manage cluster",
+	Use:     "cluster",
+	Aliases: []string{"c"},
+	Short:   "Manage cluster",
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		return validate.RequiredPrerequisites()
 	},
