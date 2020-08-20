@@ -20,6 +20,12 @@ if [ -z "$KUBEFIRE_VERSION" ] || [ -z "$CONTAINERD_VERSION" ] || [ -z "$IGNITE_V
   exit 1
 fi
 
+STABLE_KUBEFIRE_VERSION=$KUBEFIRE_VERSION
+
+if [[ $KUBEFIRE_VERSION =~ "dirty" ]]; then
+  STABLE_KUBEFIRE_VERSION=$(sed -E "s/(v[0-9]+\.[0-9]+\.[0-9]+)[a-zA-Z0-9\-]*/\1/g"< <(echo "$KUBEFIRE_VERSION"))
+fi
+
 rm -rf $TMP_DIR && mkdir -p $TMP_DIR
 pushd $TMP_DIR
 
@@ -92,7 +98,7 @@ function install_cni() {
 }
 
 function install_cni_patches() {
-    curl -sSLO "https://github.com/innobead/kubefire/releases/download/${KUBEFIRE_VERSION}/host-local-rev"
+    curl -sSLO "https://github.com/innobead/kubefire/releases/download/${STABLE_KUBEFIRE_VERSION}/host-local-rev"
     chmod +x host-local-rev
     sudo mv host-local-rev /opt/cni/bin/
 }
