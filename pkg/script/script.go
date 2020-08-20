@@ -28,7 +28,7 @@ const (
 )
 
 var (
-	downloadScriptEndpointFormat = fmt.Sprintf("https://raw.githubusercontent.com/innobead/kubefire/%s/scripts/%%s", intconfig.TagVersion)
+	downloadScriptEndpointFormat = fmt.Sprintf("https://raw.githubusercontent.com/innobead/kubefire/%s/scripts/%%s", intconfig.GetDownloadTagVersion())
 )
 
 func LocalScriptFile(version string, t Type) string {
@@ -98,8 +98,6 @@ func downloadScript(url string, destFile string, force bool) error {
 	if err := os.MkdirAll(filepath.Dir(destFile), 0755); err != nil && err != os.ErrExist {
 		return errors.WithStack(err)
 	}
-
-	logrus.Infof("downloading %s", url)
 
 	resp, err := http.Get(url)
 	if err != nil {

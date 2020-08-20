@@ -5,6 +5,7 @@ import (
 	"github.com/innobead/kubefire/pkg/script"
 	"github.com/spf13/cobra"
 	"os/exec"
+	"strings"
 )
 
 var forceDownload bool
@@ -14,7 +15,7 @@ var InstallCmd = &cobra.Command{
 	Short: "Install prerequisites",
 	PreRun: func(cmd *cobra.Command, args []string) {
 		if !forceDownload {
-			forceDownload = config.TagVersion == "master"
+			forceDownload = strings.Contains(config.TagVersion, "dirty")
 		}
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
