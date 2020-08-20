@@ -1,19 +1,4 @@
-.PHONY: env \
-		build-all \
-		build \
-		build-cni \
-		format \
-		checksum \
-		clean \
-		clean-cni \
-		clean-ignite-runtime \
-		build-images \
-		build-image-% \
-		publish-images \
-		build-kernels \
-		build-kernel-% \
-		publish-kernels \
-		publish-kernel-%
+.PHONY: $(MAKECMDGOALS)
 
 PROJECT:=$(shell basename $(CURDIR))
 COMMIT:=$(shell git rev-parse --short HEAD)-$(shell date "+%Y%m%d%H%M%S")
