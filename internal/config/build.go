@@ -1,16 +1,24 @@
 package config
 
-import "strings"
+import (
+	"regexp"
+)
 
 var (
 	BuildVersion = ""
-	TagVersion   = "master"
+	TagVersion   = ""
 )
 
-func GetDownloadTagVersion() string {
-	if strings.Contains(TagVersion, "dirty") {
+//GetTagVersionForDownloadScript get the tag version to use in the URL of download scripts. If not from release tag, the return will be master.
+func GetTagVersionForDownloadScript(version string) string {
+	if !IsReleasedTagVersion(version) {
 		return "master"
 	}
 
-	return TagVersion
+	return version
+}
+
+//IsReleasedTagVersion determine if version is a release tag (format: v\d+.\d+.\d+).
+func IsReleasedTagVersion(version string) bool {
+	return regexp.MustCompile(`^v\d+\.\d+\.\d$`).MatchString(version)
 }

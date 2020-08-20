@@ -4,7 +4,6 @@ import (
 	"github.com/innobead/kubefire/internal/config"
 	"github.com/innobead/kubefire/pkg/script"
 	"github.com/spf13/cobra"
-	"strings"
 )
 
 var UninstallCmd = &cobra.Command{
@@ -12,7 +11,7 @@ var UninstallCmd = &cobra.Command{
 	Short: "Uninstall prerequisites",
 	PreRun: func(cmd *cobra.Command, args []string) {
 		if !forceDownload {
-			forceDownload = strings.Contains(config.TagVersion, "dirty")
+			forceDownload = !config.IsReleasedTagVersion(config.TagVersion)
 		}
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {

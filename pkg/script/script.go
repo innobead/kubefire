@@ -28,7 +28,10 @@ const (
 )
 
 var (
-	downloadScriptEndpointFormat = fmt.Sprintf("https://raw.githubusercontent.com/innobead/kubefire/%s/scripts/%%s", intconfig.GetDownloadTagVersion())
+	downloadScriptEndpointFormat = fmt.Sprintf(
+		"https://raw.githubusercontent.com/innobead/kubefire/%s/scripts/%%s",
+		intconfig.GetTagVersionForDownloadScript(intconfig.TagVersion),
+	)
 )
 
 func LocalScriptFile(version string, t Type) string {
