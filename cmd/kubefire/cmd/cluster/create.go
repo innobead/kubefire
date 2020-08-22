@@ -18,6 +18,7 @@ import (
 var (
 	cluster = pkgconfig.NewCluster()
 	started bool
+	cached bool
 )
 
 var createCmd = &cobra.Command{
@@ -30,11 +31,15 @@ var createCmd = &cobra.Command{
 		}
 		config.Bootstrapper = cluster.Bootstrapper
 
-		if err := generateBootstrapperVersions(); err != nil {
+		if err := validate.CheckClusterVersion(cluster.Version); err != nil {
 			return err
 		}
 
-		if err := validate.CheckClusterVersion(cluster.Version); err != nil {
+		if !cached {
+			_ = di.ConfigManager().DeleteBootstrapperVersions(pkgconfig.NewBootstrapperVersion(cluster.Bootstrapper, ""))
+		}
+
+		if err := generateBootstrapperVersions(); err != nil {
 			return err
 		}
 
@@ -99,6 +104,7 @@ The corresponding latest patch will be used. If the value left empty, the latest
 	flags.StringVar(&cluster.Worker.DiskSize, "worker-size", "10GB", "Disk size of worker node")
 
 	flags.BoolVar(&forceDeleteCluster, "force", false, "Force to recreate if the cluster exists")
+	flags.BoolVar(&cached, "cache", true, "Use caches")
 	flags.BoolVar(&started, "start", true, "Start nodes")
 }
 

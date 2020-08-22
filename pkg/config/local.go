@@ -61,7 +61,12 @@ func (l *LocalConfigManager) SaveCluster(cluster *Cluster) error {
 func (l *LocalConfigManager) DeleteCluster(cluster *Cluster) error {
 	logrus.WithField("cluster", cluster.Name).Infoln("deleting cluster configurations")
 
-	return errors.WithStack(os.RemoveAll(cluster.LocalClusterDir()))
+	err := os.RemoveAll(cluster.LocalClusterDir())
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	return nil
 }
 
 func (l *LocalConfigManager) GetCluster(name string) (*Cluster, error) {
@@ -178,7 +183,12 @@ func (l *LocalConfigManager) GetBootstrapperVersions(latestVersion BootstrapperV
 func (l *LocalConfigManager) DeleteBootstrapperVersions(latestVersion BootstrapperVersioner) error {
 	logrus.WithField("bootstrapper", latestVersion.Type()).Infoln("deleting bootstrapper version configurations")
 
-	return errors.WithStack(os.RemoveAll(latestVersion.LocalVersionFile()))
+	err := os.RemoveAll(path.Dir(latestVersion.LocalVersionFile()))
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	return nil
 }
 
 func (l *LocalConfigManager) generateKeys(cluster *Cluster) error {
