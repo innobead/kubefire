@@ -6,7 +6,7 @@ import (
 
 var (
 	BuildVersion = ""
-	TagVersion   = ""
+	TagVersion   = "master"
 )
 
 //GetTagVersionForDownloadScript get the tag version to use in the URL of download scripts. If not from release tag, the return will be master.

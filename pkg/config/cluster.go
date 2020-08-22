@@ -13,6 +13,7 @@ type Cluster struct {
 	Bootstrapper string `json:"bootstrapper"`
 	Pubkey       string `json:"pubkey"`
 	Prikey       string `json:"prikey"`
+	Version      string `json:"version"`
 
 	Image       string `json:"image"`
 	KernelImage string `json:"kernel_image,omitempty"`

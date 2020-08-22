@@ -12,7 +12,7 @@ var stopCmd = &cobra.Command{
 	Short: "Stop cluster",
 	Args:  validate.OneArg("name"),
 	PreRunE: func(cmd *cobra.Command, args []string) error {
-		return validate.ClusterExist(args[0])
+		return validate.CheckClusterExist(args[0])
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return stopCluster(args[0])

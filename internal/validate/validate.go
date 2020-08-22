@@ -5,10 +5,12 @@ import (
 	intcmd "github.com/innobead/kubefire/internal/cmd"
 	"github.com/innobead/kubefire/internal/di"
 	interr "github.com/innobead/kubefire/internal/error"
+	"github.com/innobead/kubefire/pkg/bootstrap"
 	"github.com/pkg/errors"
+	"regexp"
 )
 
-func RequiredPrerequisites() error {
+func CheckPrerequisites() error {
 	if intcmd.CurrentPrerequisitesInfos().Matched() {
 		return nil
 	}
@@ -16,23 +18,43 @@ func RequiredPrerequisites() error {
 	return errors.WithMessage(interr.IncorrectRequiredPrerequisitesError, "check your environment by `ignite info`")
 }
 
-func ClusterExist(name string) error {
+func CheckClusterExist(name string) error {
 	_, err := di.ConfigManager().GetCluster(name)
 	if err != nil {
-		return errors.WithMessage(interr.ClusterNotFoundError, field("cluster", name))
+		return errors.WithMessage(interr.ClusterNotFoundError, Field("cluster", name))
 	}
 
 	return nil
 }
 
-func NodeExist(name string) error {
+func CheckNodeExist(name string) error {
 	if _, err := di.NodeManager().GetNode(name); err != nil {
-		return errors.WithMessage(interr.NodeNotFoundError, field("node", name))
+		return errors.WithMessage(interr.NodeNotFoundError, Field("node", name))
 	}
 
 	return nil
 }
 
-func field(key, value string) string {
+func CheckClusterVersion(version string) error {
+	if version == "" {
+		return nil
+	}
+
+	if matched, _ := regexp.MatchString(`^v\d+\.\d+$`, version); !matched {
+		return errors.WithMessage(interr.ClusterVersionInvalidError, Field("version", version))
+	}
+
+	return nil
+}
+
+func CheckBootstrapperType(bootstrapper string) error {
+	if !bootstrap.IsValid(bootstrapper) {
+		return errors.WithMessage(interr.BootstrapperNotFoundError, Field("bootstrapper", bootstrapper))
+	}
+
+	return nil
+}
+
+func Field(key, value string) string {
 	return fmt.Sprintf("%s = %s", key, value)
 }

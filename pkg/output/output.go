@@ -1,7 +1,7 @@
 package output
 
 import (
-	"github.com/pkg/errors"
+	interr "github.com/innobead/kubefire/internal/error"
 	"io"
 )
 
@@ -33,6 +33,6 @@ func NewOutput(t Type, writer io.Writer) (Outputer, error) {
 		return &DefaultOutput{&d}, nil
 
 	default:
-		return nil, errors.New("")
+		return nil, interr.NotFoundError
 	}
 }

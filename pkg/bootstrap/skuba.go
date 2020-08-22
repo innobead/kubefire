@@ -6,6 +6,7 @@ import (
 	"github.com/avast/retry-go"
 	"github.com/hashicorp/go-multierror"
 	"github.com/innobead/kubefire/internal/config"
+	"github.com/innobead/kubefire/pkg/constants"
 	"github.com/innobead/kubefire/pkg/data"
 	"github.com/innobead/kubefire/pkg/node"
 	"github.com/innobead/kubefire/pkg/script"
@@ -29,42 +30,6 @@ type SkubaBootstrapper struct {
 
 func NewSkubaBootstrapper(nodeManager node.Manager) *SkubaBootstrapper {
 	return &SkubaBootstrapper{nodeManager: nodeManager}
-}
-
-func installSkuba(force bool) error {
-	scripts := []script.Type{
-		script.InstallPrerequisitesSkuba,
-	}
-
-	for _, s := range scripts {
-		if err := script.Download(s, config.TagVersion, force); err != nil {
-			return err
-		}
-
-		if err := script.Run(s, config.TagVersion, func(cmd *exec.Cmd) error {
-			cmd.Env = append(
-				cmd.Env,
-				config.SkubaVersionsEnvVars()...,
-			)
-
-			return nil
-		}); err != nil {
-			return err
-		}
-	}
-
-	//func createSetupInstallCommandEnvsFunc() func(cmd *exec.Cmd) error {
-	//	return func(cmd *exec.Cmd) error {
-	//		cmd.Env = append(
-	//			cmd.Env,
-	//			config.ExpectedPrerequisiteVersionsEnvVars()...,
-	//		)
-	//
-	//		return nil
-	//	}
-	//}
-
-	return nil
 }
 
 func (s *SkubaBootstrapper) Deploy(cluster *data.Cluster, before func() error) error {
@@ -135,8 +100,12 @@ func (s *SkubaBootstrapper) DownloadKubeConfig(cluster *data.Cluster, destDir st
 	return downloadKubeConfig(s.nodeManager, cluster, "", destDir)
 }
 
-func (s *SkubaBootstrapper) Prepare(force bool) error {
-	return installSkuba(force)
+func (s *SkubaBootstrapper) Prepare(cluster *data.Cluster, force bool) error {
+	return installSkubaExecutables(cluster.Spec.Version, force)
+}
+
+func (s *SkubaBootstrapper) Type() string {
+	return constants.SKUBA
 }
 
 func (s *SkubaBootstrapper) init(cluster *data.Cluster, master *data.Node, extraOptions *SkubaExtraOptions) (string, error) {
@@ -300,4 +269,29 @@ loop:
 	}
 
 	return err
+}
+
+func installSkubaExecutables(version string, force bool) error {
+	scripts := []script.Type{
+		script.InstallPrerequisitesSkuba,
+	}
+
+	for _, s := range scripts {
+		if err := script.Download(s, config.TagVersion, force); err != nil {
+			return err
+		}
+
+		if err := script.Run(s, config.TagVersion, func(cmd *exec.Cmd) error {
+			cmd.Env = append(
+				cmd.Env,
+				config.SkubaVersionsEnvVars(version)...,
+			)
+
+			return nil
+		}); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

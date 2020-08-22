@@ -55,6 +55,9 @@ build-cni: ## Build CNI executables
         ./plugins/build_linux.sh -ldflags "-extldflags -static -X github.com/containernetworking/plugins/pkg/utils/buildversion.BuildVersion=$${TAG}"; \
 		mv ./plugins/bin/host-local $(BUILD_CNI_DIR)/host-local-rev
 
+test:  ## Test
+	go test -cover $(GO_LDFLAGS) ./...
+
 format: ## Format source code
 	go fmt ./...
 	go vet ./...

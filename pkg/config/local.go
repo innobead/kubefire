@@ -15,10 +15,11 @@ import (
 )
 
 var (
-	HomeDir, _     = os.UserHomeDir()
-	RootDir        = path.Join(HomeDir, ".kubefire")
-	ClusterRootDir = path.Join(RootDir, "clusters")
-	BinDir         = path.Join(RootDir, "bin")
+	HomeDir, _          = os.UserHomeDir()
+	RootDir             = path.Join(HomeDir, ".kubefire")
+	ClusterRootDir      = path.Join(RootDir, "clusters")
+	BinDir              = path.Join(RootDir, "bin")
+	BootstrapperRootDir = path.Join(RootDir, "bootstrappers")
 )
 
 type LocalConfigManager struct {
@@ -109,6 +110,75 @@ func (l *LocalConfigManager) ListClusters() ([]*Cluster, error) {
 	}
 
 	return clusters, nil
+}
+
+func (l *LocalConfigManager) SaveBootstrapperVersions(latestVersion BootstrapperVersioner, versions []BootstrapperVersioner) error {
+	logrus.WithField("bootstrapper", latestVersion.Type()).Infoln("saving bootstrapper version configurations")
+
+	bytes, err := yaml.Marshal(versions)
+	if err != nil {
+		return err
+	}
+
+	if err := os.MkdirAll(path.Dir(latestVersion.LocalVersionFile()), 0755); err != nil && err != os.ErrExist {
+		return errors.WithStack(err)
+	}
+
+	return ioutil.WriteFile(latestVersion.LocalVersionFile(), bytes, 0755)
+}
+
+func (l *LocalConfigManager) GetBootstrapperVersions(latestVersion BootstrapperVersioner) ([]BootstrapperVersioner, error) {
+	logrus.WithField("bootstrapper", latestVersion.Type()).Debugln("getting bootstrapper version configurations")
+
+	bytes, err := ioutil.ReadFile(latestVersion.LocalVersionFile())
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	var bootstrapperVersions []BootstrapperVersioner
+
+	switch latestVersion.(type) {
+	case *KubeadmBootstrapperVersion:
+		var versions []KubeadmBootstrapperVersion
+		if err := yaml.Unmarshal(bytes, &versions); err != nil {
+			return nil, errors.WithStack(err)
+		}
+
+		for _, v := range versions {
+			v := v
+			bootstrapperVersions = append(bootstrapperVersions, &v)
+		}
+
+	case *K3sBootstrapperVersion:
+		var versions []K3sBootstrapperVersion
+		if err := yaml.Unmarshal(bytes, &versions); err != nil {
+			return nil, errors.WithStack(err)
+		}
+
+		for _, v := range versions {
+			v := v
+			bootstrapperVersions = append(bootstrapperVersions, &v)
+		}
+
+	case *SkubaBootstrapperVersion:
+		var versions []SkubaBootstrapperVersion
+		if err := yaml.Unmarshal(bytes, &versions); err != nil {
+			return nil, errors.WithStack(err)
+		}
+
+		for _, v := range versions {
+			v := v
+			bootstrapperVersions = append(bootstrapperVersions, &v)
+		}
+	}
+
+	return bootstrapperVersions, nil
+}
+
+func (l *LocalConfigManager) DeleteBootstrapperVersions(latestVersion BootstrapperVersioner) error {
+	logrus.WithField("bootstrapper", latestVersion.Type()).Infoln("deleting bootstrapper version configurations")
+
+	return errors.WithStack(os.RemoveAll(latestVersion.LocalVersionFile()))
 }
 
 func (l *LocalConfigManager) generateKeys(cluster *Cluster) error {

@@ -1,6 +1,7 @@
 package bootstrap
 
 import (
+	"github.com/innobead/kubefire/pkg/constants"
 	"github.com/innobead/kubefire/pkg/data"
 	"github.com/innobead/kubefire/pkg/node"
 	utilssh "github.com/innobead/kubefire/pkg/util/ssh"
@@ -8,46 +9,41 @@ import (
 	"path"
 )
 
-const (
-	KUBEADM = "kubeadm"
-	SKUBA   = "skuba"
-	K3S     = "k3s"
-)
-
 var BuiltinTypes = []string{
-	KUBEADM,
-	SKUBA,
-	K3S,
+	constants.KUBEADM,
+	constants.SKUBA,
+	constants.K3S,
 }
 
 type Bootstrapper interface {
 	Deploy(cluster *data.Cluster, before func() error) error
 	DownloadKubeConfig(cluster *data.Cluster, destDir string) (string, error)
-	Prepare(force bool) error
-}
-
-func IsValid(bootstrapper string) bool {
-	switch bootstrapper {
-	case KUBEADM, SKUBA, K3S:
-		return true
-	default:
-		return false
-	}
+	Prepare(cluster *data.Cluster, force bool) error
+	Type() string
 }
 
 func New(bootstrapper string, nodeManager node.Manager) Bootstrapper {
 	switch bootstrapper {
-	case SKUBA:
+	case constants.SKUBA:
 		return NewSkubaBootstrapper(nodeManager)
 
-	case KUBEADM, "":
+	case constants.KUBEADM, "":
 		return NewKubeadmBootstrapper(nodeManager)
 
-	case K3S:
+	case constants.K3S:
 		return NewK3sBootstrapper(nodeManager)
 
 	default:
 		return nil
+	}
+}
+
+func IsValid(bootstrapper string) bool {
+	switch bootstrapper {
+	case constants.KUBEADM, constants.SKUBA, constants.K3S:
+		return true
+	default:
+		return false
 	}
 }
 

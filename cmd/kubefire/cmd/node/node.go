@@ -10,7 +10,7 @@ var Cmd = &cobra.Command{
 	Aliases: []string{"n"},
 	Short:   "Manage node",
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-		return validate.RequiredPrerequisites()
+		return validate.CheckPrerequisites()
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return cmd.Help()

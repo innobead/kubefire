@@ -3,6 +3,7 @@ package di
 import (
 	"github.com/innobead/kubefire/internal/config"
 	"github.com/innobead/kubefire/pkg/bootstrap"
+	"github.com/innobead/kubefire/pkg/bootstrap/versionfinder"
 	"github.com/innobead/kubefire/pkg/cluster"
 	pkgconfig "github.com/innobead/kubefire/pkg/config"
 	"github.com/innobead/kubefire/pkg/node"
@@ -19,6 +20,7 @@ var (
 	configManager  pkgconfig.Manager
 	bootstrapper   bootstrap.Bootstrapper
 	outputer       output.Outputer
+	versionFinder  versionfinder.Finder
 )
 
 func Output() output.Outputer {
@@ -111,4 +113,18 @@ func Bootstrapper() bootstrap.Bootstrapper {
 	}
 
 	return bootstrapper
+}
+
+func VersionFinder() versionfinder.Finder {
+	bootstrapper := Bootstrapper()
+
+	lock.Lock()
+	defer lock.Unlock()
+
+	if versionFinder != nil {
+		return versionFinder
+	}
+
+	versionFinder = versionfinder.New(bootstrapper.Type())
+	return versionFinder
 }

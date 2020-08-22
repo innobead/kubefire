@@ -6,6 +6,8 @@ import (
 	"github.com/avast/retry-go"
 	"github.com/hashicorp/go-multierror"
 	"github.com/innobead/kubefire/internal/config"
+	pkgconfig "github.com/innobead/kubefire/pkg/config"
+	"github.com/innobead/kubefire/pkg/constants"
 	"github.com/innobead/kubefire/pkg/data"
 	"github.com/innobead/kubefire/pkg/node"
 	"github.com/innobead/kubefire/pkg/script"
@@ -82,12 +84,18 @@ func (k *KubeadmBootstrapper) DownloadKubeConfig(cluster *data.Cluster, destDir 
 	return downloadKubeConfig(k.nodeManager, cluster, "", destDir)
 }
 
-func (k *KubeadmBootstrapper) Prepare(force bool) error {
+func (k *KubeadmBootstrapper) Prepare(cluster *data.Cluster, force bool) error {
 	return nil
+}
+
+func (k *KubeadmBootstrapper) Type() string {
+	return constants.KUBEADM
 }
 
 func (k *KubeadmBootstrapper) init(cluster *data.Cluster) error {
 	logrus.WithField("cluster", cluster.Name).Infoln("initializing cluster")
+
+	bootstrapperVersion := pkgconfig.NewBootstrapperVersion(k.Type(), cluster.Spec.Version).(*pkgconfig.KubeadmBootstrapperVersion)
 
 	wgInitNodes := sync.WaitGroup{}
 	wgInitNodes.Add(len(cluster.Nodes))
@@ -117,7 +125,15 @@ func (k *KubeadmBootstrapper) init(cluster *data.Cluster) error {
 					"swapoff -a",
 					fmt.Sprintf("curl -sSLO %s", script.RemoteScriptUrl(script.InstallPrerequisitesKubeadm)),
 					fmt.Sprintf("chmod +x %s", script.InstallPrerequisitesKubeadm),
-					fmt.Sprintf("%s ./%s", config.KubeadmVersionsEnvVars().String(), script.InstallPrerequisitesKubeadm),
+					fmt.Sprintf(
+						"%s ./%s",
+						config.KubeadmVersionsEnvVars(
+							bootstrapperVersion.BootstrapperVersion,
+							bootstrapperVersion.KubeReleaseVersion,
+							bootstrapperVersion.CrictlVersion,
+						).String(),
+						script.InstallPrerequisitesKubeadm,
+					),
 					"sysctl -w net.ipv4.ip_forward=1",
 					`echo "net.ipv4.ip_forward = 1" >> /etc/sysctl.conf`,
 					`echo "0.0.0.0 $(hostname)" >> /etc/hosts`,

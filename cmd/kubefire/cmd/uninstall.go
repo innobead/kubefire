@@ -30,5 +30,5 @@ var UninstallCmd = &cobra.Command{
 
 func init() {
 	flags := UninstallCmd.Flags()
-	flags.BoolVar(&forceDownload, "force", false, "force to uninstall")
+	flags.BoolVar(&forceDownload, "force", false, "Force to uninstall")
 }

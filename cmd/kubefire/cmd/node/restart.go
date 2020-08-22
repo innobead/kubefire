@@ -10,7 +10,7 @@ var restartCmd = &cobra.Command{
 	Short: "Restart node",
 	Args:  validate.OneArg("name"),
 	PreRunE: func(cmd *cobra.Command, args []string) error {
-		return validate.NodeExist(args[0])
+		return validate.CheckNodeExist(args[0])
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		name := args[0]

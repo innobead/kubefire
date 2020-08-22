@@ -19,4 +19,4 @@ jobs:
           go-version: ^1.14
 
       - name: Build all artifacts
-        run: make build-all
+        run: make test build-all

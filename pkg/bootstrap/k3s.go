@@ -6,6 +6,7 @@ import (
 	"github.com/avast/retry-go"
 	"github.com/hashicorp/go-multierror"
 	"github.com/innobead/kubefire/internal/config"
+	"github.com/innobead/kubefire/pkg/constants"
 	"github.com/innobead/kubefire/pkg/data"
 	"github.com/innobead/kubefire/pkg/node"
 	"github.com/innobead/kubefire/pkg/script"
@@ -42,7 +43,7 @@ func (k *K3sBootstrapper) Deploy(cluster *data.Cluster, before func() error) err
 	}
 
 	extraOptions := cluster.Spec.ParseExtraOptions(&K3sExtraOptions{
-		ExtraOptions: config.K3sVersionsEnvVars().String(),
+		ExtraOptions: config.K3sVersionsEnvVars(cluster.Spec.Version).String(),
 	}).(K3sExtraOptions)
 
 	if err := k.nodeManager.WaitNodesRunning(cluster.Name, 5); err != nil {
@@ -92,8 +93,12 @@ func (k *K3sBootstrapper) DownloadKubeConfig(cluster *data.Cluster, destDir stri
 	return downloadKubeConfig(k.nodeManager, cluster, "/etc/rancher/k3s/k3s.yaml", destDir)
 }
 
-func (k *K3sBootstrapper) Prepare(force bool) error {
+func (k *K3sBootstrapper) Prepare(cluster *data.Cluster, force bool) error {
 	return nil
+}
+
+func (k *K3sBootstrapper) Type() string {
+	return constants.K3S
 }
 
 func (k *K3sBootstrapper) init(cluster *data.Cluster) error {
@@ -127,7 +132,7 @@ func (k *K3sBootstrapper) init(cluster *data.Cluster) error {
 					"swapoff -a",
 					fmt.Sprintf("curl -sSLO %s", script.RemoteScriptUrl(script.InstallPrerequisitesK3s)),
 					fmt.Sprintf("chmod +x %s", script.InstallPrerequisitesK3s),
-					fmt.Sprintf("%s ./%s", config.K3sVersionsEnvVars().String(), script.InstallPrerequisitesK3s),
+					fmt.Sprintf("%s ./%s", config.K3sVersionsEnvVars(cluster.Spec.Version).String(), script.InstallPrerequisitesK3s),
 				}
 
 				err = sshClient.Run(nil, nil, cmds...)
