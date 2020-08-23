@@ -1,6 +1,6 @@
 # What is KubeFire?:fire: 
 
-KubeFire is to manage Kubernetes clusters running on FireCracker microVMs via **weaveworks/ignite**. 
+KubeFire is to create and manage Kubernetes clusters running on FireCracker microVMs via **weaveworks/ignite**. 
 
 - No need to have KVM qocws image for rootfs and kernel. Ignite uses independent rootfs and kernel from OCI images.
 - Ignite uses container managment engine like docker or containerd to manage Firecracker processes running in containers.
