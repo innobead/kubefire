@@ -16,7 +16,7 @@ import (
 
 var rootCmd = &cobra.Command{
 	Use:           "kubefire",
-	Short:         "KubeFire, manage Kubernetes clusters on FireCracker microVMs",
+	Short:         "KubeFire creates and manages Kubernetes clusters using FireCracker microVMs",
 	SilenceErrors: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return cmd.Help()
