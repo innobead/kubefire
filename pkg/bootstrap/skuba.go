@@ -150,6 +150,7 @@ func (s *SkubaBootstrapper) bootstrap(master *data.Node, clusterDir string, isSi
 		envs    []string
 	}{
 		{
+			// If encountering ssh multiple authentication failure due, try to use `ssh-add -D` to remove the duplicated key path when you use the same cluster name too many times
 			cmdline: fmt.Sprintf("skuba node bootstrap %s -t %s -v 5", master.Name, master.Status.IPAddresses),
 			enabled: true,
 		},
