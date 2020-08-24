@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -85,7 +86,7 @@ func getKubeLatestVersionFromStableChannel() *data.Version {
 	if err != nil {
 		panic(err)
 	}
-	return data.ParseVersion(string(body))
+	return data.ParseVersion(strings.TrimSuffix(string(body), "\n"))
 }
 
 func TestKubeadmVersionFinder_GetCriToolMinorVersions(t *testing.T) {
