@@ -147,14 +147,16 @@ func (s *SkubaBootstrapper) bootstrap(master *data.Node, clusterDir string, isSi
 	cmds := []struct {
 		cmdline string
 		enabled bool
+		envs    []string
 	}{
 		{
 			cmdline: fmt.Sprintf("skuba node bootstrap %s -t %s -v 5", master.Name, master.Status.IPAddresses),
 			enabled: true,
 		},
 		{
-			cmdline: fmt.Sprintf("KUBECONFIG=%s kubectl taint nodes --all node-role.kubernetes.io/master-", path.Join(clusterDir, "admin.conf")),
+			cmdline: "kubectl taint nodes --all node-role.kubernetes.io/master-",
 			enabled: isSingleNode,
+			envs:    []string{fmt.Sprintf("KUBECONFIG=%s", path.Join(clusterDir, "admin.conf"))},
 		},
 	}
 
@@ -173,6 +175,7 @@ func (s *SkubaBootstrapper) bootstrap(master *data.Node, clusterDir string, isSi
 			),
 		)
 		cmd.Dir = clusterDir
+		cmd.Env = append(cmd.Env, c.envs...)
 
 		if err := cmd.Run(); err != nil {
 			return errors.WithStack(err)
@@ -240,7 +243,7 @@ func (s *SkubaBootstrapper) register(cluster *data.Cluster, extraOptions *SkubaE
 				cmds := []string{"swapoff -a"}
 
 				if data.ParseVersion(cluster.Spec.Version).Compare(data.ParseVersion("v4.5.0")) < 0 {
-					logrus.Infof("Please make sure that the OS should be SLE 15.1")
+					logrus.Infof("note: make sure that the OS should be SLE 15.1")
 
 					cmds = append(
 						cmds,
@@ -249,7 +252,7 @@ func (s *SkubaBootstrapper) register(cluster *data.Cluster, extraOptions *SkubaE
 						fmt.Sprintf("SUSEConnect -p caasp/4.0/x86_64 -r %s", extraOptions.RegisterCode),
 					)
 				} else {
-					logrus.Infof("Please make sure that the OS should be SLE 15.2")
+					logrus.Infof("note: make sure that the OS should be SLE 15.2")
 
 					cmds = append(
 						cmds,
