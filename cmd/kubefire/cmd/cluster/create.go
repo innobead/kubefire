@@ -12,13 +12,14 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"os"
+	"regexp"
 	"strings"
 )
 
 var (
 	cluster = pkgconfig.NewCluster()
 	started bool
-	cached bool
+	cached  bool
 )
 
 var createCmd = &cobra.Command{
@@ -30,6 +31,7 @@ var createCmd = &cobra.Command{
 			return err
 		}
 		config.Bootstrapper = cluster.Bootstrapper
+		di.DelayInit(true)
 
 		if err := validate.CheckClusterVersion(cluster.Version); err != nil {
 			return err
@@ -229,10 +231,29 @@ func correctClusterVersion(version string) (string, error) {
 		return "", err
 	}
 
+	patternCheckMajorMinorVersion := regexp.MustCompile(`^v\d+\.\d+$`)
+	patternCheckMajorMinorPatchVersion := regexp.MustCompile(`^v\d+\.\d+\.\d+$`)
+
 	for _, v := range versions {
+		if version == v.Version() {
+			return v.Version(), nil
+		}
+
 		if strings.HasPrefix(v.Version(), version+".") {
 			return v.Version(), nil
 		}
+
+		switch {
+		case version == v.Version():
+			return v.Version(), nil
+
+		case patternCheckMajorMinorVersion.MatchString(version) && strings.HasPrefix(v.Version(), version+"."):
+			return v.Version(), nil
+		}
+	}
+
+	if patternCheckMajorMinorPatchVersion.MatchString(version) && di.VersionFinder().HasPatchVersion(version) {
+		return version, nil
 	}
 
 	return "", errors.New("version not found")

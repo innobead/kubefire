@@ -1,12 +1,18 @@
 package bootstrap
 
 import (
+	"fmt"
+	interr "github.com/innobead/kubefire/internal/error"
+	"github.com/innobead/kubefire/pkg/bootstrap/versionfinder"
+	pkgconfig "github.com/innobead/kubefire/pkg/config"
 	"github.com/innobead/kubefire/pkg/constants"
 	"github.com/innobead/kubefire/pkg/data"
 	"github.com/innobead/kubefire/pkg/node"
 	utilssh "github.com/innobead/kubefire/pkg/util/ssh"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"path"
+	"strings"
 )
 
 var BuiltinTypes = []string{
@@ -22,19 +28,19 @@ type Bootstrapper interface {
 	Type() string
 }
 
-func New(bootstrapper string, nodeManager node.Manager) Bootstrapper {
+func New(bootstrapper string) Bootstrapper {
 	switch bootstrapper {
 	case constants.SKUBA:
-		return NewSkubaBootstrapper(nodeManager)
+		return NewSkubaBootstrapper()
 
 	case constants.KUBEADM, "":
-		return NewKubeadmBootstrapper(nodeManager)
+		return NewKubeadmBootstrapper()
 
 	case constants.K3S:
-		return NewK3sBootstrapper(nodeManager)
+		return NewK3sBootstrapper()
 
 	default:
-		return nil
+		panic("no supported bootstrapper")
 	}
 }
 
@@ -84,4 +90,32 @@ func downloadKubeConfig(nodeManager node.Manager, cluster *data.Cluster, remoteK
 	}
 
 	return destPath, nil
+}
+
+func getSupportedBootstrapperVersion(versionFinder versionfinder.Finder, configManager pkgconfig.Manager, bootstrapper Bootstrapper, version string) (pkgconfig.BootstrapperVersioner, error) {
+	latestVersion, err := versionFinder.GetLatestVersion()
+	if err != nil {
+		return nil, err
+	}
+
+	bootstrapperVersion := pkgconfig.NewBootstrapperVersion(bootstrapper.Type(), latestVersion.String())
+	versions, err := configManager.GetBootstrapperVersions(bootstrapperVersion)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, v := range versions {
+		if v.Version() == version {
+			return v, nil
+		}
+
+		if strings.HasPrefix(version, data.ParseVersion(v.Version()).MajorMinorString()) {
+			return v, nil
+		}
+	}
+
+	return nil, errors.WithMessagef(
+		interr.NotFoundError,
+		fmt.Sprintf("bootstrapper=%s, version=%s", bootstrapper.Type(), version),
+	)
 }

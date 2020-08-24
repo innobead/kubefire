@@ -42,7 +42,7 @@ func (k *KubeadmVersionFinder) GetVersionsAfterVersion(afterVersion data.Version
 func (k *KubeadmVersionFinder) GetLatestVersion() (*data.Version, error) {
 	logrus.WithField("bootstrapper", k.bootstrapperType).Infof("getting the latest released version info")
 
-	body, err := util.HttpGet(KubeStableVersionUrl)
+	body, _, err := util.HttpGet(KubeStableVersionUrl)
 	if err != nil {
 		return nil, err
 	}
@@ -52,6 +52,10 @@ func (k *KubeadmVersionFinder) GetLatestVersion() (*data.Version, error) {
 	}
 
 	return data.ParseVersion(strings.TrimSuffix(body, "\n")), nil
+}
+
+func (k *KubeadmVersionFinder) HasPatchVersion(version string) bool {
+	return hasPatchVersionGithub("kubernetes", "kubernetes", version, k.bootstrapperType)
 }
 
 func (k *KubeadmVersionFinder) GetCritoolVersionsAfterVersion(afterVersion data.Version) ([]*data.Version, error) {

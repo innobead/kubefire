@@ -33,3 +33,15 @@ func (s *SkubaVersionFinder) GetLatestVersion() (*data.Version, error) {
 	versions, _ := s.GetVersionsAfterVersion(data.Version{})
 	return versions[0], nil
 }
+
+func (s *SkubaVersionFinder) HasPatchVersion(version string) bool {
+	versions, _ := s.GetVersionsAfterVersion(data.Version{})
+
+	for _, v := range versions {
+		if v.String() == version {
+			return true
+		}
+	}
+
+	return false
+}

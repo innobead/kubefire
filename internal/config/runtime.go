@@ -37,7 +37,7 @@ func ExpectedPrerequisiteVersionsEnvVars() EnvVars {
 	}
 }
 
-func KubeadmVersionsEnvVars(k8sVersion, kubeReleaseVersion, crictlVersion string) EnvVars { // TODO planned to support selective version
+func KubeadmVersionsEnvVars(k8sVersion, kubeReleaseVersion, crictlVersion string) EnvVars {
 	preVersions := ExpectedPrerequisiteVersionsEnvVars()
 
 	preVersions = append(preVersions, fmt.Sprintf("KUBE_VERSION=%s", k8sVersion)) // https://dl.k8s.io/release/stable.txt
@@ -47,9 +47,7 @@ func KubeadmVersionsEnvVars(k8sVersion, kubeReleaseVersion, crictlVersion string
 	return preVersions
 }
 
-func K3sVersionsEnvVars(k3sVersion string) EnvVars { // TODO planned to support selective version
-	// k3sVersion = "v1.18.8"
-
+func K3sVersionsEnvVars(k3sVersion string) EnvVars {
 	return []string{
 		fmt.Sprintf("K3S_VERSION=%s", k3sVersion),
 		// Need to use this option to forcibly ask k3s installer to install the specific version. Otherwise, it will choose a stable version from https://update.k3s.io/v1-release/channels.
@@ -57,9 +55,7 @@ func K3sVersionsEnvVars(k3sVersion string) EnvVars { // TODO planned to support 
 	}
 }
 
-func SkubaVersionsEnvVars(version string) EnvVars { // TODO planned to support selective version
-	// version = "v1.4.1" // SUSE CaaSP 4.2.2
-
+func SkubaVersionsEnvVars(version string) EnvVars {
 	return []string{
 		fmt.Sprintf("SKUBA_VERSION=%s", version),
 	}

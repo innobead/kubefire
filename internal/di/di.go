@@ -1,130 +1,126 @@
 package di
 
 import (
-	"github.com/innobead/kubefire/internal/config"
 	"github.com/innobead/kubefire/pkg/bootstrap"
 	"github.com/innobead/kubefire/pkg/bootstrap/versionfinder"
 	"github.com/innobead/kubefire/pkg/cluster"
 	pkgconfig "github.com/innobead/kubefire/pkg/config"
 	"github.com/innobead/kubefire/pkg/node"
 	"github.com/innobead/kubefire/pkg/output"
-	"os"
+	"github.com/sirupsen/logrus"
+	"path"
+	"reflect"
 	"sync"
 )
 
-var lock = &sync.Mutex{}
-
 var (
-	clusterManager cluster.Manager
-	nodeManager    node.Manager
-	configManager  pkgconfig.Manager
-	bootstrapper   bootstrap.Bootstrapper
-	outputer       output.Outputer
-	versionFinder  versionfinder.Finder
+	lock         = &sync.Mutex{}
+	initialized  = false
+	bootstrapper bootstrap.Bootstrapper
+	container    = map[string]interface{}{}
 )
 
-func Output() output.Outputer {
-	lock.Lock()
-	defer lock.Unlock()
-
-	if outputer != nil {
-		return outputer
-	}
-
-	outputType := output.DEFAULT
-
-	switch config.Output {
-	case "json":
-		outputType = output.JSON
-
-	case "yaml":
-		outputType = output.YAML
-	}
-
-	if o, err := output.NewOutput(outputType, os.Stdout); err != nil {
-		panic(err)
-	} else {
-		outputer = o
-	}
-
-	return outputer
+type awareInjectTypes struct {
+	awareType  reflect.Type
+	injectType reflect.Type
 }
 
-func ClusterManager() cluster.Manager {
-	nm := NodeManager()
-	b := Bootstrapper()
-	cm := ConfigManager()
+func DelayInit(force bool) {
+	if !force && initialized {
+		return
+	}
 
 	lock.Lock()
 	defer lock.Unlock()
 
-	if clusterManager != nil {
-		return clusterManager
+	if !force && initialized {
+		return
 	}
 
-	clusterManager = cluster.NewDefaultManager(
-		nm,
-		b,
-		cm,
+	if force {
+		logrus.Debugln("forcibly initializing dependency injection system")
+		initialized = false
+		container = map[string]interface{}{}
+	} else {
+		logrus.Debugln("initializing dependency injection system")
+	}
+
+	var awareInjectInterfaceTypes []awareInjectTypes
+	var awareInterfaceInstances []interface{}
+
+	// init
+	awareInjectInterfaceTypes = append(
+		awareInjectInterfaceTypes,
+		awareInjectTypes{awareType: reflect.TypeOf(new(ClusterManagerAware)).Elem(), injectType: reflect.TypeOf(new(cluster.Manager)).Elem()},
+	)
+	awareInjectInterfaceTypes = append(
+		awareInjectInterfaceTypes,
+		awareInjectTypes{awareType: reflect.TypeOf(new(NodeManagerAware)).Elem(), injectType: reflect.TypeOf(new(node.Manager)).Elem()},
+	)
+	awareInjectInterfaceTypes = append(
+		awareInjectInterfaceTypes,
+		awareInjectTypes{awareType: reflect.TypeOf(new(ConfigManagerAware)).Elem(), injectType: reflect.TypeOf(new(pkgconfig.Manager)).Elem()},
+	)
+	awareInjectInterfaceTypes = append(
+		awareInjectInterfaceTypes,
+		awareInjectTypes{awareType: reflect.TypeOf(new(BootstrapperAware)).Elem(), injectType: reflect.TypeOf(new(bootstrap.Bootstrapper)).Elem()},
+	)
+	awareInjectInterfaceTypes = append(
+		awareInjectInterfaceTypes,
+		awareInjectTypes{awareType: reflect.TypeOf(new(VersionFinderAware)).Elem(), injectType: reflect.TypeOf(new(versionfinder.Finder)).Elem()},
+	)
+	awareInjectInterfaceTypes = append(
+		awareInjectInterfaceTypes,
+		awareInjectTypes{awareType: reflect.TypeOf(new(OutputAware)).Elem(), injectType: reflect.TypeOf(new(output.Outputer)).Elem()},
 	)
 
-	return clusterManager
+	awareInterfaceInstances = append(awareInterfaceInstances, ClusterManager())
+	awareInterfaceInstances = append(awareInterfaceInstances, NodeManager())
+	awareInterfaceInstances = append(awareInterfaceInstances, ConfigManager())
+	awareInterfaceInstances = append(awareInterfaceInstances, Bootstrapper())
+	awareInterfaceInstances = append(awareInterfaceInstances, VersionFinder())
+	awareInterfaceInstances = append(awareInterfaceInstances, Output())
+
+	// inject dependencies
+	for _, awareInjectInterfaceType := range awareInjectInterfaceTypes {
+
+		for _, awareInterfaceInstance := range awareInterfaceInstances {
+			awareInterfaceInstanceValue := reflect.ValueOf(awareInterfaceInstance).Elem().Addr()
+			if !awareInterfaceInstanceValue.Type().Implements(awareInjectInterfaceType.awareType) {
+				continue
+			}
+
+			for i := 0; i < awareInjectInterfaceType.awareType.NumMethod(); i++ {
+				m := awareInjectInterfaceType.awareType.Method(i)
+
+				instanceMethod := awareInterfaceInstanceValue.MethodByName(m.Name)
+				if instanceMethod.IsValid() {
+					key := path.Join(awareInjectInterfaceType.injectType.PkgPath(), awareInjectInterfaceType.injectType.Name())
+					injectedObj := reflect.ValueOf(container[key]).Convert(awareInjectInterfaceType.injectType)
+
+					instanceMethod.Call(
+						[]reflect.Value{
+							injectedObj,
+						},
+					)
+				}
+			}
+		}
+	}
+
+	initialized = true
+
+	logrus.Debugln("completed dependency injection system")
 }
 
-func NodeManager() node.Manager {
-	lock.Lock()
-	defer lock.Unlock()
-
-	if nodeManager != nil {
-		return nodeManager
-	}
-
-	nodeManager = node.NewIgniteNodeManager()
-
-	return nodeManager
+func addObjToContainer(key string, obj interface{}) {
+	container[key] = obj
 }
 
-func ConfigManager() pkgconfig.Manager {
-	lock.Lock()
-	defer lock.Unlock()
-
-	if configManager != nil {
-		return configManager
+func getObjFromContainer(key string) interface{} {
+	if obj, ok := container[key]; ok {
+		return obj
 	}
 
-	configManager = pkgconfig.NewLocalConfigManager()
-
-	return configManager
-}
-
-func Bootstrapper() bootstrap.Bootstrapper {
-	nm := NodeManager()
-
-	lock.Lock()
-	defer lock.Unlock()
-
-	if bootstrapper != nil {
-		return bootstrapper
-	}
-
-	bootstrapper = bootstrap.New(config.Bootstrapper, nm)
-	if bootstrapper == nil {
-		panic("no supported bootstrapper")
-	}
-
-	return bootstrapper
-}
-
-func VersionFinder() versionfinder.Finder {
-	bootstrapper := Bootstrapper()
-
-	lock.Lock()
-	defer lock.Unlock()
-
-	if versionFinder != nil {
-		return versionFinder
-	}
-
-	versionFinder = versionfinder.New(bootstrapper.Type())
-	return versionFinder
+	return nil
 }

@@ -40,7 +40,7 @@ func CheckClusterVersion(version string) error {
 		return nil
 	}
 
-	if matched, _ := regexp.MatchString(`^v\d+\.\d+$`, version); !matched {
+	if matched, _ := regexp.MatchString(`^v\d+\.\d+(\.\d+)?$`, version); !matched {
 		return errors.WithMessage(interr.ClusterVersionInvalidError, Field("version", version))
 	}
 

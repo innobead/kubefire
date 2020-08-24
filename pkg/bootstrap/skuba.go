@@ -13,6 +13,7 @@ import (
 	"github.com/innobead/kubefire/pkg/util"
 	utilssh "github.com/innobead/kubefire/pkg/util/ssh"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 	"os/exec"
 	"path"
 	"strings"
@@ -28,8 +29,12 @@ type SkubaBootstrapper struct {
 	nodeManager node.Manager
 }
 
-func NewSkubaBootstrapper(nodeManager node.Manager) *SkubaBootstrapper {
-	return &SkubaBootstrapper{nodeManager: nodeManager}
+func NewSkubaBootstrapper() *SkubaBootstrapper {
+	return &SkubaBootstrapper{}
+}
+
+func (s *SkubaBootstrapper) SetNodeManager(nodeManager node.Manager) {
+	s.nodeManager = nodeManager
 }
 
 func (s *SkubaBootstrapper) Deploy(cluster *data.Cluster, before func() error) error {
@@ -227,15 +232,31 @@ func (s *SkubaBootstrapper) register(cluster *data.Cluster, extraOptions *SkubaE
 					nil,
 				)
 				if err != nil {
-					chErr <- err
-					return nil
+					return err
 				}
+				defer sshClient.Close()
 
-				cmds := []string{
-					"swapoff -a",
-					fmt.Sprintf("SUSEConnect -r %s", extraOptions.RegisterCode),
-					"SUSEConnect -p sle-module-containers/15.1/x86_64",
-					fmt.Sprintf("SUSEConnect -p caasp/4.0/x86_64 -r %s", extraOptions.RegisterCode),
+				//TODO if 4.5, it should use different repos
+				cmds := []string{"swapoff -a"}
+
+				if data.ParseVersion(cluster.Spec.Version).Compare(data.ParseVersion("v4.5.0")) < 0 {
+					logrus.Infof("Please make sure that the OS should be SLE 15.1")
+
+					cmds = append(
+						cmds,
+						fmt.Sprintf("SUSEConnect -r %s", extraOptions.RegisterCode),
+						"SUSEConnect -p sle-module-containers/15.1/x86_64",
+						fmt.Sprintf("SUSEConnect -p caasp/4.0/x86_64 -r %s", extraOptions.RegisterCode),
+					)
+				} else {
+					logrus.Infof("Please make sure that the OS should be SLE 15.2")
+
+					cmds = append(
+						cmds,
+						fmt.Sprintf("SUSEConnect -r %s", extraOptions.RegisterCode),
+						"SUSEConnect -p sle-module-containers/15.2/x86_64",
+						fmt.Sprintf("SUSEConnect -p caasp/4.5/x86_64 -r %s", extraOptions.RegisterCode),
+					)
 				}
 
 				for _, c := range cmds {

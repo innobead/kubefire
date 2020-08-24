@@ -7,7 +7,7 @@ var (
 	NotFoundError                       = errors.New("not found")
 	NodeNotFoundError                   = errors.New("node not found")
 	ClusterNotFoundError                = errors.New("cluster not found")
-	ClusterVersionInvalidError          = errors.New("version is invalid, but v<major>.<minor> supported only")
+	ClusterVersionInvalidError          = errors.New("version is invalid. The format should be v<major>.<minor> or v<major>.<minor.<patch>")
 	BootstrapperNotFoundError           = errors.New("bootstrapper not found")
 )
 

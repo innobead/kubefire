@@ -6,6 +6,7 @@ import (
 	"github.com/avast/retry-go"
 	"github.com/hashicorp/go-multierror"
 	"github.com/innobead/kubefire/internal/config"
+	"github.com/innobead/kubefire/pkg/bootstrap/versionfinder"
 	pkgconfig "github.com/innobead/kubefire/pkg/config"
 	"github.com/innobead/kubefire/pkg/constants"
 	"github.com/innobead/kubefire/pkg/data"
@@ -21,13 +22,25 @@ import (
 )
 
 type KubeadmBootstrapper struct {
-	nodeManager node.Manager
+	nodeManager   node.Manager
+	versionFinder versionfinder.Finder
+	configManager pkgconfig.Manager
 }
 
-func NewKubeadmBootstrapper(nodeManager node.Manager) *KubeadmBootstrapper {
-	return &KubeadmBootstrapper{
-		nodeManager: nodeManager,
-	}
+func NewKubeadmBootstrapper() *KubeadmBootstrapper {
+	return &KubeadmBootstrapper{}
+}
+
+func (k *KubeadmBootstrapper) SetConfigManager(configManager pkgconfig.Manager) {
+	k.configManager = configManager
+}
+
+func (k *KubeadmBootstrapper) SetVersionFinder(versionFinder versionfinder.Finder) {
+	k.versionFinder = versionFinder
+}
+
+func (k *KubeadmBootstrapper) SetNodeManager(nodeManager node.Manager) {
+	k.nodeManager = nodeManager
 }
 
 func (k *KubeadmBootstrapper) Deploy(cluster *data.Cluster, before func() error) error {
@@ -95,7 +108,11 @@ func (k *KubeadmBootstrapper) Type() string {
 func (k *KubeadmBootstrapper) init(cluster *data.Cluster) error {
 	logrus.WithField("cluster", cluster.Name).Infoln("initializing cluster")
 
-	bootstrapperVersion := pkgconfig.NewBootstrapperVersion(k.Type(), cluster.Spec.Version).(*pkgconfig.KubeadmBootstrapperVersion)
+	bootstrapperVersion, err := getSupportedBootstrapperVersion(k.versionFinder, k.configManager, k, cluster.Spec.Version)
+	if err != nil {
+		return err
+	}
+	kubeadmBootstrapperVersion := bootstrapperVersion.(*pkgconfig.KubeadmBootstrapperVersion)
 
 	wgInitNodes := sync.WaitGroup{}
 	wgInitNodes.Add(len(cluster.Nodes))
@@ -128,9 +145,9 @@ func (k *KubeadmBootstrapper) init(cluster *data.Cluster) error {
 					fmt.Sprintf(
 						"%s ./%s",
 						config.KubeadmVersionsEnvVars(
-							bootstrapperVersion.BootstrapperVersion,
-							bootstrapperVersion.KubeReleaseVersion,
-							bootstrapperVersion.CrictlVersion,
+							kubeadmBootstrapperVersion.BootstrapperVersion,
+							kubeadmBootstrapperVersion.KubeReleaseVersion,
+							kubeadmBootstrapperVersion.CrictlVersion,
 						).String(),
 						script.InstallPrerequisitesKubeadm,
 					),
@@ -159,7 +176,7 @@ func (k *KubeadmBootstrapper) init(cluster *data.Cluster) error {
 	wgInitNodes.Wait()
 	close(chErr)
 
-	var err error
+	err = nil
 	for {
 		e, ok := <-chErr
 		if !ok {

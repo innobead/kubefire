@@ -6,6 +6,7 @@ import (
 	"github.com/innobead/kubefire/cmd/kubefire/cmd/cluster"
 	"github.com/innobead/kubefire/cmd/kubefire/cmd/node"
 	"github.com/innobead/kubefire/internal/config"
+	"github.com/innobead/kubefire/internal/di"
 	"github.com/innobead/kubefire/pkg/output"
 	"github.com/innobead/kubefire/pkg/util"
 	"github.com/sirupsen/logrus"
@@ -18,6 +19,9 @@ var rootCmd = &cobra.Command{
 	Use:           "kubefire",
 	Short:         "KubeFire creates and manages Kubernetes clusters using FireCracker microVMs",
 	SilenceErrors: true,
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		di.DelayInit(false)
+	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return cmd.Help()
 	},

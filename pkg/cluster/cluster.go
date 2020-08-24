@@ -2,7 +2,6 @@ package cluster
 
 import (
 	"fmt"
-	"github.com/innobead/kubefire/pkg/bootstrap"
 	pkgconfig "github.com/innobead/kubefire/pkg/config"
 	"github.com/innobead/kubefire/pkg/data"
 	"github.com/innobead/kubefire/pkg/node"
@@ -21,34 +20,37 @@ type Manager interface {
 }
 
 type DefaultManager struct {
-	NodeManager   node.Manager
-	Bootstrapper  bootstrap.Bootstrapper
-	ConfigManager pkgconfig.Manager
+	nodeManager   node.Manager
+	configManager pkgconfig.Manager
 }
 
-func NewDefaultManager(nodeManager node.Manager, bootstrapper bootstrap.Bootstrapper, configManager pkgconfig.Manager) Manager {
-	return &DefaultManager{
-		NodeManager:   nodeManager,
-		Bootstrapper:  bootstrapper,
-		ConfigManager: configManager,
-	}
+func NewDefaultManager() Manager {
+	return &DefaultManager{}
+}
+
+func (d *DefaultManager) SetNodeManager(nodeManager node.Manager) {
+	d.nodeManager = nodeManager
+}
+
+func (d *DefaultManager) SetConfigManager(configManager pkgconfig.Manager) {
+	d.configManager = configManager
 }
 
 func (d *DefaultManager) Init(cluster *pkgconfig.Cluster) error {
 	logrus.WithField("cluster", cluster.Name).Infoln("initializing cluster configuration")
 	logrus.Debugf("%+v", cluster)
 
-	if _, err := d.ConfigManager.GetCluster(cluster.Name); err == nil {
+	if _, err := d.configManager.GetCluster(cluster.Name); err == nil {
 		return errors.New(fmt.Sprintf("cluster (%s) configuration already exists", cluster.Name))
 	}
 
-	return d.ConfigManager.SaveCluster(cluster)
+	return d.configManager.SaveCluster(cluster)
 }
 
 func (d *DefaultManager) Create(name string, started bool) error {
 	logrus.WithField("cluster", name).Infoln("creating cluster")
 
-	cluster, err := d.ConfigManager.GetCluster(name)
+	cluster, err := d.configManager.GetCluster(name)
 	if err != nil {
 		return err
 	}
@@ -63,7 +65,7 @@ func (d *DefaultManager) Create(name string, started bool) error {
 			continue
 		}
 
-		if err := d.NodeManager.CreateNodes(t, c, started); err != nil {
+		if err := d.nodeManager.CreateNodes(t, c, started); err != nil {
 			return err
 		}
 	}
@@ -77,7 +79,7 @@ func (d *DefaultManager) Delete(name string, force bool) error {
 		"force":   force,
 	}).Infoln("deleting cluster")
 
-	cluster, err := d.ConfigManager.GetCluster(name)
+	cluster, err := d.configManager.GetCluster(name)
 	if err != nil {
 		return err
 	}
@@ -88,7 +90,7 @@ func (d *DefaultManager) Delete(name string, force bool) error {
 		node.Worker: &cluster.Worker,
 	}
 	for t, n := range nodeTypeConfigs {
-		if err := d.NodeManager.DeleteNodes(t, n); err != nil {
+		if err := d.nodeManager.DeleteNodes(t, n); err != nil {
 			if !force {
 				return err
 			}
@@ -97,7 +99,7 @@ func (d *DefaultManager) Delete(name string, force bool) error {
 		}
 	}
 
-	if err := d.ConfigManager.DeleteCluster(cluster); err != nil {
+	if err := d.configManager.DeleteCluster(cluster); err != nil {
 		return err
 	}
 
@@ -107,12 +109,12 @@ func (d *DefaultManager) Delete(name string, force bool) error {
 func (d *DefaultManager) Get(name string) (*data.Cluster, error) {
 	logrus.WithField("cluster", name).Debugln("getting cluster")
 
-	configCluster, err := d.ConfigManager.GetCluster(name)
+	configCluster, err := d.configManager.GetCluster(name)
 	if err != nil {
 		return nil, err
 	}
 
-	nodes, err := d.NodeManager.ListNodes(name)
+	nodes, err := d.nodeManager.ListNodes(name)
 	if err != nil {
 		return nil, err
 	}
@@ -127,7 +129,7 @@ func (d *DefaultManager) Get(name string) (*data.Cluster, error) {
 func (d *DefaultManager) List() ([]*data.Cluster, error) {
 	logrus.Debugln("listing clusters")
 
-	configClusters, err := d.ConfigManager.ListClusters()
+	configClusters, err := d.configManager.ListClusters()
 	if err != nil {
 		return nil, err
 	}
@@ -146,9 +148,9 @@ func (d *DefaultManager) List() ([]*data.Cluster, error) {
 }
 
 func (d *DefaultManager) GetNodeManager() node.Manager {
-	return d.NodeManager
+	return d.nodeManager
 }
 
 func (d *DefaultManager) GetConfigManager() pkgconfig.Manager {
-	return d.ConfigManager
+	return d.configManager
 }

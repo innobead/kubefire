@@ -29,10 +29,12 @@ type K3sBootstrapper struct {
 	nodeManager node.Manager
 }
 
-func NewK3sBootstrapper(nodeManager node.Manager) *K3sBootstrapper {
-	return &K3sBootstrapper{
-		nodeManager: nodeManager,
-	}
+func NewK3sBootstrapper() *K3sBootstrapper {
+	return &K3sBootstrapper{}
+}
+
+func (k *K3sBootstrapper) SetNodeManager(nodeManager node.Manager) {
+	k.nodeManager = nodeManager
 }
 
 func (k *K3sBootstrapper) Deploy(cluster *data.Cluster, before func() error) error {

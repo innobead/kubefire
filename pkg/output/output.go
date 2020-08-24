@@ -1,7 +1,6 @@
 package output
 
 import (
-	interr "github.com/innobead/kubefire/internal/error"
 	"io"
 )
 
@@ -19,20 +18,20 @@ type Outputer interface {
 	Print(obj interface{}, filters []string, title string) error
 }
 
-func NewOutput(t Type, writer io.Writer) (Outputer, error) {
+func NewOutput(t Type, writer io.Writer) Outputer {
 	d := DefaultOutput{writer}
 
 	switch t {
 	case JSON:
-		return &JsonOutput{d}, nil
+		return &JsonOutput{d}
 
 	case YAML:
-		return &YamlOutput{d}, nil
+		return &YamlOutput{d}
 
 	case DEFAULT:
-		return &DefaultOutput{&d}, nil
+		return &DefaultOutput{&d}
 
 	default:
-		return nil, interr.NotFoundError
+		panic("no supported output")
 	}
 }

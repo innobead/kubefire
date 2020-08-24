@@ -50,7 +50,7 @@ func (v *Version) Compare(version *Version) int {
 }
 
 func ParseVersion(version string) *Version {
-	pattern := regexp.MustCompile(`v(\d+)\.(\d+)(\.\d+)?`)
+	pattern := regexp.MustCompile(`^v(\d+)\.(\d+)(\.\d+)?$`)
 
 	submatch := pattern.FindStringSubmatch(version)
 	if len(submatch) == 0 {

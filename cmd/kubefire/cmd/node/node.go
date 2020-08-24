@@ -1,6 +1,7 @@
 package node
 
 import (
+	"github.com/innobead/kubefire/internal/di"
 	"github.com/innobead/kubefire/internal/validate"
 	"github.com/spf13/cobra"
 )
@@ -10,6 +11,7 @@ var Cmd = &cobra.Command{
 	Aliases: []string{"n"},
 	Short:   "Manage node",
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		di.DelayInit(false)
 		return validate.CheckPrerequisites()
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
