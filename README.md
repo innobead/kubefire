@@ -13,7 +13,7 @@ KubeFire is to create and manage Kubernetes clusters running on FireCracker micr
 For official releases, please install the latest release as below command.
 
 ```console
-curl -LO https://github.com/innobead/kubefire/releases/download/v0.1.0/kubefire && chmod +x kubefire && sudo mv kubefire /usr/local/bin 
+curl -sSL https://github.com/innobead/kubefire/blob/master/hack/install-release-kubefire.sh | sh -
 ```
 
 For development purpose, please make sure go 1.14 installed, then build and install `kubefire` in the `GOBIN` path.
