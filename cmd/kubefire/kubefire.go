@@ -17,7 +17,7 @@ import (
 
 var rootCmd = &cobra.Command{
 	Use:           "kubefire",
-	Short:         "KubeFire creates and manages Kubernetes clusters using FireCracker microVMs",
+	Short:         "KubeFire, creates and manages Kubernetes clusters using FireCracker microVMs",
 	SilenceErrors: true,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		di.DelayInit(false)
