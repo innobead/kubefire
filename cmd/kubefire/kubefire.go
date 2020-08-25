@@ -58,6 +58,7 @@ func main() {
 		cmd.InstallCmd,
 		cmd.UninstallCmd,
 		cmd.InfoCmd,
+		cmd.KubeconfigCmd,
 		cluster.Cmd,
 		node.Cmd,
 	}

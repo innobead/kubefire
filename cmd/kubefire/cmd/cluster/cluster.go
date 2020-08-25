@@ -28,7 +28,6 @@ func init() {
 		deleteCmd,
 		getCmd,
 		listCmd,
-		downloadCmd,
 		envCmd,
 	}
 

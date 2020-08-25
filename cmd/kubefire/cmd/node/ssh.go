@@ -9,7 +9,7 @@ import (
 var sshCmd = &cobra.Command{
 	Use:   "ssh [name]",
 	Short: "SSH into node",
-	Args:  validate.OneArg("name"),
+	Args:  validate.OneArg("node name"),
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		return validate.CheckNodeExist(args[0])
 	},

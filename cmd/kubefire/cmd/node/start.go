@@ -11,7 +11,7 @@ import (
 var startCmd = &cobra.Command{
 	Use:   "start [name]",
 	Short: "Start node",
-	Args:  validate.OneArg("name"),
+	Args:  validate.OneArg("node name"),
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		return validate.CheckNodeExist(args[0])
 	},

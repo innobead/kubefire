@@ -23,7 +23,7 @@ var (
 var createCmd = &cobra.Command{
 	Use:   "create [name]",
 	Short: "Create cluster",
-	Args:  validate.OneArg("name"),
+	Args:  validate.OneArg("cluster name"),
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if err := validate.CheckBootstrapperType(cluster.Bootstrapper); err != nil {
 			return err
