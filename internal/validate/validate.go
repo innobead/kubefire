@@ -15,7 +15,7 @@ func CheckPrerequisites() error {
 		return nil
 	}
 
-	return errors.WithMessage(interr.IncorrectRequiredPrerequisitesError, "check your environment by `ignite info`")
+	return errors.WithMessage(interr.IncorrectRequiredPrerequisitesError, "check your installed prerequisites by `ignite info`, then install/update via 'kubefire install'")
 }
 
 func CheckClusterExist(name string) error {
@@ -56,5 +56,5 @@ func CheckBootstrapperType(bootstrapper string) error {
 }
 
 func Field(key, value string) string {
-	return fmt.Sprintf("%s = %s", key, value)
+	return fmt.Sprintf("%s=%s", key, value)
 }

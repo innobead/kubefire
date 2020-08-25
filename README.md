@@ -172,7 +172,7 @@ kubefire info
 # Show supported K8s/K3s versions by builtin bootstrappers
 kubefire info -b
 
-# Install or Upgrade prerequisites
+# Install or Update prerequisites
 kubefire install 
 
 # Uninstall prerequisites
