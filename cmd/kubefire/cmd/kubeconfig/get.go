@@ -18,11 +18,11 @@ var getCmd = &cobra.Command{
 	Short:   "Get the kubeconfig of cluster",
 	Args:    validate.OneArg("cluster name"),
 	PreRunE: func(cmd *cobra.Command, args []string) error {
+		logrus.SetLevel(logrus.ErrorLevel)
+
 		return validate.CheckClusterExist(args[0])
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		logrus.SetLevel(logrus.ErrorLevel)
-
 		name := args[0]
 
 		cluster, err := di.ClusterManager().Get(name)

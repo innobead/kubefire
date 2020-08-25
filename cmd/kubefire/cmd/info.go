@@ -4,6 +4,7 @@ import (
 	intcmd "github.com/innobead/kubefire/internal/cmd"
 	"github.com/innobead/kubefire/internal/di"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -13,6 +14,9 @@ var InfoCmd = &cobra.Command{
 	Use:     "info",
 	Aliases: []string{"i"},
 	Short:   "Show info of prerequisites, supported K8s/K3s versions",
+	PreRun: func(cmd *cobra.Command, args []string) {
+		logrus.SetLevel(logrus.ErrorLevel)
+	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if showBootstrapperInfo {
 			if err := di.Output().Print(intcmd.BootstrapperVersionInfos(), nil, ""); err != nil {
