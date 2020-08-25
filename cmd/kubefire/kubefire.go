@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/innobead/kubefire/cmd/kubefire/cmd"
 	"github.com/innobead/kubefire/cmd/kubefire/cmd/cluster"
+	"github.com/innobead/kubefire/cmd/kubefire/cmd/kubeconfig"
 	"github.com/innobead/kubefire/cmd/kubefire/cmd/node"
 	"github.com/innobead/kubefire/internal/config"
 	"github.com/innobead/kubefire/internal/di"
@@ -58,7 +59,7 @@ func main() {
 		cmd.InstallCmd,
 		cmd.UninstallCmd,
 		cmd.InfoCmd,
-		cmd.KubeconfigCmd,
+		kubeconfig.Cmd,
 		cluster.Cmd,
 		node.Cmd,
 	}
