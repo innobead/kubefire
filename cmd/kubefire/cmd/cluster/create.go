@@ -5,13 +5,11 @@ import (
 	"github.com/innobead/kubefire/internal/di"
 	"github.com/innobead/kubefire/internal/validate"
 	"github.com/innobead/kubefire/pkg/bootstrap"
-	"github.com/innobead/kubefire/pkg/bootstrap/versionfinder"
 	pkgconfig "github.com/innobead/kubefire/pkg/config"
 	"github.com/innobead/kubefire/pkg/constants"
 	"github.com/innobead/kubefire/pkg/util"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
-	"os"
 	"regexp"
 	"strings"
 )
@@ -41,7 +39,7 @@ var createCmd = &cobra.Command{
 			_ = di.ConfigManager().DeleteBootstrapperVersions(pkgconfig.NewBootstrapperVersion(cluster.Bootstrapper, ""))
 		}
 
-		if err := generateBootstrapperVersions(); err != nil {
+		if _, _, err := bootstrap.GenerateSaveBootstrapperVersions(config.Bootstrapper, di.ConfigManager()); err != nil {
 			return err
 		}
 
@@ -83,8 +81,7 @@ func init() {
 
 	flags.StringVar(&cluster.Bootstrapper, "bootstrapper", constants.KUBEADM, util.FlagsValuesUsage("Bootstrapper type", bootstrap.BuiltinTypes))
 	flags.StringVar(&cluster.Pubkey, "pubkey", "", "Public key")
-	flags.StringVar(&cluster.Version, "version", "", `Version of Kubernetes bootstrapper ex: v1.18 for kubeadm/k3s.
-The corresponding latest patch will be used. If the value left empty, the latest release will be used`)
+	flags.StringVar(&cluster.Version, "version", "", "Version of Kubernetes supported by bootstrapper (ex: v1.18, v1.18.8, empty)")
 	flags.StringVar(&cluster.Image, "image", "innobead/kubefire-opensuse-leap:15.2", "Rootfs container image")
 	flags.StringVar(&cluster.KernelImage, "kernel-image", "innobead/kubefire-kernel-4.19.125-amd64:latest", "Kernel container image")
 	flags.StringVar(&cluster.KernelArgs, "kernel-args", "console=ttyS0 reboot=k panic=1 pci=off ip=dhcp security=apparmor apparmor=1", "Kernel arguments")
@@ -108,83 +105,6 @@ The corresponding latest patch will be used. If the value left empty, the latest
 	flags.BoolVar(&forceDeleteCluster, "force", false, "Force to recreate if the cluster exists")
 	flags.BoolVar(&cached, "cache", true, "Use caches")
 	flags.BoolVar(&started, "start", true, "Start nodes")
-}
-
-func generateBootstrapperVersions() error {
-	versionFinder := di.VersionFinder()
-
-	latestVersion, err := versionFinder.GetLatestVersion()
-	if err != nil {
-		return err
-	}
-
-	bootstrapperVersion := pkgconfig.NewBootstrapperVersion(di.Bootstrapper().Type(), latestVersion.String())
-	if _, err := os.Stat(bootstrapperVersion.LocalVersionFile()); !os.IsNotExist(err) {
-		return nil
-	}
-
-	versions, err := versionFinder.GetVersionsAfterVersion(*latestVersion)
-	if err != nil {
-		return errors.WithMessagef(err, "failed to get the supported versions after/include %s from bootstrapper %s", latestVersion.String(), di.Bootstrapper().Type())
-	}
-
-	var bootstrapperLatestVersion pkgconfig.BootstrapperVersioner
-	var bootstrapperVersions []pkgconfig.BootstrapperVersioner
-
-	switch versionFinder := versionFinder.(type) {
-	case *versionfinder.KubeadmVersionFinder:
-
-		critoolVersions, err := versionFinder.GetCritoolVersionsAfterVersion(*latestVersion)
-		if err != nil {
-			return errors.WithMessagef(err, "failed to get the CriTools versions after/include %s from bootstrapper %s", latestVersion.String(), di.Bootstrapper().Type())
-		}
-
-		kubeReleaseToolLatestVersion, err := versionFinder.GetKubeReleaseToolLatestVersion(*latestVersion)
-		if err != nil {
-			return errors.WithMessagef(err, "failed to get the kubernetes release tool version from bootstrapper %s", di.Bootstrapper().Type())
-		}
-
-		for i, v := range versions {
-			bv := pkgconfig.NewKubeadmBootstrapperVersion(
-				v.String(),
-				critoolVersions[i].String(),
-				kubeReleaseToolLatestVersion.String(),
-			)
-			bootstrapperVersions = append(bootstrapperVersions, bv)
-
-			if bv.Version() == latestVersion.String() {
-				bootstrapperLatestVersion = bv
-			}
-		}
-
-	case *versionfinder.K3sVersionFinder:
-
-		for _, v := range versions {
-			bv := pkgconfig.NewK3sBootstrapperVersion(v.String())
-			bootstrapperVersions = append(bootstrapperVersions, bv)
-
-			if bv.Version() == latestVersion.String() {
-				bootstrapperLatestVersion = bv
-			}
-		}
-
-	case *versionfinder.SkubaVersionFinder:
-
-		for _, v := range versions {
-			bv := pkgconfig.NewSkubaBootstrapperVersion(v.String())
-			bootstrapperVersions = append(bootstrapperVersions, bv)
-
-			if bv.Version() == latestVersion.String() {
-				bootstrapperLatestVersion = bv
-			}
-		}
-	}
-
-	if err := di.ConfigManager().SaveBootstrapperVersions(bootstrapperLatestVersion, bootstrapperVersions); err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func deployCluster(name string) error {

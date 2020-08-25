@@ -118,7 +118,7 @@ func (l *LocalConfigManager) ListClusters() ([]*Cluster, error) {
 }
 
 func (l *LocalConfigManager) SaveBootstrapperVersions(latestVersion BootstrapperVersioner, versions []BootstrapperVersioner) error {
-	logrus.WithField("bootstrapper", latestVersion.Type()).Infoln("saving bootstrapper version configurations")
+	logrus.WithField("bootstrapper", latestVersion.Type()).Debugln("saving bootstrapper version configurations")
 
 	bytes, err := yaml.Marshal(versions)
 	if err != nil {

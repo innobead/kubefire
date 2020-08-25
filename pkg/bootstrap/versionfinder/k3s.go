@@ -24,7 +24,7 @@ func NewK3sVersionFinder() *K3sVersionFinder {
 }
 
 func (k *K3sVersionFinder) GetVersionsAfterVersion(afterVersion data.Version) ([]*data.Version, error) {
-	logrus.WithField("bootstrapper", k.bootstrapperType).Infoln("getting the released versions info")
+	logrus.WithField("bootstrapper", k.bootstrapperType).Debugln("getting the released versions info")
 
 	var versions []*data.Version
 
@@ -65,7 +65,7 @@ func (k *K3sVersionFinder) GetVersionsAfterVersion(afterVersion data.Version) ([
 }
 
 func (k *K3sVersionFinder) GetLatestVersion() (*data.Version, error) {
-	logrus.WithField("bootstrapper", k.bootstrapperType).Infof("getting the latest released version info")
+	logrus.WithField("bootstrapper", k.bootstrapperType).Debugln("getting the latest released version info")
 
 	body, _, err := util.HttpGet(K3sChannelInfoUrl)
 	if err != nil {

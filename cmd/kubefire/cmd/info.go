@@ -7,16 +7,31 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var showBootstrapperInfo bool
+
 var InfoCmd = &cobra.Command{
 	Use:     "info",
 	Aliases: []string{"i"},
-	Short:   "Show runtime info",
+	Short:   "Show info of prerequisites, supported K8s/K3s versions",
 	RunE: func(cmd *cobra.Command, args []string) error {
+		if showBootstrapperInfo {
+			if err := di.Output().Print(intcmd.BootstrapperVersionInfos(), nil, ""); err != nil {
+				return errors.WithMessage(err, "failed to print output of bootstrapper info")
+			}
+
+			return nil
+		}
+
 		versionsInfo := intcmd.CurrentPrerequisitesInfos()
 		if err := di.Output().Print(versionsInfo, nil, ""); err != nil {
-			return errors.WithMessage(err, "failed to print output of runtime info")
+			return errors.WithMessage(err, "failed to print output of prerequisites info")
 		}
 
 		return nil
 	},
+}
+
+func init() {
+	flags := InfoCmd.Flags()
+	flags.BoolVarP(&showBootstrapperInfo, "bootstrapper", "b", false, "Show K8s/K3s supported versions in builtin bootstrappers")
 }

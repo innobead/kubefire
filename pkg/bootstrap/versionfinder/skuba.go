@@ -19,7 +19,7 @@ func NewSkubaVersionFinder() *SkubaVersionFinder {
 }
 
 func (s *SkubaVersionFinder) GetVersionsAfterVersion(afterVersion data.Version) ([]*data.Version, error) {
-	logrus.WithField("bootstrapper", s.bootstrapperType).Infoln("getting the released versions info")
+	logrus.WithField("bootstrapper", s.bootstrapperType).Debugln("getting the released versions info")
 
 	return []*data.Version{
 		data.ParseVersion("v1.4.1"), // CaaSP 4.2.2
@@ -28,7 +28,7 @@ func (s *SkubaVersionFinder) GetVersionsAfterVersion(afterVersion data.Version) 
 }
 
 func (s *SkubaVersionFinder) GetLatestVersion() (*data.Version, error) {
-	logrus.WithField("bootstrapper", s.bootstrapperType).Infof("getting the latest released version info")
+	logrus.WithField("bootstrapper", s.bootstrapperType).Debugln("getting the latest released version info")
 
 	versions, _ := s.GetVersionsAfterVersion(data.Version{})
 	return versions[0], nil

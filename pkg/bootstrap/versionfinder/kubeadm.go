@@ -34,13 +34,13 @@ func NewKubeadmVersionFinder() *KubeadmVersionFinder {
 }
 
 func (k *KubeadmVersionFinder) GetVersionsAfterVersion(afterVersion data.Version) ([]*data.Version, error) {
-	logrus.WithField("bootstrapper", k.bootstrapperType).Infof("getting the released versions info less than/equal to %s", afterVersion.String())
+	logrus.WithField("bootstrapper", k.bootstrapperType).Debugf("getting the released versions info less than/equal to %s", afterVersion.String())
 
 	return k.githubInfoer.GetVersionsAfterVersion(afterVersion, k.owner, k.repo, data.SupportedMinorVersionCount)
 }
 
 func (k *KubeadmVersionFinder) GetLatestVersion() (*data.Version, error) {
-	logrus.WithField("bootstrapper", k.bootstrapperType).Infof("getting the latest released version info")
+	logrus.WithField("bootstrapper", k.bootstrapperType).Debugln("getting the latest released version info")
 
 	body, _, err := util.HttpGet(KubeStableVersionUrl)
 	if err != nil {

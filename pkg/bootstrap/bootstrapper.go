@@ -11,6 +11,7 @@ import (
 	utilssh "github.com/innobead/kubefire/pkg/util/ssh"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+	"os"
 	"path"
 	"strings"
 )
@@ -51,6 +52,91 @@ func IsValid(bootstrapper string) bool {
 	default:
 		return false
 	}
+}
+
+func GenerateSaveBootstrapperVersions(bootstrapperType string, configManager pkgconfig.Manager) (bootstrapperLatestVersion pkgconfig.BootstrapperVersioner, bootstrapperVersions []pkgconfig.BootstrapperVersioner, err error) {
+	versionFinder := versionfinder.New(bootstrapperType)
+
+	latestVersion, err := versionFinder.GetLatestVersion()
+	if err != nil {
+		return
+	}
+
+	bootstrapperVersion := pkgconfig.NewBootstrapperVersion(bootstrapperType, latestVersion.String())
+	if _, err = os.Stat(bootstrapperVersion.LocalVersionFile()); !os.IsNotExist(err) {
+		bootstrapperVersions, err = configManager.GetBootstrapperVersions(bootstrapperVersion)
+		if err != nil {
+			return
+		}
+
+		return
+	}
+
+	var versions []*data.Version
+	versions, err = versionFinder.GetVersionsAfterVersion(*latestVersion)
+	if err != nil {
+		err = errors.WithMessagef(err, "failed to get the supported versions after/include %s from bootstrapper %s", latestVersion.String(), bootstrapperType)
+		return
+	}
+
+	switch versionFinder := versionFinder.(type) {
+	case *versionfinder.KubeadmVersionFinder:
+
+		var critoolVersions []*data.Version
+		critoolVersions, err = versionFinder.GetCritoolVersionsAfterVersion(*latestVersion)
+		if err != nil {
+			err = errors.WithMessagef(err, "failed to get the CriTools versions after/include %s from bootstrapper %s", latestVersion.String(), bootstrapperType)
+			return
+		}
+
+		var kubeReleaseToolLatestVersion *data.Version
+		kubeReleaseToolLatestVersion, err = versionFinder.GetKubeReleaseToolLatestVersion(*latestVersion)
+		if err != nil {
+			err = errors.WithMessagef(err, "failed to get the kubernetes release tool version from bootstrapper %s", bootstrapperType)
+			return
+		}
+
+		for i, v := range versions {
+			bv := pkgconfig.NewKubeadmBootstrapperVersion(
+				v.String(),
+				critoolVersions[i].String(),
+				kubeReleaseToolLatestVersion.String(),
+			)
+			bootstrapperVersions = append(bootstrapperVersions, bv)
+
+			if bv.Version() == latestVersion.String() {
+				bootstrapperLatestVersion = bv
+			}
+		}
+
+	case *versionfinder.K3sVersionFinder:
+
+		for _, v := range versions {
+			bv := pkgconfig.NewK3sBootstrapperVersion(v.String())
+			bootstrapperVersions = append(bootstrapperVersions, bv)
+
+			if bv.Version() == latestVersion.String() {
+				bootstrapperLatestVersion = bv
+			}
+		}
+
+	case *versionfinder.SkubaVersionFinder:
+
+		for _, v := range versions {
+			bv := pkgconfig.NewSkubaBootstrapperVersion(v.String())
+			bootstrapperVersions = append(bootstrapperVersions, bv)
+
+			if bv.Version() == latestVersion.String() {
+				bootstrapperLatestVersion = bv
+			}
+		}
+	}
+
+	if err = configManager.SaveBootstrapperVersions(bootstrapperLatestVersion, bootstrapperVersions); err != nil {
+		return
+	}
+
+	return
 }
 
 func downloadKubeConfig(nodeManager node.Manager, cluster *data.Cluster, remoteKubeConfigPath string, destDir string) (string, error) {
