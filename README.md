@@ -65,7 +65,7 @@ kubefire cluster create demo --version=v1.18.8
 kubefire cluster create demo --version=v1.17
 kubefire cluster create demo --version=v1.16
 
-# If the version is outside the supported versions (last 3 minor version given the latest is v1.18), the cluster creation will be not supported 
+# If the version is outside the supported versions (last 3 minor versions given the latest is v1.18), the cluster creation will be not supported 
 kubefire cluster create demo --version=v1.15
 ```
 
@@ -181,7 +181,7 @@ kubefire uninstall
 # Create a cluster
 kubefire cluster create
 
-# Create a cluster
+# Create a cluster w/ a selected version
 kubefire cluster create --version=[v.<MAJOR>.<MINOR>.<PATCH> | v.<MAJOR>.<MINOR> | empty]
 
 # Delete clusters
