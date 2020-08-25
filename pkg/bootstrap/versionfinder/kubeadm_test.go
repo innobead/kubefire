@@ -1,3 +1,5 @@
+// +build !feature_run_on_ci
+
 package versionfinder
 
 import (
