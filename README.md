@@ -182,7 +182,7 @@ kubefire uninstall
 kubefire cluster create
 
 # Create a cluster w/ a selected version
-kubefire cluster create --version=[v.<MAJOR>.<MINOR>.<PATCH> | v.<MAJOR>.<MINOR> | empty]
+kubefire cluster create --version=[v<MAJOR>.<MINOR>.<PATCH> | v<MAJOR>.<MINOR>]
 
 # Delete clusters
 kubefire cluster delete
