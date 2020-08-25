@@ -31,9 +31,10 @@ kubefire install
 kubefire cluster create demo
 ```
 
-## Installing Prerequisites
+## Installing or Update Prerequisites
 
-To be able to run kubefire commands w/o issues like node/cluster management, there are some prerequisites to have. Please run `kubefire install` command with root permission (or sudo without password) to have these prerequisites via the below steps.
+To be able to run kubefire commands w/o issues like node/cluster management, there are some prerequisites to have. 
+Please run `kubefire install` command with root permission (or sudo without password) to install or update these prerequisites via the below steps.
 
 - Check virtualization supported
 - Install necessary components including runc, containerd, CNI plugins, and Ignite
@@ -46,7 +47,30 @@ To be able to run kubefire commands w/o issues like node/cluster management, the
 
 ## Bootstrapping Cluster
 
-### Kubeadm (K8s 1.18.8)
+### Bootstrap with selectable Kubernetes versions
+
+From v0.2.0, Kubefire supports user to create a cluster with a specific version supported by built-in bootstrappers in the below cases.
+
+```console
+# Create a cluster with the latest versions w/o any specified version
+kubefire cluster create demo
+
+# Create a cluster with the latest patch version of v1.18
+kubefire cluster create demo --version=v1.18
+
+# Create a cluster with a valid specific version v1.18.8
+kubefire cluster create demo --version=v1.18.8
+
+# Create a cluster with the latest patch version of supported minor releases
+kubefire cluster create demo --version=v1.17
+kubefire cluster create demo --version=v1.16
+
+# If the version is outside the supported versions (last 3 minor version given the latest is v1.18), the cluster creation will be not supported 
+kubefire cluster create demo --version=v1.15
+```
+
+### Kubeadm
+> Supports [the latest supported version](https://dl.k8s.io/release/stable.txt) and last 3 minor versions.
 
 ```console
 kubefire cluster create demo --bootstrapper=kubeadm
@@ -54,7 +78,8 @@ kubefire cluster create demo --bootstrapper=kubeadm
 
 [![asciicast](https://asciinema.org/a/lQfFfMa1zCXWvz321eUqhNyxB.svg)](https://asciinema.org/a/lQfFfMa1zCXWvz321eUqhNyxB)
 
-### K3s (K8s 1.18.8)
+### K3s
+> Supports [the latest supported version](https://update.k3s.io/v1-release/channels/latest) and last 3 minor versions.
 
 Please note that K3s only officially supports Ubuntu 16.04 and 18.04, the kernel versions of which are 4.4 and 4.15. 
 Therefore, if using the prebuilt kernels, please use `4.19` (which is the default kernel used) instead of `5.4`, otherwise there will be some unexpected errors happening. 
@@ -113,24 +138,26 @@ There are two ways below to operate the deployed cluster. After having a valid K
 Make sure to run kubefire commands with root permission or sudo without password, because ignite needs root permission to manage Firecracker VMs for now, but it is planned to improve in the future release.
 
 ```console
-KubeFire, manage Kubernetes clusters on FireCracker microVMs
+KubeFire, creates and manages Kubernetes clusters using FireCracker microVMs
 
 Usage:
   kubefire [flags]
   kubefire [command]
 
 Available Commands:
-  cluster     Manage cluster
+  cluster     Manage clusters
   help        Help about any command
+  info        Show info of prerequisites, supported K8s/K3s versions
   install     Install prerequisites
-  node        Manage node
+  kubeconfig  Manage kubeconfig of clusters
+  node        Manage nodes
   uninstall   Uninstall prerequisites
   version     Show version
 
 Flags:
   -h, --help               help for kubefire
       --log-level string   log level, options: [panic, fatal, error, warning, info, debug, trace] (default "info")
-      --output string      output format, options: [default, json, yaml] (default "default")
+  -o, --output string      output format, options: [default, json, yaml] (default "default")
 
 Use "kubefire [command] --help" for more information about a command.
 ```
@@ -142,7 +169,10 @@ kubefire version
 # Show prerequisites information
 kubefire info
 
-# Install prerequisites
+# Show supported K8s/K3s versions by builtin bootstrappers
+kubefire info -b
+
+# Install or Upgrade prerequisites
 kubefire install 
 
 # Uninstall prerequisites
@@ -150,6 +180,9 @@ kubefire uninstall
 
 # Create a cluster
 kubefire cluster create
+
+# Create a cluster
+kubefire cluster create --version=[v.<MAJOR>.<MINOR>.<PATCH> | v.<MAJOR>.<MINOR> | empty]
 
 # Delete clusters
 kubefire cluster delete
@@ -169,11 +202,14 @@ kubefire cluster restart
 # List clusters
 kubefire cluster list
 
-# Download cluster kubeconfig
-kubefire cluster download
-
 # Print environment variables of cluster (ex: KUBECONFIG)
 kubefire cluster env
+
+# Print cluster kubeconfig
+kubefire kubeconfig get
+
+# Download cluster kubeconfig
+kubefire kubeconfig download
 
 # SSH to a node
 kubefire node ssh
@@ -189,7 +225,6 @@ kubefire node start
 
 # Restart a node
 kubefire node restart
-
 ```
 
 # Troubleshooting
