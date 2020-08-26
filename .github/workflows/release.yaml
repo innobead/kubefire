@@ -1,4 +1,4 @@
-name: Test, Build, Release
+name: Release
 
 on:
   push:
@@ -26,7 +26,8 @@ jobs:
       - name: Build all artifacts
         run: make build-all
 
-      - name: changelog
+      - name: Create changelog
+        id: changelog
         uses: innobead/github-release-notes-action@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -45,7 +46,7 @@ jobs:
           done < <(find ./target -print0)
 
           tag_name="${GITHUB_REF##*/}"
-          hub release create -d "${assets[@]}" -m "$tag_name" -F ./CHANGELOG.md "$tag_name"
+          hub release create -d "${assets[@]}" -m "$tag_name\n ${CHANGELOG}" "$tag_name"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CHANGELOG: ${{ steps.changelog.outputs.changelog }}
