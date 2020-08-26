@@ -27,10 +27,9 @@ jobs:
         run: make build-all
 
       - name: changelog
-        uses: scottbrenner/generate-changelog-action@master
-        id: changelog
+        uses: innobead/github-release-notes-action@master
         env:
-          REPO: ${{ github.repository }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create release and upload artifacts
         id: upload-release-asset
@@ -46,7 +45,7 @@ jobs:
           done < <(find ./target -print0)
 
           tag_name="${GITHUB_REF##*/}"
-          hub release create -d "${assets[@]}" -m "${CHANGELOG}" "$tag_name"
+          hub release create -d "${assets[@]}" -m "$tag_name" -F ./CHANGELOG.md "$tag_name"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CHANGELOG: ${{ steps.changelog.outputs.changelog }}
