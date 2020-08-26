@@ -46,7 +46,7 @@ jobs:
           done < <(find ./target -print0)
 
           tag_name="${GITHUB_REF##*/}"
-          hub release create -d "${assets[@]}" -m "$tag_name\n ${CHANGELOG}" "$tag_name"
+          hub release edit -d "${assets[@]}" -m "" "$tag_name"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CHANGELOG: ${{ steps.changelog.outputs.changelog }}
