@@ -41,6 +41,10 @@ done:
 			}
 
 			if releaseVersion.MajorMinorString() != afterVersion.MajorMinorString() {
+				if releaseVersion.Minor.ToInt() > afterVersion.Minor.ToInt() {
+					continue
+				}
+
 				if afterVersion.Minor.ToInt()-1 < 0 {
 					return nil, errors.New("unexpected error, out of range of minor versions")
 				}
