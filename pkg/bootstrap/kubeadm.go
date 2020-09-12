@@ -21,6 +21,12 @@ import (
 	"time"
 )
 
+type KubeadmExtraOptions struct {
+	ApiServerOpts         string
+	ControllerManagerOpts string
+	SchedulerOpts         string
+}
+
 type KubeadmBootstrapper struct {
 	nodeManager   node.Manager
 	versionFinder versionfinder.Finder
@@ -50,6 +56,9 @@ func (k *KubeadmBootstrapper) Deploy(cluster *data.Cluster, before func() error)
 		}
 	}
 
+	extraOptions := KubeadmExtraOptions{}
+	cluster.Spec.ParseExtraOptions(&extraOptions)
+
 	if err := k.nodeManager.WaitNodesRunning(cluster.Name, 5); err != nil {
 		return errors.WithMessage(err, "some nodes are not running")
 	}
@@ -65,7 +74,7 @@ func (k *KubeadmBootstrapper) Deploy(cluster *data.Cluster, before func() error)
 
 	firstMaster.Spec.Cluster = &cluster.Spec
 
-	joinCmd, err := k.bootstrap(firstMaster, len(cluster.Nodes) == 1)
+	joinCmd, err := k.bootstrap(firstMaster, len(cluster.Nodes) == 1, &extraOptions)
 	if err != nil {
 		return err
 	}
@@ -191,7 +200,7 @@ func (k *KubeadmBootstrapper) init(cluster *data.Cluster) error {
 	return err
 }
 
-func (k *KubeadmBootstrapper) bootstrap(node *data.Node, isSingleNode bool) (joinCmd string, err error) {
+func (k *KubeadmBootstrapper) bootstrap(node *data.Node, isSingleNode bool, options *KubeadmExtraOptions) (joinCmd string, err error) {
 	logrus.WithField("node", node.Name).Infoln("bootstrapping the first master node")
 
 	sshClient, err := utilssh.NewClient(
@@ -207,6 +216,11 @@ func (k *KubeadmBootstrapper) bootstrap(node *data.Node, isSingleNode bool) (joi
 	defer sshClient.Close()
 
 	joinCmdBuf := bytes.Buffer{}
+	ignoreErrors := []string{
+		"FileAvailable--etc-kubernetes-manifests-kube-apiserver.yaml",
+		"FileAvailable--etc-kubernetes-manifests-kube-controller-manager.yaml",
+		"FileAvailable--etc-kubernetes-manifests-kube-scheduler.yaml",
+	}
 
 	cmds := []struct {
 		cmdline string
@@ -214,7 +228,19 @@ func (k *KubeadmBootstrapper) bootstrap(node *data.Node, isSingleNode bool) (joi
 		after   utilssh.Callback
 	}{
 		{
-			cmdline: "kubeadm init -v 5",
+			cmdline: fmt.Sprintf(
+				"kubeadm init phase control-plane all -v 5 --apiserver-extra-args=%s --controller-manager-extra-args=%s --scheduler-extra-args=%s",
+				options.ApiServerOpts,
+				options.ControllerManagerOpts,
+				options.SchedulerOpts,
+			),
+			before: func(session *ssh.Session) bool {
+				logrus.Info("running kubeadm init")
+				return true
+			},
+		},
+		{
+			cmdline: fmt.Sprintf("kubeadm init -v 5 --skip-phases='control-plane' --ignore-preflight-errors='%s'", strings.Join(ignoreErrors, ",")),
 			before: func(session *ssh.Session) bool {
 				logrus.Info("running kubeadm init")
 				return true

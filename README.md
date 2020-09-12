@@ -76,6 +76,20 @@ kubefire cluster create demo --version=v1.15
 kubefire cluster create demo --bootstrapper=kubeadm
 ```
 
+#### Add extra Kubeadm installation options
+
+To add extra installation options of the control plane components, use `--extra-options` of `cluster create` command to provide `ApiServerOpts`, `ControllerManagerOpts` or `SchedulerOpts` key-value pairs as the below example. 
+
+> Note: the key-value pairs in `--extra-options` are separated by comma.
+
+- Add extra options of `API Server` into `ApiServerOpts='<option>,...'`.
+- Add extra options of `Controller Manager` into `ControllerManagerOpts='<option>,...'`.
+- Add extra options of `Scheduler` into `SchedulerOpts='<option>,...'`.
+
+```console
+kubefire cluster create demo --bootstrapper=kubeadm --extra-opts="ApiServerOpts='audit-log-maxage=10'"
+```
+
 [![asciicast](https://asciinema.org/a/lQfFfMa1zCXWvz321eUqhNyxB.svg)](https://asciinema.org/a/lQfFfMa1zCXWvz321eUqhNyxB)
 
 ### K3s
@@ -95,8 +109,8 @@ To add extra installation options of the server or agent nodes, use `--extra-opt
 
 > Note: the key-value pairs in `--extra-options` are separated by comma.
 
-- Add any options of `k3s server` into `ServerOpts='<k3s server option1>, <k3s server option2>, ...'`.
-- Add any options of `k3s agent` into `AgentOpts='<k3s agent option1>, <k3s agent option2>, ...'`.
+- Add extra options of `k3s server` into `ServerOpts='<k3s server option>,...'`.
+- Add extra options of `k3s agent` into `AgentOpts='<k3s agent option>,...'`.
 
 ```console
 kubefire cluster create demo --bootstrapper=k3s --extra-opts="ServerOpts='--disable=traefik --disable=metrics-server'"

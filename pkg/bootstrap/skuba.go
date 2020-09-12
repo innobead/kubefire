@@ -44,7 +44,8 @@ func (s *SkubaBootstrapper) Deploy(cluster *data.Cluster, before func() error) e
 		}
 	}
 
-	extraOptions := cluster.Spec.ParseExtraOptions(&SkubaExtraOptions{}).(SkubaExtraOptions)
+	extraOptions := SkubaExtraOptions{}
+	cluster.Spec.ParseExtraOptions(&extraOptions)
 
 	if err := s.nodeManager.WaitNodesRunning(cluster.Name, 5); err != nil {
 		return errors.WithMessage(err, "some nodes are not running")

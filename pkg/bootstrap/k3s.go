@@ -44,9 +44,10 @@ func (k *K3sBootstrapper) Deploy(cluster *data.Cluster, before func() error) err
 		}
 	}
 
-	extraOptions := cluster.Spec.ParseExtraOptions(&K3sExtraOptions{
+	extraOptions := K3sExtraOptions{
 		ExtraOptions: config.K3sVersionsEnvVars(cluster.Spec.Version).String(),
-	}).(K3sExtraOptions)
+	}
+	cluster.Spec.ParseExtraOptions(&extraOptions)
 
 	if err := k.nodeManager.WaitNodesRunning(cluster.Name, 5); err != nil {
 		return errors.WithMessage(err, "some nodes are not running")
@@ -63,7 +64,7 @@ func (k *K3sBootstrapper) Deploy(cluster *data.Cluster, before func() error) err
 
 	firstMaster.Spec.Cluster = &cluster.Spec
 
-	joinToken, err := k.bootstrap(firstMaster, len(cluster.Nodes) == 1, extraOptions)
+	joinToken, err := k.bootstrap(firstMaster, len(cluster.Nodes) == 1, &extraOptions)
 	if err != nil {
 		return err
 	}
@@ -83,7 +84,7 @@ func (k *K3sBootstrapper) Deploy(cluster *data.Cluster, before func() error) err
 		}
 		n.Spec.Cluster = &cluster.Spec
 
-		if err := k.join(n, firstMaster.Status.IPAddresses, joinToken, extraOptions); err != nil {
+		if err := k.join(n, firstMaster.Status.IPAddresses, joinToken, &extraOptions); err != nil {
 			return err
 		}
 	}
@@ -170,7 +171,7 @@ func (k *K3sBootstrapper) init(cluster *data.Cluster) error {
 	return err
 }
 
-func (k *K3sBootstrapper) bootstrap(node *data.Node, isSingleNode bool, extraOptions K3sExtraOptions) (token string, err error) {
+func (k *K3sBootstrapper) bootstrap(node *data.Node, isSingleNode bool, extraOptions *K3sExtraOptions) (token string, err error) {
 	logrus.WithField("node", node.Name).Infoln("bootstrapping the first master node")
 
 	sshClient, err := utilssh.NewClient(
@@ -224,7 +225,7 @@ func (k *K3sBootstrapper) bootstrap(node *data.Node, isSingleNode bool, extraOpt
 	return strings.TrimSuffix(tokenBuf.String(), "\n"), nil
 }
 
-func (k *K3sBootstrapper) join(node *data.Node, apiServerAddress string, joinToken string, extraOptions K3sExtraOptions) error {
+func (k *K3sBootstrapper) join(node *data.Node, apiServerAddress string, joinToken string, extraOptions *K3sExtraOptions) error {
 	logrus.WithField("node", node.Name).Infoln("joining node")
 
 	sshClient, err := utilssh.NewClient(

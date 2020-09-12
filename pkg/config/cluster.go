@@ -53,6 +53,7 @@ func (c *Cluster) ParseExtraOptions(obj interface{}) interface{} {
 
 	for _, option := range optionList {
 		values := strings.SplitN(option, "=", 2)
+
 		if len(values) == 2 {
 			field := value.FieldByName(values[0])
 
