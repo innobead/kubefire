@@ -1,9 +1,9 @@
 PROJECT := $(shell basename $(CURDIR))
 COMMIT := $(shell git rev-parse --short HEAD)-$(shell date "+%Y%m%d%H%M%S")
 TAG := $(shell git describe --tags --dirty)
-IMAGES := centos:8 ubuntu:18.04 ubuntu:20.04 ubuntu:20.10 opensuse-leap:15.1 opensuse-leap:15.2
+IMAGES := $(shell ./hack/generate-image-info.sh --image)
 IMAGES_SUSE := sle15:15.1 sle15:15.2
-KERNELS := $(shell ls ./build/kernels | sed 's/config-amd64-//; /README.md/d;')
+KERNELS := $(shell ./hack/generate-image-info.sh --kernel)
 GOBIN := $(shell go env GOBIN)
 GOARCH := $(shell go env GOARCH)
 
@@ -31,6 +31,7 @@ BUILD_DIR := $(CURDIR)/target
 BUILD_CNI_DIR := $(BUILD_DIR)/cni
 BUILD_TMP_DIR := $(CURDIR)/.build
 BUILD_CACHE_DIR := $(CURDIR)/.cache
+BUILD_GENERATE_DIR := $(CURDIR)/generated
 
 .PHONY: help
 help:
@@ -45,12 +46,12 @@ build-all: clean clean-cni env build build-cni checksum ## Build all
 
 .PHONY: env
 env: ## Prepare build env
-	 [ ! -x "$(BUILD_CACHE_DIR)/golangci-lint" ] && \
+	 [ -x "$(BUILD_CACHE_DIR)/golangci-lint" ] || (\
 			mkdir -p $(BUILD_CACHE_DIR) || true && \
 			curl -sfLO https://github.com/golangci/golangci-lint/releases/download/v1.30.0/golangci-lint-1.30.0-linux-amd64.tar.gz && \
 			tar -zxvf golangci-lint-1.30.0-linux-amd64.tar.gz && \
 			mv ./golangci-lint-1.30.0-linux-amd64/golangci-lint $(BUILD_CACHE_DIR)/ && \
-			rm -rf ./golangci-lint-1.30.0-linux-amd64* || true
+			rm -rf ./golangci-lint-1.30.0-linux-amd64* || true)
 
 .PHONY: build
 build: env format ## Build executables (linux/amd64 supported only)
@@ -83,6 +84,10 @@ format: ## Format source code
 checksum: ## Generate checksum files for built executables
 	$(CURDIR)/hack/generate-checksum.sh $(BUILD_DIR)
 
+.PHONY: generate
+generate: ## Generate generated files
+	$(CURDIR)/hack/generate-image-info.sh --generate
+
 .PHONY: clean
 clean: ## Clean build caches
 	rm -rf $(BUILD_DIR)
@@ -97,6 +102,10 @@ clean-cni: ## CLean build CNI caches
 .PHONY: clean-ignite
 clean-ignite: ## Clean ignite caches
 	$(CURDIR)/hack/clean-ignite.sh
+
+.PHONY: clean-generate
+clean-generate: ## Clean generated files
+	rm -rf $(BUILD_GENERATE_DIR)
 
 .PHONY: check-publish-image-env
 check-publish-image-env: ## Check if the authentication of container registry provided

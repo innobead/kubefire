@@ -59,6 +59,7 @@ func main() {
 		cmd.InstallCmd,
 		cmd.UninstallCmd,
 		cmd.InfoCmd,
+		cmd.ImageCmd,
 		kubeconfig.Cmd,
 		cluster.Cmd,
 		node.Cmd,

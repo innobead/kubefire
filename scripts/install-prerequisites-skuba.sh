@@ -6,7 +6,6 @@ set -o pipefail
 set -o xtrace
 
 TMP_DIR=/tmp/kubefire
-GOARCH=$(go env GOARCH 2>/dev/null)
 GOBIN=$(go env GOPATH 2>/dev/null)/bin
 
 SKUBA_VERSION=${SKUBA_VERSION:-}

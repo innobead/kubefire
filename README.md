@@ -166,6 +166,9 @@ Use "kubefire [command] --help" for more information about a command.
 # Show version
 kubefire version
 
+# Show supported RootFS and Kernel images
+kubefire image
+
 # Show prerequisites information
 kubefire info
 

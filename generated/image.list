@@ -1,0 +1,6 @@
+ghcr.io/innobead/kubefire-centos:8
+ghcr.io/innobead/kubefire-ubuntu:18.04
+ghcr.io/innobead/kubefire-ubuntu:20.04
+ghcr.io/innobead/kubefire-ubuntu:20.10
+ghcr.io/innobead/kubefire-opensuse-leap:15.1
+ghcr.io/innobead/kubefire-opensuse-leap:15.2
