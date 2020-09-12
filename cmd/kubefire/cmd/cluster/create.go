@@ -82,8 +82,8 @@ func init() {
 	flags.StringVar(&cluster.Bootstrapper, "bootstrapper", constants.KUBEADM, util.FlagsValuesUsage("Bootstrapper type", bootstrap.BuiltinTypes))
 	flags.StringVar(&cluster.Pubkey, "pubkey", "", "Public key")
 	flags.StringVar(&cluster.Version, "version", "", "Version of Kubernetes supported by bootstrapper (ex: v1.18, v1.18.8, empty)")
-	flags.StringVar(&cluster.Image, "image", "innobead/kubefire-opensuse-leap:15.2", "Rootfs container image")
-	flags.StringVar(&cluster.KernelImage, "kernel-image", "innobead/kubefire-kernel-4.19.125-amd64:latest", "Kernel container image")
+	flags.StringVar(&cluster.Image, "image", "ghcr.io/innobead/kubefire-opensuse-leap:15.2", "Rootfs container image")
+	flags.StringVar(&cluster.KernelImage, "kernel-image", "ghcr.io/innobead/kubefire-ignite-kernel:4.19.125-amd64", "Kernel container image")
 	flags.StringVar(&cluster.KernelArgs, "kernel-args", "console=ttyS0 reboot=k panic=1 pci=off ip=dhcp security=apparmor apparmor=1", "Kernel arguments")
 	flags.StringVar(&cluster.ExtraOptions, "extra-opts", "", "Extra options (ex: key=value,...) for bootstrapper")
 

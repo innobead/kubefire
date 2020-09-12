@@ -1,0 +1,24 @@
+name: Release images
+
+on:
+  # https://github.blog/changelog/2020-07-06-github-actions-manual-triggers-with-workflow_dispatch/
+  workflow_dispatch:
+    inputs:
+
+jobs:
+  release:
+    name: Release images
+    runs-on: ubuntu-latest
+    needs: []
+    steps:
+      - name: Checkout code
+        id: checkout-code
+        uses: actions/checkout@v2
+
+      # https://docs.github.com/en/actions/reference/software-installed-on-github-hosted-runners
+      - name: Release images
+        run: make publish-images
+        env:
+          CR_USERNAME: ${{ secrets.CR_USERNAME }}
+          CR_PAT: ${{ secrets.CR_PAT }}
+          CR_PATH: ghcr.io/
