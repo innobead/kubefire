@@ -245,8 +245,7 @@ Besides below prebuilt images, you can also use the images provided by [weavewor
 - ghcr.io/innobead/kubefire-opensuse-leap:15.1, 15.2
 - ghcr.io/innobead/kubefire-sle15:15.1, 15.2
 - ghcr.io/innobead/kubefire-centos:8
-- ghcr.io/innobead/kubefire-ubuntu:18.04
-- ghcr.io/innobead/kubefire-ubuntu:20.10
+- ghcr.io/innobead/kubefire-ubuntu:18.04, 20.04, 20.10
 
 ## Kernel images (w/ AppArmor enabled)
 - ghcr.io/innobead/kubefire-ignite-kernel:5.4.43-amd64

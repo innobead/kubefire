@@ -1,7 +1,7 @@
 PROJECT := $(shell basename $(CURDIR))
 COMMIT := $(shell git rev-parse --short HEAD)-$(shell date "+%Y%m%d%H%M%S")
 TAG := $(shell git describe --tags --dirty)
-IMAGES := centos:8 ubuntu:18.04 ubuntu:20.10 opensuse-leap:15.1 opensuse-leap:15.2
+IMAGES := centos:8 ubuntu:18.04 ubuntu:20.04 ubuntu:20.10 opensuse-leap:15.1 opensuse-leap:15.2
 IMAGES_SUSE := sle15:15.1 sle15:15.2
 KERNELS := $(shell ls ./build/kernels | sed 's/config-amd64-//; /README.md/d;')
 GOBIN := $(shell go env GOBIN)
