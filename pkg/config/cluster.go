@@ -84,6 +84,10 @@ func (c *Cluster) LocalClusterKeyFiles() (string, string) {
 }
 
 func (c *Cluster) UpdateExtraOptions(options string) {
+	if options == "" {
+		return
+	}
+
 	optionList := strings.Split(options, " ")
 
 	for _, option := range optionList {

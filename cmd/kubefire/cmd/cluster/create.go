@@ -1,6 +1,8 @@
 package cluster
 
 import (
+	"fmt"
+	"github.com/goccy/go-yaml"
 	"github.com/innobead/kubefire/internal/config"
 	"github.com/innobead/kubefire/internal/di"
 	"github.com/innobead/kubefire/internal/validate"
@@ -9,6 +11,7 @@ import (
 	"github.com/innobead/kubefire/pkg/util"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+	"io/ioutil"
 	"regexp"
 	"strings"
 )
@@ -18,6 +21,7 @@ var (
 	started      bool
 	cached       bool
 	extraOptions string
+	configFile   string
 )
 
 var createCmd = &cobra.Command{
@@ -25,6 +29,17 @@ var createCmd = &cobra.Command{
 	Short: "Create cluster",
 	Args:  validate.OneArg("cluster name"),
 	PreRunE: func(cmd *cobra.Command, args []string) error {
+		if configFile != "" {
+			bytes, err := ioutil.ReadFile(configFile)
+			if err != nil {
+				return errors.WithMessage(err, fmt.Sprintf("failed to get the cluster config file %s", configFile))
+			}
+
+			if err := yaml.Unmarshal(bytes, cluster); err != nil {
+				return errors.WithMessage(err, fmt.Sprintf("failed to parse the cluster config file %s", configFile))
+			}
+		}
+
 		if err := validate.CheckBootstrapperType(cluster.Bootstrapper); err != nil {
 			return err
 		}
@@ -98,6 +113,7 @@ func init() {
 	flags.IntVar(&cluster.Worker.Cpus, "worker-cpu", cluster.Worker.Cpus, "CPUs of worker node")
 	flags.StringVar(&cluster.Worker.Memory, "worker-memory", cluster.Worker.Memory, "Memory of worker node")
 	flags.StringVar(&cluster.Worker.DiskSize, "worker-size", cluster.Worker.DiskSize, "Disk size of worker node")
+	flags.StringVar(&configFile, "config", "", "Cluster configuration file (ex: use 'config-template' command to generate the default cluster config)")
 
 	flags.BoolVar(&forceDeleteCluster, "force", false, "Force to recreate if the cluster exists")
 	flags.BoolVar(&cached, "cache", true, "Use caches")
