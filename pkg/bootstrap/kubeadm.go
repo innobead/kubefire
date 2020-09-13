@@ -22,9 +22,9 @@ import (
 )
 
 type KubeadmExtraOptions struct {
-	ApiServerOpts         string
-	ControllerManagerOpts string
-	SchedulerOpts         string
+	ApiServerOptions         []string `json:"api_server_options"`
+	ControllerManagerOptions []string `json:"controller_manager_options"`
+	SchedulerOptions         []string `json:"scheduler_options"`
 }
 
 type KubeadmBootstrapper struct {
@@ -57,7 +57,9 @@ func (k *KubeadmBootstrapper) Deploy(cluster *data.Cluster, before func() error)
 	}
 
 	extraOptions := KubeadmExtraOptions{}
-	cluster.Spec.ParseExtraOptions(&extraOptions)
+	if err := cluster.Spec.ParseExtraOptions(&extraOptions); err != nil {
+		return err
+	}
 
 	if err := k.nodeManager.WaitNodesRunning(cluster.Name, 5); err != nil {
 		return errors.WithMessage(err, "some nodes are not running")
@@ -229,10 +231,10 @@ func (k *KubeadmBootstrapper) bootstrap(node *data.Node, isSingleNode bool, opti
 	}{
 		{
 			cmdline: fmt.Sprintf(
-				"kubeadm init phase control-plane all -v 5 --apiserver-extra-args=%s --controller-manager-extra-args=%s --scheduler-extra-args=%s",
-				options.ApiServerOpts,
-				options.ControllerManagerOpts,
-				options.SchedulerOpts,
+				`kubeadm init phase control-plane all -v 5 --apiserver-extra-args="%s" --controller-manager-extra-args="%s" --scheduler-extra-args="%s"`,
+				strings.Join(options.ApiServerOptions, ","),
+				strings.Join(options.ControllerManagerOptions, ","),
+				strings.Join(options.ControllerManagerOptions, ","),
 			),
 			before: func(session *ssh.Session) bool {
 				logrus.Info("running kubeadm init")

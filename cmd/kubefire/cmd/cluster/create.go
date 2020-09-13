@@ -15,9 +15,10 @@ import (
 )
 
 var (
-	cluster = pkgconfig.NewCluster()
-	started bool
-	cached  bool
+	cluster      = pkgconfig.NewCluster()
+	started      bool
+	cached       bool
+	extraOptions string
 )
 
 var createCmd = &cobra.Command{
@@ -48,6 +49,8 @@ var createCmd = &cobra.Command{
 			return err
 		}
 		cluster.Version = version
+
+		cluster.UpdateExtraOptions(extraOptions)
 
 		return nil
 	},
@@ -85,7 +88,7 @@ func init() {
 	flags.StringVar(&cluster.Image, "image", "ghcr.io/innobead/kubefire-opensuse-leap:15.2", "Rootfs container image")
 	flags.StringVar(&cluster.KernelImage, "kernel-image", "ghcr.io/innobead/kubefire-ignite-kernel:4.19.125-amd64", "Kernel container image")
 	flags.StringVar(&cluster.KernelArgs, "kernel-args", "console=ttyS0 reboot=k panic=1 pci=off ip=dhcp security=apparmor apparmor=1", "Kernel arguments")
-	flags.StringVar(&cluster.ExtraOptions, "extra-opts", "", "Extra options (ex: key=value,...) for bootstrapper")
+	flags.StringVar(&extraOptions, "extra-opts", "", "Extra options (ex: key=value,...) for bootstrapper")
 
 	flags.IntVar(&cluster.Admin.Count, "admin-count", 0, "Count of admin node")
 	flags.IntVar(&cluster.Admin.Cpus, "admin-cpu", 1, "CPUs of admin node")

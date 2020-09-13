@@ -20,9 +20,9 @@ import (
 )
 
 type K3sExtraOptions struct {
-	ServerInstallOpts string
-	AgentInstallOpts  string
-	ExtraOptions      string
+	ServerInstallOptions []string `json:"server_install_options"`
+	AgentInstallOptions  []string `json:"agent_install_options"`
+	ExtraOptions         []string `json:"extra_options"`
 }
 
 type K3sBootstrapper struct {
@@ -45,9 +45,11 @@ func (k *K3sBootstrapper) Deploy(cluster *data.Cluster, before func() error) err
 	}
 
 	extraOptions := K3sExtraOptions{
-		ExtraOptions: config.K3sVersionsEnvVars(cluster.Spec.Version).String(),
+		ExtraOptions: config.K3sVersionsEnvVars(cluster.Spec.Version),
 	}
-	cluster.Spec.ParseExtraOptions(&extraOptions)
+	if err := cluster.Spec.ParseExtraOptions(&extraOptions); err != nil {
+		return err
+	}
 
 	if err := k.nodeManager.WaitNodesRunning(cluster.Name, 5); err != nil {
 		return errors.WithMessage(err, "some nodes are not running")
@@ -195,8 +197,8 @@ func (k *K3sBootstrapper) bootstrap(node *data.Node, isSingleNode bool, extraOpt
 		k3sOpts = append(k3sOpts, "--cluster-init")
 	}
 
-	if extraOptions.ServerInstallOpts != "" {
-		k3sOpts = append(k3sOpts, extraOptions.ServerInstallOpts)
+	if extraOptions.ServerInstallOptions != nil {
+		k3sOpts = append(k3sOpts, extraOptions.ServerInstallOptions...)
 	}
 
 	cmds := []struct {
@@ -204,7 +206,7 @@ func (k *K3sBootstrapper) bootstrap(node *data.Node, isSingleNode bool, extraOpt
 		before  utilssh.Callback
 	}{
 		{
-			cmdline: fmt.Sprintf(`INSTALL_K3S_EXEC="%s" %s k3s-install.sh `, strings.Join(k3sOpts, " "), extraOptions.ExtraOptions),
+			cmdline: fmt.Sprintf(`INSTALL_K3S_EXEC="%s" %s k3s-install.sh `, strings.Join(k3sOpts, " "), strings.Join(extraOptions.ExtraOptions, " ")),
 		},
 		{
 			cmdline: "cat /var/lib/rancher/k3s/server/node-token",
@@ -246,16 +248,16 @@ func (k *K3sBootstrapper) join(node *data.Node, apiServerAddress string, joinTok
 	if node.IsMaster() {
 		k3sOpts = append(k3sOpts, "--server")
 
-		if extraOptions.ServerInstallOpts != "" {
-			k3sOpts = append(k3sOpts, extraOptions.ServerInstallOpts)
+		if len(extraOptions.ServerInstallOptions) > 0 {
+			k3sOpts = append(k3sOpts, extraOptions.ServerInstallOptions...)
 		}
 	} else {
-		if extraOptions.AgentInstallOpts != "" {
-			k3sOpts = append(k3sOpts, extraOptions.AgentInstallOpts)
+		if len(extraOptions.AgentInstallOptions) > 0 {
+			k3sOpts = append(k3sOpts, extraOptions.AgentInstallOptions...)
 		}
 	}
 
-	cmd = fmt.Sprintf(`INSTALL_K3S_EXEC="%s" %s`, strings.Join(k3sOpts, " "), extraOptions.ExtraOptions) + cmd
+	cmd = fmt.Sprintf(`INSTALL_K3S_EXEC="%s" %s`, strings.Join(k3sOpts, " "), strings.Join(extraOptions.ExtraOptions, " ")) + cmd
 
 	if err := sshClient.Run(nil, nil, cmd); err != nil {
 		return errors.WithStack(err)

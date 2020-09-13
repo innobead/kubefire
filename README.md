@@ -13,7 +13,7 @@ KubeFire is to create and manage Kubernetes clusters running on FireCracker micr
 For official releases, please install the latest release as below command.
 
 ```console
-curl -sSL https://raw.githubusercontent.com/innobead/kubefire/master/hack/install-release-kubefire.sh | sh -
+curl -sSL https://raw.githubusercontent.com/innobead/kubefire/master/hack/install-release-kubefire.sh | sh
 ```
 
 For development purpose, please make sure go 1.14 installed, then build and install `kubefire` in the `GOBIN` path.
@@ -78,16 +78,16 @@ kubefire cluster create demo --bootstrapper=kubeadm
 
 #### Add extra Kubeadm installation options
 
-To add extra installation options of the control plane components, use `--extra-options` of `cluster create` command to provide `ApiServerOpts`, `ControllerManagerOpts` or `SchedulerOpts` key-value pairs as the below example. 
+To add extra installation options of the control plane components, use `--extra-options` of `cluster create` command to provide `api_server_opts`, `controller_manager_opts` or `scheduler_opts` key-value pairs as the below example. 
 
 > Note: the key-value pairs in `--extra-options` are separated by comma.
 
-- Add extra options of `API Server` into `ApiServerOpts='<option>,...'`.
-- Add extra options of `Controller Manager` into `ControllerManagerOpts='<option>,...'`.
-- Add extra options of `Scheduler` into `SchedulerOpts='<option>,...'`.
+- Add extra options of `API Server` into `api_server_opts='<option>,...'`.
+- Add extra options of `Controller Manager` into `controller_manager_opts='<option>,...'`.
+- Add extra options of `Scheduler` into `scheduler_opts='<option>,...'`.
 
 ```console
-kubefire cluster create demo --bootstrapper=kubeadm --extra-opts="ApiServerOpts='audit-log-maxage=10'"
+kubefire cluster create demo --bootstrapper=kubeadm --extra-opts="api_server_opts='audit-log-maxage=10'"
 ```
 
 [![asciicast](https://asciinema.org/a/lQfFfMa1zCXWvz321eUqhNyxB.svg)](https://asciinema.org/a/lQfFfMa1zCXWvz321eUqhNyxB)
@@ -105,15 +105,15 @@ kubefire cluster create demo --bootstrapper=k3s
 
 #### Add extra K3s installation options
 
-To add extra installation options of the server or agent nodes, use `--extra-options` of `cluster create` command to provide `ServerOpts` or `AgentOpts` key-value pairs as the below example. 
+To add extra installation options of the server or agent nodes, use `--extra-options` of `cluster create` command to provide `server_install_opts` or `agent_install_opts` key-value pairs as the below example. 
 
 > Note: the key-value pairs in `--extra-options` are separated by comma.
 
-- Add extra options of `k3s server` into `ServerOpts='<k3s server option>,...'`.
-- Add extra options of `k3s agent` into `AgentOpts='<k3s agent option>,...'`.
+- Add extra options of `k3s server` into `server_install_opts='<k3s server option>,...'`.
+- Add extra options of `k3s agent` into `agent_install_opts='<k3s agent option>,...'`.
 
 ```console
-kubefire cluster create demo --bootstrapper=k3s --extra-opts="ServerOpts='--disable=traefik --disable=metrics-server'"
+kubefire cluster create demo --bootstrapper=k3s --extra-opts="server_install_opts='--disable=traefik,--disable=metrics-server'"
 ```
 
 [![asciicast](https://asciinema.org/a/HqmfS4wZP7pPVS3E7M7gwAzmA.svg)](https://asciinema.org/a/HqmfS4wZP7pPVS3E7M7gwAzmA)

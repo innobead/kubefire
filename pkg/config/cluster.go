@@ -1,10 +1,10 @@
 package config
 
 import (
+	"encoding/json"
+	"github.com/pkg/errors"
 	"path"
-	"reflect"
 	"regexp"
-	"strconv"
 	"strings"
 )
 
@@ -23,13 +23,13 @@ type Cluster struct {
 	Master Node `json:"master"`
 	Worker Node `json:"worker"`
 
-	ExtraOptions string `json:"extra_options"`
+	ExtraOptions map[string]interface{} `json:"extra_options"`
 
 	Deployed bool `json:"deployed"` // the only status property
 }
 
 func NewCluster() *Cluster {
-	c := Cluster{Admin: Node{}, Master: Node{}, Worker: Node{}}
+	c := Cluster{Admin: Node{}, Master: Node{}, Worker: Node{}, ExtraOptions: map[string]interface{}{}}
 
 	c.Admin.Cluster = &c
 	c.Master.Cluster = &c
@@ -46,38 +46,6 @@ type Node struct {
 	Cluster  *Cluster `json:"-"`
 }
 
-func (c *Cluster) ParseExtraOptions(obj interface{}) interface{} {
-	value := reflect.ValueOf(obj).Elem()
-
-	optionList := strings.Split(c.ExtraOptions, ",")
-
-	for _, option := range optionList {
-		values := strings.SplitN(option, "=", 2)
-
-		if len(values) == 2 {
-			field := value.FieldByName(values[0])
-
-			switch field.Kind() {
-			case reflect.String:
-				pattern := regexp.MustCompile(`^["'](.+)["']$`)
-				values[1] = pattern.ReplaceAllString(values[1], "$1")
-
-				field.SetString(values[1])
-
-			case reflect.Int:
-				v, _ := strconv.Atoi(values[1])
-				field.SetInt(int64(v))
-
-			case reflect.Bool:
-				b, _ := strconv.ParseBool(values[1])
-				field.SetBool(b)
-			}
-		}
-	}
-
-	return value.Interface()
-}
-
 func (c *Cluster) LocalClusterDir() string {
 	return path.Join(ClusterRootDir, c.Name)
 }
@@ -92,4 +60,47 @@ func (c *Cluster) LocalClusterConfigFile() string {
 
 func (c *Cluster) LocalClusterKeyFiles() (string, string) {
 	return path.Join(c.LocalClusterDir(), "key"), path.Join(c.LocalClusterDir(), "key.pub")
+}
+
+func (c *Cluster) UpdateExtraOptions(options string) {
+	optionList := strings.Split(options, " ")
+
+	for _, option := range optionList {
+		values := strings.SplitN(option, "=", 2)
+
+		if len(values) != 2 {
+			continue
+		}
+
+		if strings.Contains(values[1], "=") {
+			pattern := regexp.MustCompile(`^['"]?([\w\d-=,]+)['"]?$`)
+			matches := pattern.FindStringSubmatch(values[1])
+
+			if len(matches) == 2 {
+				if _, ok := c.ExtraOptions[values[0]]; !ok {
+					c.ExtraOptions[values[0]] = []string{}
+				}
+
+				c.ExtraOptions[values[0]] = append(c.ExtraOptions[values[0]].([]string), strings.Split(matches[1], ",")...)
+			}
+
+			continue
+		}
+
+		c.ExtraOptions[values[0]] = values[1]
+	}
+}
+
+func (c *Cluster) ParseExtraOptions(options interface{}) error {
+	bytes, err := json.Marshal(c.ExtraOptions)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	err = json.Unmarshal(bytes, options)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	return nil
 }

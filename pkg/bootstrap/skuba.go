@@ -22,7 +22,7 @@ import (
 )
 
 type SkubaExtraOptions struct {
-	RegisterCode string
+	RegisterCode string `json:"register_code"`
 }
 
 type SkubaBootstrapper struct {
@@ -45,7 +45,9 @@ func (s *SkubaBootstrapper) Deploy(cluster *data.Cluster, before func() error) e
 	}
 
 	extraOptions := SkubaExtraOptions{}
-	cluster.Spec.ParseExtraOptions(&extraOptions)
+	if err := cluster.Spec.ParseExtraOptions(&extraOptions); err != nil {
+		return err
+	}
 
 	if err := s.nodeManager.WaitNodesRunning(cluster.Name, 5); err != nil {
 		return errors.WithMessage(err, "some nodes are not running")
