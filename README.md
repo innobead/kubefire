@@ -47,7 +47,7 @@ Please run `kubefire install` command with root permission (or sudo without pass
 
 ## Bootstrapping Cluster
 
-### Bootstrap with command options or a declarative config
+### Bootstrap with command options, or a declarative config file
 
 `cluster create` provides detailed options to configure the cluster, but it also provides `--config` to accept a cluster configuration file to bootstrap the cluster as below commands. 
 
