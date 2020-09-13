@@ -47,6 +47,54 @@ Please run `kubefire install` command with root permission (or sudo without pass
 
 ## Bootstrapping Cluster
 
+### Bootstrap with command options or a declarative config
+
+`cluster create` provides detailed options to configure the cluster, but it also provides `--config` to accept a cluster configuration file to bootstrap the cluster as below commands. 
+
+#### With Command Options
+```console
+➜  kubefire cluster create -h
+Create cluster
+
+Usage:
+  kubefire cluster create [name] [flags]
+
+Flags:
+      --bootstrapper string    Bootstrapper type, options: [kubeadm, skuba, k3s] (default "kubeadm")
+      --cache                  Use caches (default true)
+      --config string          Cluster configuration file (ex: use 'config-template' command to generate the default cluster config)
+      --extra-options string   Extra options (ex: key=value,...) for bootstrapper
+      --force                  Force to recreate if the cluster exists
+  -h, --help                   help for create
+      --image string           Rootfs container image (default "ghcr.io/innobead/kubefire-opensuse-leap:15.2")
+      --kernel-args string     Kernel arguments (default "console=ttyS0 reboot=k panic=1 pci=off ip=dhcp security=apparmor apparmor=1")
+      --kernel-image string    Kernel container image (default "ghcr.io/innobead/kubefire-ignite-kernel:4.19.125-amd64")
+      --master-count int       Count of master node (default 1)
+      --master-cpu int         CPUs of master node (default 2)
+      --master-memory string   Memory of master node (default "2GB")
+      --master-size string     Disk size of master node (default "10GB")
+      --pubkey string          Public key
+      --start                  Start nodes (default true)
+      --version string         Version of Kubernetes supported by bootstrapper (ex: v1.18, v1.18.8, empty)
+      --worker-count int       Count of worker node
+      --worker-cpu int         CPUs of worker node (default 2)
+      --worker-memory string   Memory of worker node (default "2GB")
+      --worker-size string     Disk size of worker node (default "10GB")
+
+Global Flags:
+      --log-level string   log level, options: [panic, fatal, error, warning, info, debug, trace] (default "info")
+  -o, --output string      output format, options: [default, json, yaml] (default "default")
+```
+
+#### With Config File
+```consoel
+# Geneate a cluster template configuration, then update the config as per your needs
+kubefire cluster config-template > cluster.yaml
+
+# Create a cluster with the config file
+kubeifre cluster create demo --config=cluster.yaml
+```
+
 ### Bootstrap with selectable Kubernetes versions
 
 From v0.2.0, Kubefire supports user to create a cluster with a specific version supported by built-in bootstrappers in the below cases.
@@ -204,8 +252,14 @@ kubefire cluster create --version=[v<MAJOR>.<MINOR>.<PATCH> | v<MAJOR>.<MINOR>]
 # Delete clusters
 kubefire cluster delete
 
-# Get a cluster info
-kubefire cluster get
+# Show a cluster info
+kubefire cluster show
+
+# Show a cluster config
+kubefire cluster config
+
+# Create the default cluster config template
+kubefire cluster config-template
 
 # Stop a cluster
 kubefire cluster stop
@@ -223,7 +277,7 @@ kubefire cluster list
 kubefire cluster env
 
 # Print cluster kubeconfig
-kubefire kubeconfig get
+kubefire kubeconfig show
 
 # Download cluster kubeconfig
 kubefire kubeconfig download
@@ -231,8 +285,8 @@ kubefire kubeconfig download
 # SSH to a node
 kubefire node ssh
 
-# Get a node info
-kubefire node get
+# Show a node info
+kubefire node show
 
 # Stop a node
 kubefire node stop
