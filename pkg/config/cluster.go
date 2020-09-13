@@ -2,6 +2,7 @@ package config
 
 import (
 	"encoding/json"
+	"github.com/innobead/kubefire/pkg/constants"
 	"github.com/pkg/errors"
 	"path"
 	"regexp"
@@ -37,6 +38,25 @@ func NewCluster() *Cluster {
 	c.Worker.Cluster = &c
 
 	return &c
+}
+
+func NewDefaultCluster() *Cluster {
+	cluster := NewCluster()
+
+	cluster.Bootstrapper = constants.KUBEADM
+	cluster.Image = "ghcr.io/innobead/kubefire-opensuse-leap:15.2"
+	cluster.KernelImage = "ghcr.io/innobead/kubefire-ignite-kernel:4.19.125-amd64"
+	cluster.KernelArgs = "console=ttyS0 reboot=k panic=1 pci=off ip=dhcp security=apparmor apparmor=1"
+	cluster.Master.Count = 1
+	cluster.Master.Cpus = 2
+	cluster.Master.Memory = "2GB"
+	cluster.Master.DiskSize = "10GB"
+	cluster.Worker.Count = 0
+	cluster.Worker.Cpus = 2
+	cluster.Worker.Memory = "2GB"
+	cluster.Worker.DiskSize = "10GB"
+
+	return cluster
 }
 
 type Node struct {

@@ -26,9 +26,11 @@ func init() {
 		stopCmd,
 		restartCmd,
 		deleteCmd,
-		getCmd,
+		showCmd,
 		listCmd,
 		envCmd,
+		configCmd,
+		configTemplateCmd,
 	}
 
 	for _, c := range cmds {

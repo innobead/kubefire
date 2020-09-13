@@ -22,7 +22,7 @@ var Cmd = &cobra.Command{
 func init() {
 	cmds := []*cobra.Command{
 		sshCmd,
-		getCmd,
+		showCmd,
 		startCmd,
 		stopCmd,
 		restartCmd,

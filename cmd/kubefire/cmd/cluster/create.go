@@ -6,7 +6,6 @@ import (
 	"github.com/innobead/kubefire/internal/validate"
 	"github.com/innobead/kubefire/pkg/bootstrap"
 	pkgconfig "github.com/innobead/kubefire/pkg/config"
-	"github.com/innobead/kubefire/pkg/constants"
 	"github.com/innobead/kubefire/pkg/util"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -15,7 +14,7 @@ import (
 )
 
 var (
-	cluster      = pkgconfig.NewCluster()
+	cluster      = pkgconfig.NewDefaultCluster()
 	started      bool
 	cached       bool
 	extraOptions string
@@ -82,23 +81,23 @@ var createCmd = &cobra.Command{
 func init() {
 	flags := createCmd.Flags()
 
-	flags.StringVar(&cluster.Bootstrapper, "bootstrapper", constants.KUBEADM, util.FlagsValuesUsage("Bootstrapper type", bootstrap.BuiltinTypes))
+	flags.StringVar(&cluster.Bootstrapper, "bootstrapper", cluster.Bootstrapper, util.FlagsValuesUsage("Bootstrapper type", bootstrap.BuiltinTypes))
 	flags.StringVar(&cluster.Pubkey, "pubkey", "", "Public key")
 	flags.StringVar(&cluster.Version, "version", "", "Version of Kubernetes supported by bootstrapper (ex: v1.18, v1.18.8, empty)")
-	flags.StringVar(&cluster.Image, "image", "ghcr.io/innobead/kubefire-opensuse-leap:15.2", "Rootfs container image")
-	flags.StringVar(&cluster.KernelImage, "kernel-image", "ghcr.io/innobead/kubefire-ignite-kernel:4.19.125-amd64", "Kernel container image")
-	flags.StringVar(&cluster.KernelArgs, "kernel-args", "console=ttyS0 reboot=k panic=1 pci=off ip=dhcp security=apparmor apparmor=1", "Kernel arguments")
+	flags.StringVar(&cluster.Image, "image", cluster.Image, "Rootfs container image")
+	flags.StringVar(&cluster.KernelImage, "kernel-image", cluster.KernelImage, "Kernel container image")
+	flags.StringVar(&cluster.KernelArgs, "kernel-args", cluster.KernelArgs, "Kernel arguments")
 	flags.StringVar(&extraOptions, "extra-options", "", "Extra options (ex: key=value,...) for bootstrapper")
 
-	flags.IntVar(&cluster.Master.Count, "master-count", 1, "Count of master node")
-	flags.IntVar(&cluster.Master.Cpus, "master-cpu", 2, "CPUs of master node")
-	flags.StringVar(&cluster.Master.Memory, "master-memory", "2GB", "Memory of master node")
-	flags.StringVar(&cluster.Master.DiskSize, "master-size", "10GB", "Disk size of master node")
+	flags.IntVar(&cluster.Master.Count, "master-count", cluster.Master.Count, "Count of master node")
+	flags.IntVar(&cluster.Master.Cpus, "master-cpu", cluster.Master.Cpus, "CPUs of master node")
+	flags.StringVar(&cluster.Master.Memory, "master-memory", cluster.Master.Memory, "Memory of master node")
+	flags.StringVar(&cluster.Master.DiskSize, "master-size", cluster.Master.DiskSize, "Disk size of master node")
 
-	flags.IntVar(&cluster.Worker.Count, "worker-count", 0, "Count of worker node")
-	flags.IntVar(&cluster.Worker.Cpus, "worker-cpu", 2, "CPUs of worker node")
-	flags.StringVar(&cluster.Worker.Memory, "worker-memory", "2GB", "Memory of worker node")
-	flags.StringVar(&cluster.Worker.DiskSize, "worker-size", "10GB", "Disk size of worker node")
+	flags.IntVar(&cluster.Worker.Count, "worker-count", cluster.Worker.Count, "Count of worker node")
+	flags.IntVar(&cluster.Worker.Cpus, "worker-cpu", cluster.Worker.Cpus, "CPUs of worker node")
+	flags.StringVar(&cluster.Worker.Memory, "worker-memory", cluster.Worker.Memory, "Memory of worker node")
+	flags.StringVar(&cluster.Worker.DiskSize, "worker-size", cluster.Worker.DiskSize, "Disk size of worker node")
 
 	flags.BoolVar(&forceDeleteCluster, "force", false, "Force to recreate if the cluster exists")
 	flags.BoolVar(&cached, "cache", true, "Use caches")

@@ -21,7 +21,7 @@ var Cmd = &cobra.Command{
 
 func init() {
 	cmds := []*cobra.Command{
-		getCmd,
+		showCmd,
 		downloadCmd,
 	}
 

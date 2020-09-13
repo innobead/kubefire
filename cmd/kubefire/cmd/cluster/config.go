@@ -7,9 +7,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var getCmd = &cobra.Command{
-	Use:   "get [name]",
-	Short: "Get cluster",
+var configCmd = &cobra.Command{
+	Use:   "config [name]",
+	Short: "Show cluster configuration",
 	Args:  validate.OneArg("cluster name"),
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		return validate.CheckClusterExist(args[0])
@@ -17,9 +17,9 @@ var getCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		name := args[0]
 
-		cluster, err := di.ClusterManager().Get(name)
+		cluster, err := di.ConfigManager().GetCluster(name)
 		if err != nil {
-			return errors.WithMessagef(err, "failed to get cluster (%s) info", name)
+			return err
 		}
 
 		if err := di.Output().Print(cluster, nil, ""); err != nil {

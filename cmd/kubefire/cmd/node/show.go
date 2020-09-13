@@ -7,9 +7,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var getCmd = &cobra.Command{
-	Use:   "get [name]",
-	Short: "Get node",
+var showCmd = &cobra.Command{
+	Use:   "show [name]",
+	Short: "Show node info",
 	Args:  validate.OneArg("node name"),
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		return validate.CheckNodeExist(args[0])

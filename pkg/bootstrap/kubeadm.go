@@ -234,7 +234,7 @@ func (k *KubeadmBootstrapper) bootstrap(node *data.Node, isSingleNode bool, opti
 				`kubeadm init phase control-plane all -v 5 --apiserver-extra-args="%s" --controller-manager-extra-args="%s" --scheduler-extra-args="%s"`,
 				strings.Join(options.ApiServerOptions, ","),
 				strings.Join(options.ControllerManagerOptions, ","),
-				strings.Join(options.ControllerManagerOptions, ","),
+				strings.Join(options.SchedulerOptions, ","),
 			),
 			before: func(session *ssh.Session) bool {
 				logrus.Info("running kubeadm init")

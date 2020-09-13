@@ -12,10 +12,10 @@ import (
 	"os"
 )
 
-var getCmd = &cobra.Command{
-	Use:     "get [cluster-name]",
+var showCmd = &cobra.Command{
+	Use:     "show [cluster-name]",
 	Aliases: []string{"g"},
-	Short:   "Get the kubeconfig of cluster",
+	Short:   "Show the kubeconfig of cluster",
 	Args:    validate.OneArg("cluster name"),
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		logrus.SetLevel(logrus.ErrorLevel)
