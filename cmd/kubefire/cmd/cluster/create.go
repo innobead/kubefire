@@ -88,7 +88,7 @@ func init() {
 	flags.StringVar(&cluster.Image, "image", "ghcr.io/innobead/kubefire-opensuse-leap:15.2", "Rootfs container image")
 	flags.StringVar(&cluster.KernelImage, "kernel-image", "ghcr.io/innobead/kubefire-ignite-kernel:4.19.125-amd64", "Kernel container image")
 	flags.StringVar(&cluster.KernelArgs, "kernel-args", "console=ttyS0 reboot=k panic=1 pci=off ip=dhcp security=apparmor apparmor=1", "Kernel arguments")
-	flags.StringVar(&extraOptions, "extra-opts", "", "Extra options (ex: key=value,...) for bootstrapper")
+	flags.StringVar(&extraOptions, "extra-options", "", "Extra options (ex: key=value,...) for bootstrapper")
 
 	flags.IntVar(&cluster.Master.Count, "master-count", 1, "Count of master node")
 	flags.IntVar(&cluster.Master.Cpus, "master-cpu", 2, "CPUs of master node")
