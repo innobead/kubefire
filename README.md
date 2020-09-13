@@ -87,7 +87,7 @@ Global Flags:
 ```
 
 #### With Config File
-```consoel
+```console
 # Geneate a cluster template configuration, then update the config as per your needs
 kubefire cluster config-template > cluster.yaml
 
