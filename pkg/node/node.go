@@ -12,7 +12,6 @@ import (
 type Type string
 
 const (
-	Admin  Type = "admin"
 	Master Type = "master"
 	Worker Type = "worker"
 
@@ -20,7 +19,7 @@ const (
 	NameFormat = "%s-%s-%s"
 )
 
-var namePattern = fmt.Sprintf(`%%s-(%s|%s|%s)-\d+`, Admin, Master, Worker)
+var namePattern = fmt.Sprintf(`%%s-(%s|%s)-\d+`, Master, Worker)
 
 type Manager interface {
 	CreateNodes(nodeType Type, node *config.Node, started bool) error

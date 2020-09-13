@@ -56,7 +56,6 @@ func (d *DefaultManager) Create(name string, started bool) error {
 	}
 
 	nodeTypeConfigs := map[node.Type]*pkgconfig.Node{
-		node.Admin:  &cluster.Admin,
 		node.Master: &cluster.Master,
 		node.Worker: &cluster.Worker,
 	}
@@ -85,7 +84,6 @@ func (d *DefaultManager) Delete(name string, force bool) error {
 	}
 
 	nodeTypeConfigs := map[node.Type]*pkgconfig.Node{
-		node.Admin:  &cluster.Admin,
 		node.Master: &cluster.Master,
 		node.Worker: &cluster.Worker,
 	}

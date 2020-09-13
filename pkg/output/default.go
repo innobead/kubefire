@@ -62,7 +62,6 @@ func (d *DefaultOutput) Print(obj interface{}, filters []string, title string) e
 				d.parse(specField, filters, &tableHeaders, &tableData)
 				subObjs = append(
 					subObjs,
-					subObjectType{title: "Admin Node Configuration", obj: specField.FieldByName("Admin").Interface()},
 					subObjectType{title: "Master Node Configuration", obj: specField.FieldByName("Master").Interface()},
 					subObjectType{title: "Worker Node Configuration", obj: specField.FieldByName("Worker").Interface()},
 				)

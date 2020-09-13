@@ -19,19 +19,20 @@ type Cluster struct {
 	KernelImage string `json:"kernel_image,omitempty"`
 	KernelArgs  string `json:"kernel_args,omitempty"`
 
-	Admin  Node `json:"admin"`
+	ExtraOptions map[string]interface{} `json:"extra_options"`
+	Deployed     bool                   `json:"deployed"` // the only status property
+
 	Master Node `json:"master"`
 	Worker Node `json:"worker"`
-
-	ExtraOptions map[string]interface{} `json:"extra_options"`
-
-	Deployed bool `json:"deployed"` // the only status property
 }
 
 func NewCluster() *Cluster {
-	c := Cluster{Admin: Node{}, Master: Node{}, Worker: Node{}, ExtraOptions: map[string]interface{}{}}
+	c := Cluster{
+		Master:       Node{},
+		Worker:       Node{},
+		ExtraOptions: map[string]interface{}{},
+	}
 
-	c.Admin.Cluster = &c
 	c.Master.Cluster = &c
 	c.Worker.Cluster = &c
 

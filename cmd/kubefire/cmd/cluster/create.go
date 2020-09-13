@@ -90,11 +90,6 @@ func init() {
 	flags.StringVar(&cluster.KernelArgs, "kernel-args", "console=ttyS0 reboot=k panic=1 pci=off ip=dhcp security=apparmor apparmor=1", "Kernel arguments")
 	flags.StringVar(&extraOptions, "extra-opts", "", "Extra options (ex: key=value,...) for bootstrapper")
 
-	flags.IntVar(&cluster.Admin.Count, "admin-count", 0, "Count of admin node")
-	flags.IntVar(&cluster.Admin.Cpus, "admin-cpu", 1, "CPUs of admin node")
-	flags.StringVar(&cluster.Admin.Memory, "admin-memory", "512MB", "Memory of admin node")
-	flags.StringVar(&cluster.Admin.DiskSize, "admin-size", "2GB", "Disk size of admin node")
-
 	flags.IntVar(&cluster.Master.Count, "master-count", 1, "Count of master node")
 	flags.IntVar(&cluster.Master.Cpus, "master-cpu", 2, "CPUs of master node")
 	flags.StringVar(&cluster.Master.Memory, "master-memory", "2GB", "Memory of master node")

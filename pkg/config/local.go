@@ -84,7 +84,6 @@ func (l *LocalConfigManager) GetCluster(name string) (*Cluster, error) {
 		return nil, errors.WithStack(err)
 	}
 
-	c.Admin.Cluster = c
 	c.Master.Cluster = c
 	c.Worker.Cluster = c
 
