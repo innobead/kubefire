@@ -28,3 +28,7 @@ var ImageCmd = &cobra.Command{
 		return nil
 	},
 }
+
+func init() {
+	intcmd.AddOutputFlag(ImageCmd)
+}

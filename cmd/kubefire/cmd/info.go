@@ -36,6 +36,8 @@ var InfoCmd = &cobra.Command{
 }
 
 func init() {
+	intcmd.AddOutputFlag(InfoCmd)
+
 	flags := InfoCmd.Flags()
 	flags.BoolVarP(&showBootstrapperInfo, "bootstrapper", "b", false, "Show K8s/K3s supported versions in builtin bootstrappers")
 }

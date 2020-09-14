@@ -2,6 +2,7 @@ package cluster
 
 import (
 	"fmt"
+	intcmd "github.com/innobead/kubefire/internal/cmd"
 	"github.com/innobead/kubefire/internal/di"
 	"github.com/innobead/kubefire/pkg/config"
 	"github.com/pkg/errors"
@@ -33,10 +34,14 @@ var listCmd = &cobra.Command{
 			configClusters = append(configClusters, &c.Spec)
 		}
 
-		if err := di.Output().Print(configClusters, []string{"Name", "Bootstrapper"}, ""); err != nil {
+		if err := di.Output().Print(configClusters, nil, ""); err != nil {
 			return errors.WithMessagef(err, "failed to print output of clusters")
 		}
 
 		return nil
 	},
+}
+
+func init() {
+	intcmd.AddOutputFlag(listCmd)
 }

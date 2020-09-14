@@ -35,7 +35,7 @@ func (d *DefaultOutput) Print(obj interface{}, filters []string, title string) e
 		}
 
 		if title != "" {
-			fmt.Printf("### %s\n", title)
+			fmt.Printf("====== %s ======\n", title)
 		}
 
 		for i := 0; i < value.Len(); i++ {
@@ -55,7 +55,7 @@ func (d *DefaultOutput) Print(obj interface{}, filters []string, title string) e
 		} else {
 			switch value.Interface().(type) {
 			case data.Cluster:
-				fmt.Println("### Cluster Configuration")
+				fmt.Println("====== Cluster Configuration ======")
 
 				specField := value.FieldByName("Spec")
 
@@ -75,7 +75,7 @@ func (d *DefaultOutput) Print(obj interface{}, filters []string, title string) e
 
 			default:
 				if title != "" {
-					fmt.Printf("### %s\n", title)
+					fmt.Printf("====== %s ======\n", title)
 				}
 
 				d.parse(value, filters, &tableHeaders, &tableData)
@@ -119,22 +119,25 @@ func (d *DefaultOutput) parse(v reflect.Value, filters []string, tableHeaders *[
 			"Name",
 			"Status.Running",
 			"Status.IPAddresses",
-			"Status.Image",
-			"Status.Kernel",
+		)
+
+	case config.Node:
+		filters = append(
+			filters,
+			"Count",
+			"Memory",
+			"Cpus",
+			"DiskSize",
 		)
 
 	case config.Cluster:
-		if len(filters) == 0 {
-			filters = append(
-				filters,
-				"Name",
-				"Bootstrapper",
-				"Image",
-				"KernelImage",
-				"KernelArgs",
-				"ExtraOptions",
-			)
-		}
+		filters = append(
+			filters,
+			"Name",
+			"Bootstrapper",
+			"Image",
+			"KernelImage",
+		)
 	}
 
 	updateTableData := func(f reflect.Value, subTableData *[]string) {
@@ -157,6 +160,7 @@ func (d *DefaultOutput) parse(v reflect.Value, filters []string, tableHeaders *[
 
 		case reflect.Bool:
 			*subTableData = append(*subTableData, strconv.FormatBool(f.Bool()))
+
 		}
 	}
 

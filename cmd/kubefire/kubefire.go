@@ -8,7 +8,6 @@ import (
 	"github.com/innobead/kubefire/cmd/kubefire/cmd/node"
 	"github.com/innobead/kubefire/internal/config"
 	"github.com/innobead/kubefire/internal/di"
-	"github.com/innobead/kubefire/pkg/output"
 	"github.com/innobead/kubefire/pkg/util"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -31,8 +30,7 @@ var rootCmd = &cobra.Command{
 func init() {
 	cobra.OnInitialize(initConfig)
 
-	rootCmd.PersistentFlags().StringVar(&config.LogLevel, "log-level", logrus.InfoLevel.String(), util.FlagsValuesUsage("log level", logrus.AllLevels))
-	rootCmd.PersistentFlags().StringVarP(&config.Output, "output", "o", string(output.DEFAULT), util.FlagsValuesUsage("output format", output.BuiltinTypes))
+	rootCmd.PersistentFlags().StringVarP(&config.LogLevel, "log-level", "l", logrus.InfoLevel.String(), util.FlagsValuesUsage("log level", logrus.AllLevels))
 }
 
 func initConfig() {

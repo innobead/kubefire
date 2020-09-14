@@ -1,6 +1,7 @@
 package cluster
 
 import (
+	intcmd "github.com/innobead/kubefire/internal/cmd"
 	"github.com/innobead/kubefire/internal/di"
 	"github.com/innobead/kubefire/internal/validate"
 	"github.com/pkg/errors"
@@ -28,4 +29,8 @@ var showCmd = &cobra.Command{
 
 		return nil
 	},
+}
+
+func init() {
+	intcmd.AddOutputFlag(showCmd)
 }
