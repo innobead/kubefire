@@ -41,7 +41,24 @@ func NewKubeadmBootstrapper() *KubeadmBootstrapper {
 func (k *KubeadmExtraOptions) generateKubeadmInitOptions() []string {
 	var options []string
 	for _, o := range k.InitOptions {
-		options = append(options, "--"+o)
+		if !strings.HasPrefix(o, "--") {
+			o = "--" + o
+		}
+
+		options = append(options, o)
+	}
+
+	return options
+}
+
+func (k *KubeadmExtraOptions) generateControlPlaneComponentOptions(cpOptions *[]string) []string {
+	var options []string
+	for _, o := range *cpOptions {
+		if strings.HasPrefix(o, "--") {
+			o = strings.TrimPrefix(o, "--")
+		}
+
+		options = append(options, o)
 	}
 
 	return options
@@ -242,9 +259,9 @@ func (k *KubeadmBootstrapper) bootstrap(node *data.Node, isSingleNode bool, opti
 		{
 			cmdline: fmt.Sprintf(
 				`kubeadm init phase control-plane all -v 5 --apiserver-extra-args="%s" --controller-manager-extra-args="%s" --scheduler-extra-args="%s"`,
-				strings.Join(options.ApiServerOptions, ","),
-				strings.Join(options.ControllerManagerOptions, ","),
-				strings.Join(options.SchedulerOptions, ","),
+				strings.Join(options.generateControlPlaneComponentOptions(&options.ApiServerOptions), ","),
+				strings.Join(options.generateControlPlaneComponentOptions(&options.ControllerManagerOptions), ","),
+				strings.Join(options.generateControlPlaneComponentOptions(&options.SchedulerOptions), ","),
 			),
 			before: func(session *ssh.Session) bool {
 				logrus.Info("running kubeadm init")

@@ -136,7 +136,7 @@ To add extra installation options of the control plane components, use `--extra-
 - Add extra options of `Scheduler` into `scheduler_options='<option>,...'`.
 
 ```console
-kubefire cluster create demo --bootstrapper=kubeadm --extra-options="init_options='service-dns-domain=yourcluster.local' api_server_options='audit-log-maxage=10'"
+kubefire cluster create demo --bootstrapper=kubeadm --extra-options="init_options='--service-dns-domain=yourcluster.local' api_server_options='--audit-log-maxage=10'"
 ```
 
 [![asciicast](https://asciinema.org/a/lQfFfMa1zCXWvz321eUqhNyxB.svg)](https://asciinema.org/a/lQfFfMa1zCXWvz321eUqhNyxB)
@@ -170,7 +170,7 @@ kubefire cluster create demo --bootstrapper=k3s --extra-options="server_install_
 ### SUSE Skuba (K8s 1.17.9)
 
 ```console
-kubefire cluster create demo --bootstrapper=skuba --extra-options="RegisterCode=<Product Register Code>"
+kubefire cluster create demo --bootstrapper=skuba --extra-options="register_code=<Product Register Code>"
 ```
 
 ## Accessing Cluster
