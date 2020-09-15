@@ -98,7 +98,7 @@ func (c *Cluster) UpdateExtraOptions(options string) {
 		}
 
 		if strings.Contains(values[1], "=") {
-			pattern := regexp.MustCompile(`^['"]?([\w\d-=,]+)['"]?$`)
+			pattern := regexp.MustCompile(`^['"]?([\w\d-=,.]+)['"]?$`)
 			matches := pattern.FindStringSubmatch(values[1])
 
 			if len(matches) == 2 {

@@ -22,6 +22,7 @@ import (
 )
 
 type KubeadmExtraOptions struct {
+	InitOptions              []string `json:"init_options"`
 	ApiServerOptions         []string `json:"api_server_options"`
 	ControllerManagerOptions []string `json:"controller_manager_options"`
 	SchedulerOptions         []string `json:"scheduler_options"`
@@ -35,6 +36,15 @@ type KubeadmBootstrapper struct {
 
 func NewKubeadmBootstrapper() *KubeadmBootstrapper {
 	return &KubeadmBootstrapper{}
+}
+
+func (k *KubeadmExtraOptions) generateKubeadmInitOptions() []string {
+	var options []string
+	for _, o := range k.InitOptions {
+		options = append(options, "--"+o)
+	}
+
+	return options
 }
 
 func (k *KubeadmBootstrapper) SetConfigManager(configManager pkgconfig.Manager) {
@@ -242,7 +252,11 @@ func (k *KubeadmBootstrapper) bootstrap(node *data.Node, isSingleNode bool, opti
 			},
 		},
 		{
-			cmdline: fmt.Sprintf("kubeadm init -v 5 --skip-phases='control-plane' --ignore-preflight-errors='%s'", strings.Join(ignoreErrors, ",")),
+			cmdline: fmt.Sprintf(
+				"kubeadm init -v 5 --skip-phases='control-plane' --ignore-preflight-errors='%s' %s",
+				strings.Join(ignoreErrors, ","),
+				strings.Join(options.generateKubeadmInitOptions(), " "),
+			),
 			before: func(session *ssh.Session) bool {
 				logrus.Info("running kubeadm init")
 				return true
