@@ -8,6 +8,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var (
+	showKubeconfigPathOnly bool
+)
+
 var envCmd = &cobra.Command{
 	Use:   "env [name]",
 	Short: "Print environment values of cluster",
@@ -23,8 +27,16 @@ var envCmd = &cobra.Command{
 			return errors.WithMessagef(err, "failed to get cluster (%s) config", name)
 		}
 
-		fmt.Printf("KUBECONFIG=%s\n", cluster.LocalKubeConfig())
+		if showKubeconfigPathOnly {
+			fmt.Print(cluster.LocalKubeConfig())
+		} else {
+			fmt.Printf("KUBECONFIG=%s\n", cluster.LocalKubeConfig())
+		}
 
 		return nil
 	},
+}
+
+func init() {
+	envCmd.Flags().BoolVar(&showKubeconfigPathOnly, "path-only", false, "Show kubeconfig path only")
 }
