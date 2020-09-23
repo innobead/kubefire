@@ -5,6 +5,11 @@ set -o nounset
 #set -o pipefail
 #set -o xtrace
 
+function _is_arm_arch() {
+    uname -m | grep "aarch64"
+    return $?
+}
+
 function ask() {
   read -p "Uninstall $1, are you sure [Y/y]? " -n 1 -r
   echo
@@ -17,10 +22,20 @@ function ask() {
 }
 
 function uninstall_containerd() {
+  if _is_arm_arch; then
+    echo "!!! Please uninstall containerd aarch64 via system package manager !!!"
+    return
+  fi
+
   sudo rm -f /usr/local/bin/containerd* /usr/local/bin/ctr
 }
 
 function uninstall_runc() {
+  if _is_arm_arch; then
+    echo "!!! Please uninstall containerd aarch64 via system package manager !!!"
+    return
+  fi
+
   sudo rm -f /usr/local/bin/runc
 }
 

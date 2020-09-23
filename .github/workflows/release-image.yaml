@@ -15,6 +15,16 @@ jobs:
         id: checkout-code
         uses: actions/checkout@v2
 
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: crazy-max/ghaction-docker-buildx@v3
+        with:
+          buildx-version: latest
+          qemu-version: latest
+
+      - name: Available platforms
+        run: echo ${{ steps.buildx.outputs.platforms }}
+
       # https://docs.github.com/en/actions/reference/software-installed-on-github-hosted-runners
       - name: Release images
         run: make publish-images

@@ -42,6 +42,11 @@ function _check_version() {
   return $?
 }
 
+function _is_arm_arch() {
+    uname -m | grep "aarch64"
+    return $?
+}
+
 function check_virtualization() {
   lscpu | grep Virtualization
   lsmod | grep kvm
@@ -56,13 +61,19 @@ function install_containerd() {
   local version="${CONTAINERD_VERSION:1}"
   local dir=containerd-$version
 
-  curl -sSLO "https://github.com/containerd/containerd/releases/download/${CONTAINERD_VERSION}/containerd-${version}-linux-${GOARCH}.tar.gz"
+
+  if _is_arm_arch; then
+    echo "!!! Please install containerd aarch64 via system package manager, because there is no official aarch64 release from the github repo. !!!"
+    return
+  fi
+
+  curl -sfSLO "https://github.com/containerd/containerd/releases/download/${CONTAINERD_VERSION}/containerd-${version}-linux-${GOARCH}.tar.gz"
   mkdir -p $dir
   tar -zxvf $dir*.tar.gz -C $dir
   chmod +x $dir/bin/*
   sudo mv $dir/bin/* /usr/local/bin/
 
-  curl -sSLO "https://raw.githubusercontent.com/containerd/containerd/${CONTAINERD_VERSION}/containerd.service"
+  curl -sfSLO "https://raw.githubusercontent.com/containerd/containerd/${CONTAINERD_VERSION}/containerd.service"
   sudo groupadd containerd || true
   sudo mv containerd.service /etc/systemd/system/containerd.service
   sudo sed -i -E "s#(ExecStart=/usr/local/bin/containerd)#\1\nExecStartPost=/usr/bin/chgrp containerd /run/containerd/containerd.sock#g" /etc/systemd/system/containerd.service
@@ -78,7 +89,12 @@ function install_runc() {
     return
   fi
 
-  curl -sSL "https://github.com/opencontainers/runc/releases/download/${RUNC_VERSION}/runc.amd64" -o runc
+  if _is_arm_arch; then
+    echo "!!! Please install runc aarch64 via system package manager, because there is no official aarch64 release from the github repo. !!!"
+    return
+  fi
+
+  curl -sfSL "https://github.com/opencontainers/runc/releases/download/${RUNC_VERSION}/runc.amd64" -o runc
   chmod +x runc
   sudo mv runc /usr/local/bin/
 }
@@ -90,11 +106,23 @@ function install_cni() {
   fi
 
   mkdir -p /opt/cni/bin
-  curl -sSL "https://github.com/containernetworking/plugins/releases/download/${CNI_VERSION}/cni-plugins-linux-amd64-${CNI_VERSION}.tgz" | tar -C /opt/cni/bin -xz
+
+  local f="https://github.com/containernetworking/plugins/releases/download/${CNI_VERSION}/cni-plugins-linux-amd64-${CNI_VERSION}.tgz"
+  if _is_arm_arch; then
+    f="https://github.com/containernetworking/plugins/releases/download/${CNI_VERSION}/cni-plugins-linux-arm64-${CNI_VERSION}.tgz"
+  fi
+
+  curl -sfSL "$f" | tar -C /opt/cni/bin -xz
 }
 
 function install_cni_patches() {
-    curl -sSLO "https://github.com/innobead/kubefire/releases/download/${STABLE_KUBEFIRE_VERSION}/host-local-rev"
+    if _is_arm_arch; then
+      curl -o host-local-rev -sfSL "https://github.com/innobead/kubefire/releases/download/${STABLE_KUBEFIRE_VERSION}/host-local-rev-linux-arm64"
+    else
+      curl -o host-local-rev -sfSL "https://github.com/innobead/kubefire/releases/download/${STABLE_KUBEFIRE_VERSION}/host-local-rev-linux-amd64" || \
+      curl -o host-local-rev -sfSL "https://github.com/innobead/kubefire/releases/download/${STABLE_KUBEFIRE_VERSION}/host-local-rev"
+    fi
+
     chmod +x host-local-rev
     sudo mv host-local-rev /opt/cni/bin/
 }
@@ -107,7 +135,13 @@ function install_ignite() {
 
   for binary in ignite ignited; do
     echo "Installing $binary..."
-    curl -sSLo $binary "https://github.com/weaveworks/ignite/releases/download/${IGNITE_VERION}/${binary}-${GOARCH}"
+
+    local f="https://github.com/weaveworks/ignite/releases/download/${IGNITE_VERION}/${binary}-amd64"
+    if _is_arm_arch; then
+      f="https://github.com/weaveworks/ignite/releases/download/${IGNITE_VERION}/${binary}-arm64"
+    fi
+
+    curl -sfSLo $binary "$f"
     chmod +x $binary
     sudo mv $binary /usr/local/bin
   done
@@ -119,7 +153,7 @@ function check_ignite() {
 
 function create_cni_default_config() {
   mkdir -p /etc/cni/net.d/ || true
-  cat <<'EOF' > /etc/cni/net.d/00-kubefire.conflist
+  sudo cat <<'EOF' > /etc/cni/net.d/00-kubefire.conflist
 {
 	"cniVersion": "0.4.0",
 	"name": "kubefire-cni-bridge",
