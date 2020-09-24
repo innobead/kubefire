@@ -48,6 +48,10 @@ function _is_arm_arch() {
 }
 
 function check_virtualization() {
+  if _is_arm_arch; then
+    return
+  fi
+
   lscpu | grep Virtualization
   lsmod | grep kvm
 }
