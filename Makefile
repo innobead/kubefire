@@ -15,9 +15,9 @@ CR_IMAGE_PREFIX := $(CR_PATH)innobead
 KERNEL_IMAGE_NAME=${CR_IMAGE_PREFIX}/$(PROJECT)-ignite-kernel
 BUILD_SUSE_IMAGES ?=
 
-ContainerdVersion := v1.4.0
+ContainerdVersion := v1.4.1
 IgniteVersion := v0.7.1
-CniVersion := v0.8.6
+CniVersion := v0.8.7
 RuncVersion := v1.0.0-rc92
 
 GO_LINKFLAGS := -X=github.com/innobead/kubefire/internal/config.BuildVersion=$(COMMIT)
@@ -70,7 +70,7 @@ build-cni: ## Build CNI executables
 	mkdir -p $(BUILD_TMP_DIR) || true
 	mkdir -p $(BUILD_CNI_DIR)
 	cd $(BUILD_TMP_DIR); \
-		TAG=v0.8.6-patch; \
+		TAG=$(CniVersion)-patch; \
 		git clone --branch $${TAG} https://github.com/innobead/plugins; \
         GOOS=linux GOARCH=amd64 ./plugins/build_linux.sh -ldflags "-extldflags -static -X github.com/containernetworking/plugins/pkg/utils/buildversion.BuildVersion=$${TAG}"; \
 		mv ./plugins/bin/host-local $(BUILD_CNI_DIR)/host-local-rev-linux-amd64; \
