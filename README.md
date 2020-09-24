@@ -2,9 +2,10 @@
 
 KubeFire is to create and manage Kubernetes clusters running on FireCracker microVMs via **weaveworks/ignite**. 
 
-- No need to have KVM qocws image for rootfs and kernel. Ignite uses independent rootfs and kernel from OCI images.
-- Ignite uses container managment engine like docker or containerd to manage Firecracker processes running in containers.
-- Have different bootstappers to provision Kubernetes clusters like Kubeadm, K3s, and SUSE Skuba. 
+- Uses independent rootfs and kernel from OCI images instead of traditional VM images like qcow2, vhd, etc 
+- Uses containerd to manage Firecracker processes
+- Have different cluster bootstappers to provision Kubernetes clusters like Kubeadm, K3s, and SUSE Skuba
+- Supports deploying clusters on different architectures like X86_64/AMD64 and ARM64/AARCH64
 
 # Getting Started
 
@@ -39,19 +40,21 @@ Please run `kubefire install` command with root permission (or sudo without pass
 - Check virtualization supported
 - Install necessary components including runc, containerd, CNI plugins, and Ignite
 
-> Note: 
+> Notes: 
 > - To uninstall the prerequisites, run `kubefire uninstall`.
 > - To check the installation status, run `kubefire info`. 
+> - For ARM64, `containerd` and `runc` will not be automatically installed by `kubefire install`, because there are no official ARM64 artifacts provided by https://github.com/containerd/containerd and https://github.com/opencontainers/runc. 
+> Please install manually via package manager on host (ex: Ubuntu apt, OpenSUSE zypper, CentOS yum, etc).
 
 [![asciicast](https://asciinema.org/a/tQKqYjojnsgZOjZqrGbF9Zqh0.svg)](https://asciinema.org/a/tQKqYjojnsgZOjZqrGbF9Zqh0)
 
 ## Bootstrapping Cluster
 
-### Bootstrap with command options, or a declarative config file
+### Bootstrapping with command options, or a declarative config file
 
 `cluster create` provides detailed options to configure the cluster, but it also provides `--config` to accept a cluster configuration file to bootstrap the cluster as below commands. 
 
-#### With Command Options
+#### With command options
 ```console
 ➜  kubefire cluster create -h
 Create cluster
@@ -86,7 +89,8 @@ Global Flags:
   -o, --output string      output format, options: [default, json, yaml] (default "default")
 ```
 
-#### With Config File
+#### With declarative config file
+
 ```console
 # Geneate a cluster template configuration, then update the config as per your needs
 kubefire cluster config-template > cluster.yaml
@@ -95,9 +99,7 @@ kubefire cluster config-template > cluster.yaml
 kubeifre cluster create demo --config=cluster.yaml
 ```
 
-### Bootstrap with selectable Kubernetes versions
-
-From v0.2.0, Kubefire supports user to create a cluster with a specific version supported by built-in bootstrappers in the below cases.
+### Bootstrapping with selectable Kubernetes versions
 
 ```console
 # Create a cluster with the latest versions w/o any specified version
@@ -117,7 +119,7 @@ kubefire cluster create demo --version=v1.16
 kubefire cluster create demo --version=v1.15
 ```
 
-### Kubeadm
+### Bootstrapping with Kubeadm
 > Supports [the latest supported version](https://dl.k8s.io/release/stable.txt) and last 3 minor versions.
 
 ```console
@@ -141,7 +143,7 @@ kubefire cluster create demo --bootstrapper=kubeadm --extra-options="init_option
 
 [![asciicast](https://asciinema.org/a/lQfFfMa1zCXWvz321eUqhNyxB.svg)](https://asciinema.org/a/lQfFfMa1zCXWvz321eUqhNyxB)
 
-### K3s
+### Bootstrapping with K3s
 > Supports [the latest supported version](https://update.k3s.io/v1-release/channels/latest) and last 3 minor versions.
 
 Please note that K3s only officially supports Ubuntu 16.04 and 18.04, the kernel versions of which are 4.4 and 4.15. 
@@ -151,6 +153,15 @@ For rootfs, it's no problem to use other non-Ubuntu images.
 ```console
 kubefire cluster create demo --bootstrapper=k3s
 ```
+
+### Bootstrapping with K3s on ARM64
+
+From 0.3.0, it's able to deploy K3s cluster on ARM64 architecture.
+
+> Notes:
+> K3s supported only, and Kubeadm will be planned to support in the future.
+
+[![asciicast](https://asciinema.org/a/6UVU9PVdcqAAtgN17N9EAaSFq.svg)](https://asciinema.org/a/6UVU9PVdcqAAtgN17N9EAaSFq)
 
 #### Add extra K3s installation options
 
@@ -167,7 +178,7 @@ kubefire cluster create demo --bootstrapper=k3s --extra-options="server_install_
 
 [![asciicast](https://asciinema.org/a/HqmfS4wZP7pPVS3E7M7gwAzmA.svg)](https://asciinema.org/a/HqmfS4wZP7pPVS3E7M7gwAzmA)
 
-### SUSE Skuba (K8s 1.17.9)
+### Bootstrapping with SUSE Skuba (K8s 1.17.9)
 
 ```console
 kubefire cluster create demo --bootstrapper=skuba --extra-options="register_code=<Product Register Code>"
@@ -210,8 +221,9 @@ Usage:
 Available Commands:
   cluster     Manage clusters
   help        Help about any command
+  image       Show supported RootFS and Kernel images
   info        Show info of prerequisites, supported K8s/K3s versions
-  install     Install prerequisites
+  install     Install or update prerequisites
   kubeconfig  Manage kubeconfig of clusters
   node        Manage nodes
   uninstall   Uninstall prerequisites
@@ -219,8 +231,7 @@ Available Commands:
 
 Flags:
   -h, --help               help for kubefire
-      --log-level string   log level, options: [panic, fatal, error, warning, info, debug, trace] (default "info")
-  -o, --output string      output format, options: [default, json, yaml] (default "default")
+  -l, --log-level string   log level, options: [panic, fatal, error, warning, info, debug, trace] (default "info")
 
 Use "kubefire [command] --help" for more information about a command.
 ```
@@ -322,6 +333,8 @@ Besides below prebuilt images, you can also use the images provided by [weavewor
 ## Kernel images (w/ AppArmor enabled)
 - ghcr.io/innobead/kubefire-ignite-kernel:5.4.43-amd64
 - ghcr.io/innobead/kubefire-ignite-kernel:4.19.125-amd64 (default)
+- ghcr.io/innobead/kubefire-ignite-kernel:5.4.43-arm64
+- ghcr.io/innobead/kubefire-ignite-kernel:4.19.125-arm64 (default)
 
 ## References
 
