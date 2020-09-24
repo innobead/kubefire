@@ -121,7 +121,7 @@ function install_cni() {
 
 function install_cni_patches() {
     if _is_arm_arch; then
-      curl -o host-local-rev -sfSL "https://github.com/innobead/kubefire/releases/download/${STABLE_KUBEFIRE_VERSION}/host-local-rev-linux-arm64"
+      curl -o host-local-rev -sSL "https://github.com/innobead/kubefire/releases/download/${STABLE_KUBEFIRE_VERSION}/host-local-rev-linux-arm64" # FIXME: add -f back later
     else
       curl -o host-local-rev -sfSL "https://github.com/innobead/kubefire/releases/download/${STABLE_KUBEFIRE_VERSION}/host-local-rev-linux-amd64" || \
       curl -o host-local-rev -sfSL "https://github.com/innobead/kubefire/releases/download/${STABLE_KUBEFIRE_VERSION}/host-local-rev"
