@@ -6,6 +6,7 @@ import (
 	"github.com/pkg/errors"
 	"path"
 	"regexp"
+	"runtime"
 	"strings"
 )
 
@@ -55,6 +56,11 @@ func NewDefaultCluster() *Cluster {
 	cluster.Worker.Cpus = 2
 	cluster.Worker.Memory = "2GB"
 	cluster.Worker.DiskSize = "10GB"
+
+	if runtime.GOARCH == "arm64" {
+		cluster.KernelImage = "ghcr.io/innobead/kubefire-ignite-kernel:4.19.125-arm64"
+		cluster.Bootstrapper = constants.K3S
+	}
 
 	return cluster
 }

@@ -6,8 +6,10 @@ import (
 	"github.com/innobead/kubefire/internal/di"
 	interr "github.com/innobead/kubefire/internal/error"
 	"github.com/innobead/kubefire/pkg/bootstrap"
+	"github.com/innobead/kubefire/pkg/constants"
 	"github.com/pkg/errors"
 	"regexp"
+	"runtime"
 )
 
 func CheckPrerequisites() error {
@@ -50,6 +52,12 @@ func CheckClusterVersion(version string) error {
 func CheckBootstrapperType(bootstrapper string) error {
 	if !bootstrap.IsValid(bootstrapper) {
 		return errors.WithMessage(interr.BootstrapperNotFoundError, Field("bootstrapper", bootstrapper))
+	}
+
+	if runtime.GOARCH == "arm64" {
+		if bootstrapper == constants.KUBEADM || bootstrapper == constants.SKUBA {
+			return errors.WithMessage(interr.BootstrapperNotSupportError, Field("bootstrapper", bootstrapper))
+		}
 	}
 
 	return nil

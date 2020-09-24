@@ -43,6 +43,7 @@ var createCmd = &cobra.Command{
 		if err := validate.CheckBootstrapperType(cluster.Bootstrapper); err != nil {
 			return err
 		}
+
 		config.Bootstrapper = cluster.Bootstrapper
 		di.DelayInit(true)
 
@@ -123,7 +124,7 @@ func init() {
 func deployCluster(name string) error {
 	cluster, err := di.ClusterManager().Get(name)
 	if err != nil {
-		return errors.WithMessagef(err, "failed to get cluster (%s) before bootstrapping", cluster.Name)
+		return errors.WithMessagef(err, "failed to get cluster (%s) before bootstrapping", name)
 	}
 
 	err = di.Bootstrapper().Deploy(

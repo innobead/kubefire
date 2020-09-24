@@ -9,6 +9,7 @@ var (
 	ClusterNotFoundError                = errors.New("cluster not found")
 	ClusterVersionInvalidError          = errors.New("version is invalid. The format should be v<major>.<minor> or v<major>.<minor.<patch>")
 	BootstrapperNotFoundError           = errors.New("bootstrapper not found")
+	BootstrapperNotSupportError         = errors.New("bootstrapper not supported")
 )
 
 func CheckErrors(errorFuncs ...func() error) error {
