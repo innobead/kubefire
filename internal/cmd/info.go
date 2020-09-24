@@ -117,17 +117,17 @@ func cniVersion(expectedVersion string) PrerequisitesInfo {
 		gocni.WithPluginDir([]string{CniBinDir}),
 	)
 	if err != nil {
-		logrus.Errorf("failed to initialize cni library: %v", err)
+		logrus.Warnf("failed to initialize cni library: %v", err)
 		return info
 	}
 
 	if err := client.Load(gocni.WithLoNetwork, gocni.WithDefaultConf); err != nil {
-		logrus.Errorf("failed to load cni configuration: %v", err)
+		logrus.Warnf("failed to load cni configuration: %v", err)
 		return info
 	}
 
 	if len(client.GetConfig().Networks) != 2 {
-		logrus.Errorf("failed to load cni configuration because network configuration count is not 2")
+		logrus.Warnf("failed to load cni configuration because network configuration count is not 2")
 		return info
 	}
 
