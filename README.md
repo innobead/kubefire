@@ -56,7 +56,7 @@ Please run `kubefire install` command with root permission (or sudo without pass
 
 #### With command options
 ```console
-➜  kubefire cluster create -h
+➜ kubefire cluster create -h
 Create cluster
 
 Usage:
@@ -93,10 +93,32 @@ Global Flags:
 
 ```console
 # Geneate a cluster template configuration, then update the config as per your needs
-kubefire cluster config-template > cluster.yaml
+➜ kubefire cluster config-template > cluster.yaml
+
+➜ cat cluster.yaml   
+name: ""
+bootstrapper: kubeadm
+pubkey: ""
+prikey: ""
+version: ""
+image: ghcr.io/innobead/kubefire-opensuse-leap:15.2
+kernel_image: ghcr.io/innobead/kubefire-ignite-kernel:4.19.125-amd64
+kernel_args: console=ttyS0 reboot=k panic=1 pci=off ip=dhcp security=apparmor apparmor=1
+extra_options: {}
+deployed: false
+master:
+  count: 1
+  memory: 2GB
+  cpus: 2
+  disk_size: 10GB
+worker:
+  count: 0
+  memory: 2GB
+  cpus: 2
+  disk_size: 10GB
 
 # Create a cluster with the config file
-kubeifre cluster create demo --config=cluster.yaml
+➜ kubeifre cluster create demo --config=cluster.yaml
 ```
 
 ### Bootstrapping with selectable Kubernetes versions
