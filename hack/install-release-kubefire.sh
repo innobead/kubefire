@@ -11,4 +11,11 @@ function get_latest_release() {
     sed -E 's/.*"([^"]+)".*/\1/'
 }
 
-curl -sfSLO "https://github.com/innobead/kubefire/releases/download/$(get_latest_release)/kubefire" && chmod +x kubefire && sudo mv kubefire /usr/local/bin
+filename="kubefire-linux-amd64"
+if [[ "$(uname -m)" == "aarch64" ]]; then
+  filename="kubefire-linux-arm64"
+fi
+
+echo $filename
+# shellcheck disable=SC2046
+curl -sfSLO "https://github.com/innobead/kubefire/releases/download/$(get_latest_release)/$filename" && chmod +x $filename && sudo mv $filename /usr/local/bin/kubefire
