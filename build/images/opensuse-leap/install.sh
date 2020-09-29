@@ -4,8 +4,6 @@ set -o errexit
 
 zypper ref
 
-zypper in -f -y ca-certificates-suse
-
 zypper in -f -y systemd
 ln -s /usr/lib/systemd/systemd /sbin/init
 
