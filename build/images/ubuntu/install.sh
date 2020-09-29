@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -o errexit
+
 echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
 
 # udev is needed for booting a "real" VM, setting up the ttyS0 console properly
@@ -20,7 +22,6 @@ apt-get update && apt-get install -y \
   udev \
   vim-tiny \
   wget \
-  which \
   e2fsprogs \
   thin-provisioning-tools \
   lvm2 \

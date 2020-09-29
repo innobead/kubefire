@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -o errexit
+
 cleanup() {
   zypper rr product
   zypper rr product-update

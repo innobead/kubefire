@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -o errexit
+
 yum -y install \
   iproute \
   iputils \

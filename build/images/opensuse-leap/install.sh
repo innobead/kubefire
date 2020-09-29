@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -o errexit
+
 zypper ref
 
 zypper in -f -y ca-certificates-suse
