@@ -330,6 +330,12 @@ kubefire node start
 
 # Restart a node
 kubefire node restart
+
+# Show cache info
+kubefire cache show
+
+# Delete caches
+kubefire cache delete
 ```
 
 # Troubleshooting
