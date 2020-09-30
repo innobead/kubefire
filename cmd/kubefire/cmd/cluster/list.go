@@ -1,7 +1,6 @@
 package cluster
 
 import (
-	"fmt"
 	intcmd "github.com/innobead/kubefire/internal/cmd"
 	"github.com/innobead/kubefire/internal/di"
 	"github.com/innobead/kubefire/pkg/config"
@@ -23,11 +22,6 @@ var listCmd = &cobra.Command{
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		clusters, _ := di.ClusterManager().List()
-
-		if len(clusters) == 0 {
-			fmt.Println("No clusters found")
-			return nil
-		}
 
 		var configClusters []*config.Cluster
 		for _, c := range clusters {

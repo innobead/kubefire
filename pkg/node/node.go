@@ -33,6 +33,8 @@ type Manager interface {
 	StartNode(name string) error
 	StopNodes(clusterName string) error
 	StopNode(name string) error
+	GetCaches() ([]interface{}, error)
+	DeleteCaches() error
 }
 
 func Name(clusterName string, nodeType Type, index int) string {

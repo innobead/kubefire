@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/innobead/kubefire/cmd/kubefire/cmd"
+	"github.com/innobead/kubefire/cmd/kubefire/cmd/cache"
 	"github.com/innobead/kubefire/cmd/kubefire/cmd/cluster"
 	"github.com/innobead/kubefire/cmd/kubefire/cmd/kubeconfig"
 	"github.com/innobead/kubefire/cmd/kubefire/cmd/node"
@@ -61,6 +62,7 @@ func main() {
 		kubeconfig.Cmd,
 		cluster.Cmd,
 		node.Cmd,
+		cache.Cmd,
 	}
 
 	for _, c := range cmds {

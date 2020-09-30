@@ -15,7 +15,11 @@ var deleteCmd = &cobra.Command{
 	Short:   "Delete clusters",
 	Args:    validate.MinimumArgs("name"),
 	PreRunE: func(cmd *cobra.Command, args []string) error {
-		return validate.CheckClusterExist(args[0])
+		if !forceDeleteCluster {
+			return validate.CheckClusterExist(args[0])
+		}
+
+		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		for _, n := range args {

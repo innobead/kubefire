@@ -46,6 +46,8 @@ function uninstall_cni() {
 function uninstall_ignite() {
   # shellcheck disable=SC2046
   sudo ignite rm -f $(sudo ignite ps -aq) &>/dev/null || true
+  sudo ignite image ls -q | xargs sudo ignite image rm &>/dev/null || true
+  sudo ignite kernel ls -q | xargs sudo ignite kernel rm &>/dev/null || true
 
   # clean up firecracker vms, kernels, rootfs
   sudo rm -rf /var/lib/firecracker

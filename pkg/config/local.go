@@ -77,7 +77,7 @@ func (l *LocalConfigManager) GetCluster(name string) (*Cluster, error) {
 
 	bytes, err := ioutil.ReadFile(c.LocalClusterConfigFile())
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return c, errors.WithStack(err)
 	}
 
 	if err := yaml.Unmarshal(bytes, c); err != nil {
@@ -107,6 +107,11 @@ func (l *LocalConfigManager) ListClusters() ([]*Cluster, error) {
 
 		c, err := l.GetCluster(clusterDir.Name())
 		if err != nil {
+			if os.IsNotExist(errors.Cause(err)) {
+				logrus.WithField("cluster", clusterDir.Name()).Debugln("no cluster configurations found")
+				continue
+			}
+
 			return nil, err
 		}
 

@@ -3,6 +3,7 @@ package di
 import (
 	"github.com/innobead/kubefire/pkg/bootstrap"
 	"github.com/innobead/kubefire/pkg/bootstrap/versionfinder"
+	"github.com/innobead/kubefire/pkg/cache"
 	"github.com/innobead/kubefire/pkg/cluster"
 	pkgconfig "github.com/innobead/kubefire/pkg/config"
 	"github.com/innobead/kubefire/pkg/node"
@@ -73,6 +74,10 @@ func DelayInit(force bool) {
 		awareInjectInterfaceTypes,
 		awareInjectTypes{awareType: reflect.TypeOf(new(OutputAware)).Elem(), injectType: reflect.TypeOf(new(output.Outputer)).Elem()},
 	)
+	awareInjectInterfaceTypes = append(
+		awareInjectInterfaceTypes,
+		awareInjectTypes{awareType: reflect.TypeOf(new(CacheManagerAware)).Elem(), injectType: reflect.TypeOf(new(cache.Manager)).Elem()},
+	)
 
 	awareInterfaceInstances = append(awareInterfaceInstances, ClusterManager())
 	awareInterfaceInstances = append(awareInterfaceInstances, NodeManager())
@@ -80,6 +85,7 @@ func DelayInit(force bool) {
 	awareInterfaceInstances = append(awareInterfaceInstances, Bootstrapper())
 	awareInterfaceInstances = append(awareInterfaceInstances, VersionFinder())
 	awareInterfaceInstances = append(awareInterfaceInstances, Output())
+	awareInterfaceInstances = append(awareInterfaceInstances, CacheManager())
 
 	// inject dependencies
 	for _, awareInjectInterfaceType := range awareInjectInterfaceTypes {
@@ -113,8 +119,18 @@ func DelayInit(force bool) {
 	logrus.Debugln("completed dependency injection system")
 }
 
-func addObjToContainer(key string, obj interface{}) {
-	container[key] = obj
+func addObjToContainer(emptyObj interface{}, createObj func() interface{}) interface{} {
+	objType := reflect.TypeOf(emptyObj).Elem()
+	objKey := path.Join(objType.PkgPath(), objType.Name())
+
+	if obj := getObjFromContainer(objKey); obj != nil {
+		return obj
+	}
+
+	obj := createObj()
+	container[objKey] = obj
+
+	return obj
 }
 
 func getObjFromContainer(key string) interface{} {

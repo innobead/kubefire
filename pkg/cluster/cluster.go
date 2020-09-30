@@ -7,6 +7,7 @@ import (
 	"github.com/innobead/kubefire/pkg/node"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+	"os"
 )
 
 type Manager interface {
@@ -80,7 +81,9 @@ func (d *DefaultManager) Delete(name string, force bool) error {
 
 	cluster, err := d.configManager.GetCluster(name)
 	if err != nil {
-		return err
+		if !os.IsNotExist(errors.Cause(err)) {
+			return err
+		}
 	}
 
 	nodeTypeConfigs := map[node.Type]*pkgconfig.Node{

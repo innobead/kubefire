@@ -21,14 +21,23 @@ import (
 )
 
 const (
-	RunCmd    = `ignite run {{.Image}} --name={{.Name}} --label=cluster={{.Cluster}} --ssh={{.Pubkey}} --kernel-image={{.KernelImage}} --kernel-image={{.KernelImage}} --cpus={{.Cpus}} --memory={{.Memory}} --size={{.DiskSize}}`
-	CreateCmd = `ignite create {{.Image}} --name={{.Name}} --label=cluster={{.Cluster}} --ssh={{.Pubkey}} --kernel-image={{.KernelImage}} --kernel-image={{.KernelImage}} --cpus={{.Cpus}} --memory={{.Memory}} --size={{.DiskSize}}`
-	DeleteCmd = "ignite rm {{.Name}} --force"
-	StartCmd  = "ignite start {{.Name}}"
-	StopCmd   = "ignite stop {{.Name}}"
+	RunCmd            = `ignite run {{.Image}} --name={{.Name}} --label=cluster={{.Cluster}} --ssh={{.Pubkey}} --kernel-image={{.KernelImage}} --kernel-image={{.KernelImage}} --cpus={{.Cpus}} --memory={{.Memory}} --size={{.DiskSize}}`
+	CreateCmd         = `ignite create {{.Image}} --name={{.Name}} --label=cluster={{.Cluster}} --ssh={{.Pubkey}} --kernel-image={{.KernelImage}} --kernel-image={{.KernelImage}} --cpus={{.Cpus}} --memory={{.Memory}} --size={{.DiskSize}}`
+	DeleteCmd         = "ignite rm {{.Name}} --force"
+	StartCmd          = "ignite start {{.Name}}"
+	StopCmd           = "ignite stop {{.Name}}"
+	ListImageCmd      = "ignite {{.Image}} ls -q"
+	InspectCmd        = "ignite inspect {{.Resource}} {{.ResourceName}} -t \"{{.ResourceFilter}}\""
+	DeleteResourceCmd = "ignite {{.Resource}} rm {{.ResourceName}}"
 )
 
 type IgniteNodeManager struct {
+}
+
+type IgniteCache struct {
+	Type        string
+	Name        string
+	Description string
 }
 
 func NewIgniteNodeManager() *IgniteNodeManager {
@@ -130,7 +139,7 @@ func (i *IgniteNodeManager) DeleteNodes(nodeType Type, node *config.Node) error 
 func (i *IgniteNodeManager) DeleteNode(name string) error {
 	logrus.WithField("node", name).Infoln("deleting node")
 
-	return i.runCmd(
+	_, err := i.runCmd(
 		"delete",
 		DeleteCmd,
 		struct {
@@ -138,7 +147,10 @@ func (i *IgniteNodeManager) DeleteNode(name string) error {
 		}{
 			Name: name,
 		},
+		true,
 	)
+
+	return err
 }
 
 func (i *IgniteNodeManager) GetNode(name string) (*data.Node, error) {
@@ -351,7 +363,7 @@ func (i *IgniteNodeManager) StartNodes(clusterName string) error {
 func (i *IgniteNodeManager) StartNode(name string) error {
 	logrus.WithField("node", name).Infoln("starting node")
 
-	return i.runCmd(
+	_, err := i.runCmd(
 		"start",
 		StartCmd,
 		struct {
@@ -359,8 +371,10 @@ func (i *IgniteNodeManager) StartNode(name string) error {
 		}{
 			Name: name,
 		},
+		true,
 	)
 
+	return err
 }
 
 func (i *IgniteNodeManager) StopNodes(clusterName string) error {
@@ -388,7 +402,7 @@ func (i *IgniteNodeManager) StopNodes(clusterName string) error {
 func (i *IgniteNodeManager) StopNode(name string) error {
 	logrus.WithField("node", name).Infoln("stopping node")
 
-	return i.runCmd(
+	_, err := i.runCmd(
 		"stop",
 		StopCmd,
 		struct {
@@ -396,32 +410,148 @@ func (i *IgniteNodeManager) StopNode(name string) error {
 		}{
 			Name: name,
 		},
+		true,
 	)
+
+	return err
 }
 
-func (i *IgniteNodeManager) runCmd(templateName string, templateContent string, templateVars interface{}) error {
-	tmp, err := template.New(templateName).Parse(templateContent)
+func (i *IgniteNodeManager) GetCaches() ([]interface{}, error) {
+	var caches []interface{}
+
+	resources := []struct {
+		Image          string
+		Filters        []string
+		Resource       string
+		ResourceName   string
+		ResourceFilter string
+	}{
+		{
+			Image:          "image",
+			Filters:        []string{"{{.Spec.OCI}}", "{{.Status.OCISource.ID}}"},
+			Resource:       "image",
+			ResourceFilter: "{{.Name}}",
+		},
+		{
+			Image:          "kernel",
+			Filters:        []string{"{{.Status.OCISource.ID}}"},
+			Resource:       "kernel",
+			ResourceFilter: "{{.Name}}",
+		},
+	}
+
+	for _, resource := range resources {
+		var cache IgniteCache
+
+		output, err := i.runCmd("", ListImageCmd, resource, false)
+		if err != nil {
+			return nil, err
+		}
+		if output == "" {
+			continue
+		}
+
+		imgIds := strings.Split(output, "\n")
+
+		for _, imgId := range imgIds {
+			imgId = strings.Trim(imgId, "\t\n")
+
+			c := resource
+			c.ResourceName = imgId
+
+			imgName, err := i.runCmd("", InspectCmd, c, false)
+			if err != nil {
+				return nil, err
+			}
+
+			var imgDescription []string
+			for _, f := range c.Filters {
+				c.ResourceFilter = f
+				description, err := i.runCmd("", InspectCmd, c, false)
+				if err != nil {
+					return nil, err
+				}
+
+				imgDescription = append(imgDescription, strings.Trim(description, `"`))
+			}
+
+			cache.Type = c.Image
+			cache.Name = strings.Trim(imgName, `"`)
+			cache.Description = strings.Join(imgDescription, ",")
+		}
+
+		caches = append(caches, &cache)
+	}
+
+	return caches, nil
+}
+
+func (i *IgniteNodeManager) DeleteCaches() error {
+	logrus.Infof("Deleting ignite image caches")
+
+	caches, err := i.GetCaches()
 	if err != nil {
-		return errors.WithStack(err)
+		return err
 	}
 
-	tmpBuffer := &bytes.Buffer{}
+	for _, c := range caches {
+		c := c.(*IgniteCache)
 
-	if err := tmp.Execute(tmpBuffer, templateVars); err != nil {
-		return errors.WithStack(err)
-	}
-
-	cmd := util.UpdateCommandDefaultLogWithInfo(
-		exec.CommandContext(
-			context.Background(),
-			"sudo",
-			strings.Split(tmpBuffer.String(), " ")...,
-		),
-	)
-
-	if err := cmd.Run(); err != nil {
-		return errors.WithStack(err)
+		_, err := i.runCmd(
+			"",
+			DeleteResourceCmd,
+			struct {
+				Resource     string
+				ResourceName string
+			}{
+				Resource:     c.Type,
+				ResourceName: c.Name,
+			},
+			true,
+		)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
+}
+
+func (i *IgniteNodeManager) runCmd(templateName string, templateContent string, templateVars interface{}, logOutput bool) (string, error) {
+	tmp, err := template.New(templateName).Parse(templateContent)
+	if err != nil {
+		return "", errors.WithStack(err)
+	}
+
+	tmpBuffer := &bytes.Buffer{}
+	if err := tmp.Execute(tmpBuffer, templateVars); err != nil {
+		return "", errors.WithStack(err)
+	}
+
+	cmd := exec.CommandContext(
+		context.Background(),
+		"sudo",
+		strings.Split(tmpBuffer.String(), " ")...,
+	)
+
+	if logOutput {
+		cmd = util.UpdateCommandDefaultLogWithInfo(cmd)
+
+		if err := cmd.Run(); err != nil {
+			return "", errors.WithStack(err)
+		}
+
+		return "", nil
+	}
+
+	outputBuffer := &bytes.Buffer{}
+	cmd.Stdout = outputBuffer
+	cmd.Stderr = os.Stderr
+	cmd.Stdin = os.Stdin
+
+	if err := cmd.Run(); err != nil {
+		return "", errors.WithStack(err)
+	}
+
+	return strings.Trim(outputBuffer.String(), "\t\n"), nil
 }

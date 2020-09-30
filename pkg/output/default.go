@@ -30,7 +30,7 @@ func (d *DefaultOutput) Print(obj interface{}, filters []string, title string) e
 
 	if value.Kind() == reflect.Slice {
 		if value.Len() == 0 {
-			fmt.Println("No clusters created")
+			fmt.Println("Not found")
 			return nil
 		}
 
@@ -112,6 +112,10 @@ func (d *DefaultOutput) Print(obj interface{}, filters []string, title string) e
 }
 
 func (d *DefaultOutput) parse(v reflect.Value, filters []string, tableHeaders *[]string, tableData *[][]string) {
+	if v.Kind() == reflect.Interface {
+		v = v.Elem()
+	}
+
 	switch v.Interface().(type) {
 	case data.Node:
 		filters = append(
