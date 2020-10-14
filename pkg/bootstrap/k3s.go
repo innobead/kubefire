@@ -257,7 +257,7 @@ func (k *K3sBootstrapper) join(node *data.Node, apiServerAddress string, joinTok
 		}
 	}
 
-	cmd = fmt.Sprintf(`INSTALL_K3S_EXEC="%s" %s`, strings.Join(k3sOpts, " "), strings.Join(extraOptions.ExtraOptions, " ")) + cmd
+	cmd = fmt.Sprintf(`INSTALL_K3S_EXEC="%s" %s %s`, strings.Join(k3sOpts, " "), strings.Join(extraOptions.ExtraOptions, " "), cmd)
 
 	if err := sshClient.Run(nil, nil, cmd); err != nil {
 		return errors.WithStack(err)
