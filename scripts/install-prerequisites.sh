@@ -80,7 +80,9 @@ function install_containerd() {
   curl -sfSLO "https://raw.githubusercontent.com/containerd/containerd/${CONTAINERD_VERSION}/containerd.service"
   sudo groupadd containerd || true
   sudo mv containerd.service /etc/systemd/system/containerd.service
-  sudo sed -i -E "s#(ExecStart=/usr/local/bin/containerd)#\1\nExecStartPost=/usr/bin/chgrp containerd /run/containerd/containerd.sock#g" /etc/systemd/system/containerd.service
+
+  chgrp_path=$(command -v chgrp || tr -d '\n')
+  sudo sed -i -E "s#(ExecStart=/usr/local/bin/containerd)#\1\nExecStartPost=${chgrp_path} containerd /run/containerd/containerd.sock#g" /etc/systemd/system/containerd.service
 
   sudo mkdir -p /etc/containerd
   containerd config default | sudo tee /etc/containerd/config.toml >/dev/null
