@@ -5,6 +5,7 @@ import (
 	"github.com/google/go-github/github"
 	"github.com/innobead/kubefire/pkg/data"
 	"github.com/pkg/errors"
+	"sort"
 	"strconv"
 )
 
@@ -26,6 +27,21 @@ done:
 		if err != nil {
 			return nil, errors.WithStack(err)
 		}
+
+		sort.Slice(releases, func(i, j int) bool {
+			v1 := data.ParseVersion(releases[i].GetTagName())
+			v2 := data.ParseVersion(releases[j].GetTagName())
+
+			if v1 == nil {
+				return false
+			}
+
+			if v2 == nil {
+				return true
+			}
+
+			return v1.Compare(v2) >= 0
+		})
 
 		for _, release := range releases {
 			releaseVersion := data.ParseVersion(release.GetTagName())
@@ -50,7 +66,6 @@ done:
 				}
 
 				afterVersion.Minor = data.SubVersionType(strconv.Itoa(afterVersion.Minor.ToInt() - 1))
-
 				if releaseVersion.MajorMinorString() != afterVersion.MajorMinorString() {
 					continue
 				}
@@ -59,6 +74,8 @@ done:
 			versions = append(versions, releaseVersion)
 
 			minorVersionCount--
+			afterVersion.Minor = data.SubVersionType(strconv.Itoa(afterVersion.Minor.ToInt() - 1))
+
 			if minorVersionCount == 0 {
 				break done
 			}

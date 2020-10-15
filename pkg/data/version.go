@@ -40,7 +40,7 @@ func (v *Version) MajorMinorString() string {
 
 func (v *Version) Compare(version *Version) int {
 	switch {
-	case version == nil || v.Major > version.Major || v.Major == version.Major && v.Minor > version.Minor || v.Major == version.Major && v.Minor == version.Minor && v.Patch > version.Patch:
+	case version == nil || v.Major.ToInt() > version.Major.ToInt() || v.Major.ToInt() == version.Major.ToInt() && v.Minor.ToInt() > version.Minor.ToInt() || v.Major.ToInt() == version.Major.ToInt() && v.Minor == version.Minor && v.Patch.ToInt() > version.Patch.ToInt():
 		return 1
 	case v.Major == version.Major && v.Minor == version.Minor && v.Patch == version.Patch:
 		return 0
