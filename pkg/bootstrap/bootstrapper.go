@@ -196,6 +196,11 @@ func getSupportedBootstrapperVersion(versionFinder versionfinder.Finder, configM
 		}
 
 		if strings.HasPrefix(version, data.ParseVersion(v.Version()).MajorMinorString()) {
+			switch v := v.(type) {
+			case *pkgconfig.KubeadmBootstrapperVersion:
+				v.BootstrapperVersion = version
+			}
+
 			return v, nil
 		}
 	}

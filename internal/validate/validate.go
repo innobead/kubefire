@@ -17,7 +17,7 @@ func CheckPrerequisites() error {
 		return nil
 	}
 
-	return errors.WithMessage(interr.IncorrectRequiredPrerequisitesError, "check your installed prerequisites by `ignite info`, then install/update via 'kubefire install'")
+	return errors.WithMessage(interr.IncorrectRequiredPrerequisitesError, "check your installed prerequisites by `kubefire info`, then install/update via 'kubefire install'")
 }
 
 func CheckClusterExist(name string) error {

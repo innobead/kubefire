@@ -150,6 +150,7 @@ func (k *KubeadmBootstrapper) init(cluster *data.Cluster) error {
 	if err != nil {
 		return err
 	}
+
 	kubeadmBootstrapperVersion := bootstrapperVersion.(*pkgconfig.KubeadmBootstrapperVersion)
 
 	wgInitNodes := sync.WaitGroup{}
