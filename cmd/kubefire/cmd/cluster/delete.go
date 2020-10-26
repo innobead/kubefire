@@ -33,5 +33,5 @@ var deleteCmd = &cobra.Command{
 }
 
 func init() {
-	deleteCmd.Flags().BoolVar(&forceDeleteCluster, "force", false, "Force to delete")
+	deleteCmd.Flags().BoolVarP(&forceDeleteCluster, "force", "f", false, "Force to delete")
 }

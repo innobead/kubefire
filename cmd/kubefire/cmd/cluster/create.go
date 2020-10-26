@@ -116,7 +116,7 @@ func init() {
 	flags.StringVar(&cluster.Worker.DiskSize, "worker-size", cluster.Worker.DiskSize, "Disk size of worker node")
 	flags.StringVar(&configFile, "config", "", "Cluster configuration file (ex: use 'config-template' command to generate the default cluster config)")
 
-	flags.BoolVar(&forceDeleteCluster, "force", false, "Force to recreate if the cluster exists")
+	flags.BoolVarP(&forceDeleteCluster, "force", "f", false, "Force to recreate if the cluster exists")
 	flags.BoolVar(&cached, "cache", true, "Use caches")
 	flags.BoolVar(&started, "start", true, "Start nodes")
 }

@@ -40,7 +40,7 @@ var InstallCmd = &cobra.Command{
 
 func init() {
 	flags := InstallCmd.Flags()
-	flags.BoolVar(&forceDownload, "force", false, "Force to install")
+	flags.BoolVarP(&forceDownload, "force", "f", false, "Force to install")
 }
 
 func createSetupInstallCommandEnvsFunc() func(cmd *exec.Cmd) error {
