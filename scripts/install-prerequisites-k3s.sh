@@ -31,8 +31,8 @@ function install_k3s() {
     local url="https://raw.githubusercontent.com/rancher/k3s/${K3S_VERSION}/install.sh"
   fi
 
-  echo curl -sfSL "$url" -o k3s-install.sh
-  echo chmod +x k3s-install.sh && sudo mv k3s-install.sh /usr/local/bin/
+  curl -sfSL "$url" -o k3s-install.sh
+  chmod +x k3s-install.sh && sudo mv k3s-install.sh /usr/local/bin/
 }
 
 install_k3s
