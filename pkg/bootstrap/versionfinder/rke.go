@@ -7,6 +7,7 @@ import (
 	"github.com/innobead/kubefire/pkg/constants"
 	"github.com/innobead/kubefire/pkg/data"
 	"github.com/innobead/kubefire/pkg/util"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/thoas/go-funk"
 	"sort"
@@ -16,6 +17,7 @@ import (
 const (
 	RKEDefaultBranchUrl = "https://api.github.com/repos/rancher/kontainer-driver-metadata"
 	RKEVersionInfoUrl   = "https://raw.githubusercontent.com/rancher/kontainer-driver-metadata/%s/data/data.json"
+	RKEReleasesUrl      = "https://api.github.com/repos/rancher/rke/releases"
 )
 
 type RKEVersionFinder struct {
@@ -31,7 +33,10 @@ func NewRKEVersionFinder() *RKEVersionFinder {
 func (k *RKEVersionFinder) GetVersionsAfterVersion(afterVersion data.Version) ([]*data.Version, error) {
 	logrus.WithField("bootstrapper", k.bootstrapperType).Debugln("getting the released versions info")
 
-	latestVersion := data.ParseVersion("v1.2.3")
+	latestVersion, err := k.GetLatestVersion()
+	if err != nil {
+		return nil, err
+	}
 	k8sVersions, err := k.getSupportedK8sVersions()
 	if err != nil {
 		return nil, err
@@ -50,7 +55,28 @@ func (k *RKEVersionFinder) GetVersionsAfterVersion(afterVersion data.Version) ([
 func (k *RKEVersionFinder) GetLatestVersion() (*data.Version, error) {
 	logrus.WithField("bootstrapper", k.bootstrapperType).Debugln("getting the latest released version info")
 
-	return data.ParseVersion("v1.2.3"), nil
+	body, _, err := util.HttpGet(RKEReleasesUrl)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	var versions []map[string]interface{}
+	decoder := json.NewDecoder(strings.NewReader(body))
+	if err := decoder.Decode(&versions); err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	sort.Slice(versions, func(i, j int) bool {
+		v1 := versions[i]
+		v2 := versions[2]
+
+		v1Name := v1["tag_name"].(string)
+		v2Name := v2["tag_name"].(string)
+
+		return data.ParseVersion(v1Name).Compare(data.ParseVersion(v2Name)) >= 0
+	})
+
+	return data.ParseVersion(versions[0]["tag_name"].(string)), nil
 }
 
 func (k *RKEVersionFinder) HasPatchVersion(version string) bool {
