@@ -3,8 +3,6 @@ package bootstrap
 import (
 	"bytes"
 	"fmt"
-	"github.com/avast/retry-go"
-	"github.com/hashicorp/go-multierror"
 	"github.com/innobead/kubefire/internal/config"
 	"github.com/innobead/kubefire/pkg/constants"
 	"github.com/innobead/kubefire/pkg/data"
@@ -15,8 +13,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/ssh"
 	"strings"
-	"sync"
-	"time"
 )
 
 type K3sExtraOptions struct {
@@ -107,70 +103,14 @@ func (k *K3sBootstrapper) Type() string {
 }
 
 func (k *K3sBootstrapper) init(cluster *data.Cluster) error {
-	logrus.WithField("cluster", cluster.Name).Infoln("initializing cluster")
-
-	wgInitNodes := sync.WaitGroup{}
-	wgInitNodes.Add(len(cluster.Nodes))
-
-	chErr := make(chan error, len(cluster.Nodes))
-
-	for _, n := range cluster.Nodes {
-		logrus.WithField("node", n.Name).Infoln("initializing node")
-
-		go func(n *data.Node) {
-			defer wgInitNodes.Done()
-
-			_ = retry.Do(func() error {
-				sshClient, err := utilssh.NewClient(
-					n.Name,
-					cluster.Spec.Prikey,
-					"root",
-					n.Status.IPAddresses,
-					nil,
-				)
-				if err != nil {
-					return err
-				}
-				defer sshClient.Close()
-
-				cmds := []string{
-					"swapoff -a",
-					fmt.Sprintf("curl -sSLO %s", script.RemoteScriptUrl(script.InstallPrerequisitesK3s)),
-					fmt.Sprintf("chmod +x %s", script.InstallPrerequisitesK3s),
-					fmt.Sprintf("%s ./%s", config.K3sVersionsEnvVars(cluster.Spec.Version).String(), script.InstallPrerequisitesK3s),
-				}
-
-				err = sshClient.Run(nil, nil, cmds...)
-				if err != nil {
-					chErr <- errors.WithMessagef(err, "failed on node (%s)", n.Name)
-				}
-
-				return nil
-			},
-				retry.Delay(10*time.Second),
-				retry.MaxDelay(1*time.Minute),
-			)
-		}(n)
+	cmds := []string{
+		"swapoff -a",
+		fmt.Sprintf("curl -sfSLO %s", script.RemoteScriptUrl(script.InstallPrerequisitesK3s)),
+		fmt.Sprintf("chmod +x %s", script.InstallPrerequisitesK3s),
+		fmt.Sprintf("%s ./%s", config.K3sVersionsEnvVars(cluster.Spec.Version).String(), script.InstallPrerequisitesK3s),
 	}
 
-	logrus.Info("waiting all nodes initialization finished")
-
-	wgInitNodes.Wait()
-	close(chErr)
-
-	var err error
-	for {
-		e, ok := <-chErr
-		if !ok {
-			break
-		}
-
-		if e != nil {
-			err = multierror.Append(err, e)
-		}
-	}
-
-	return err
+	return initNodes(cluster, cmds)
 }
 
 func (k *K3sBootstrapper) bootstrap(node *data.Node, isSingleNode bool, extraOptions *K3sExtraOptions) (token string, err error) {

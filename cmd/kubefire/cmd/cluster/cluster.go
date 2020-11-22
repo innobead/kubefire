@@ -9,7 +9,7 @@ import (
 var Cmd = &cobra.Command{
 	Use:     "cluster",
 	Aliases: []string{"c"},
-	Short:   "Manage clusters",
+	Short:   "Manages clusters",
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		di.DelayInit(false)
 		return validate.CheckPrerequisites()

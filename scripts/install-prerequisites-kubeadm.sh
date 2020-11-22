@@ -6,7 +6,16 @@ set -o pipefail
 set -o xtrace
 
 TMP_DIR=/tmp/kubefire
-GOARCH=$(go env GOARCH 2>/dev/null || echo "amd64")
+ARCH=$(uname -m)
+case $ARCH in
+"x86_64")
+  ARCH="amd64"
+  ;;
+*)
+  echo "Unsupported architecture ${ARCH}" > /dev/stderr
+  exit 1
+  ;;
+esac
 
 KUBE_VERSION=${KUBE_VERSION:-""} # https://dl.k8s.io/release/stable.txt
 KUBE_RELEASE_VERSION=${KUBE_RELEASE_VERSION:-"v0.3.4"}
@@ -31,7 +40,7 @@ function cleanup() {
 trap cleanup EXIT ERR INT TERM
 
 function install_kubeadm() {
-  curl -sfOL --remote-name-all "https://storage.googleapis.com/kubernetes-release/release/${KUBE_VERSION}/bin/linux/${GOARCH}/{kubeadm,kubelet,kubectl}"
+  curl -sfOL --remote-name-all "https://storage.googleapis.com/kubernetes-release/release/${KUBE_VERSION}/bin/linux/${ARCH}/{kubeadm,kubelet,kubectl}"
   chmod +x {kubeadm,kubelet,kubectl}
   sudo mv {kubeadm,kubelet,kubectl} /usr/local/bin/
 
@@ -45,7 +54,7 @@ function install_containerd() {
   local version="${CONTAINERD_VERSION:1}"
   local dir=containerd-$version
 
-  curl -sSLO "https://github.com/containerd/containerd/releases/download/${CONTAINERD_VERSION}/containerd-${version}-linux-${GOARCH}.tar.gz"
+  curl -sSLO "https://github.com/containerd/containerd/releases/download/${CONTAINERD_VERSION}/containerd-${version}-linux-${ARCH}.tar.gz"
   mkdir -p $dir
   tar -zxvf $dir*.tar.gz -C $dir
   chmod +x $dir/bin/*
@@ -59,18 +68,18 @@ function install_containerd() {
 }
 
 function install_runc() {
-  curl -sSL "https://github.com/opencontainers/runc/releases/download/${RUNC_VERSION}/runc.${GOARCH}" -o runc
+  curl -sSL "https://github.com/opencontainers/runc/releases/download/${RUNC_VERSION}/runc.${ARCH}" -o runc
   chmod +x runc
   sudo mv runc /usr/local/bin/
 }
 
 function install_cni() {
   mkdir -p /opt/cni/bin
-  curl -sSL "https://github.com/containernetworking/plugins/releases/download/${CNI_VERSION}/cni-plugins-linux-${GOARCH}-${CNI_VERSION}.tgz" | tar -C /opt/cni/bin -xz
+  curl -sSL "https://github.com/containernetworking/plugins/releases/download/${CNI_VERSION}/cni-plugins-linux-${ARCH}-${CNI_VERSION}.tgz" | tar -C /opt/cni/bin -xz
 }
 
 function install_kubelet_cri() {
-  curl -sSL "https://github.com/kubernetes-sigs/cri-tools/releases/download/${CRICTL_VERSION}/crictl-${CRICTL_VERSION}-linux-${GOARCH}.tar.gz" | sudo tar -C /usr/local/bin -xz
+  curl -sSL "https://github.com/kubernetes-sigs/cri-tools/releases/download/${CRICTL_VERSION}/crictl-${CRICTL_VERSION}-linux-${ARCH}.tar.gz" | sudo tar -C /usr/local/bin -xz
   echo "export CONTAINER_RUNTIME_ENDPOINT=unix:///run/containerd/containerd.sock" >>/etc/profile
 }
 
@@ -79,4 +88,3 @@ install_runc
 install_kubelet_cri
 install_containerd
 install_kubeadm
-

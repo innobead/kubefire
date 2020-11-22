@@ -169,8 +169,8 @@ func (l *LocalConfigManager) GetBootstrapperVersions(latestVersion BootstrapperV
 			bootstrapperVersions = append(bootstrapperVersions, &v)
 		}
 
-	case *SkubaBootstrapperVersion:
-		var versions []SkubaBootstrapperVersion
+	case *RKEBootstrapperVersion:
+		var versions []RKEBootstrapperVersion
 		if err := yaml.Unmarshal(bytes, &versions); err != nil {
 			return nil, errors.WithStack(err)
 		}

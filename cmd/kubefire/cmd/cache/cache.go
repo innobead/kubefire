@@ -9,7 +9,7 @@ import (
 var Cmd = &cobra.Command{
 	Use:     "cache",
 	Aliases: []string{"c"},
-	Short:   "Manage caches",
+	Short:   "Manages caches",
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		di.DelayInit(false)
 		return validate.CheckPrerequisites()

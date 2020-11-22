@@ -18,15 +18,15 @@ import (
 
 var (
 	cluster      = pkgconfig.NewDefaultCluster()
-	started      bool
-	cached       bool
+	noStart      bool
+	noCache      bool
 	extraOptions string
 	configFile   string
 )
 
 var createCmd = &cobra.Command{
 	Use:   "create [name]",
-	Short: "Create cluster",
+	Short: "Creates cluster",
 	Args:  validate.OneArg("cluster name"),
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if configFile != "" {
@@ -44,17 +44,17 @@ var createCmd = &cobra.Command{
 			return err
 		}
 
+		reinitDI := config.Bootstrapper != cluster.Bootstrapper
 		config.Bootstrapper = cluster.Bootstrapper
-		di.DelayInit(true)
+		di.DelayInit(reinitDI)
 
 		if err := validate.CheckClusterVersion(cluster.Version); err != nil {
 			return err
 		}
 
-		if !cached {
+		if noCache {
 			_ = di.ConfigManager().DeleteBootstrapperVersions(pkgconfig.NewBootstrapperVersion(cluster.Bootstrapper, ""))
 		}
-
 		if _, _, err := bootstrap.GenerateSaveBootstrapperVersions(config.Bootstrapper, di.ConfigManager()); err != nil {
 			return err
 		}
@@ -80,11 +80,11 @@ var createCmd = &cobra.Command{
 			return errors.WithMessagef(err, "failed to init cluster (%s)", cluster.Name)
 		}
 
-		if err := di.ClusterManager().Create(cluster.Name, started); err != nil {
+		if err := di.ClusterManager().Create(cluster.Name, !noStart); err != nil {
 			return errors.WithMessagef(err, "failed to create cluster (%s)", cluster.Name)
 		}
 
-		if started {
+		if !noStart {
 			if err := deployCluster(cluster.Name); err != nil {
 				return err
 			}
@@ -117,8 +117,8 @@ func init() {
 	flags.StringVar(&configFile, "config", "", "Cluster configuration file (ex: use 'config-template' command to generate the default cluster config)")
 
 	flags.BoolVarP(&forceDeleteCluster, "force", "f", false, "Force to recreate if the cluster exists")
-	flags.BoolVar(&cached, "cache", true, "Use caches")
-	flags.BoolVar(&started, "start", true, "Start nodes")
+	flags.BoolVar(&noCache, "no-cache", false, "Forget caches")
+	flags.BoolVar(&noStart, "no-start", false, "Don't Start nodes")
 }
 
 func deployCluster(name string) error {
@@ -166,7 +166,7 @@ func correctClusterVersion(version string) (string, error) {
 	}
 
 	patternCheckMajorMinorVersion := regexp.MustCompile(`^v\d+\.\d+$`)
-	patternCheckMajorMinorPatchVersion := regexp.MustCompile(`^v\d+\.\d+\.\d+$`)
+	patternCheckMajorMinorPatchVersion := regexp.MustCompile(`^v\d+\.\d+\.\d+`)
 
 	for _, v := range versions {
 		if version == v.Version() {
@@ -186,7 +186,7 @@ func correctClusterVersion(version string) (string, error) {
 		}
 	}
 
-	if patternCheckMajorMinorPatchVersion.MatchString(version) && di.VersionFinder().HasPatchVersion(version) {
+	if patternCheckMajorMinorPatchVersion.MatchString(version) {
 		return version, nil
 	}
 

@@ -7,7 +7,7 @@ import (
 
 var restartCmd = &cobra.Command{
 	Use:   "restart [name]",
-	Short: "Restart cluster",
+	Short: "Restarts cluster",
 	Args:  validate.OneArg("cluster name"),
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		return validate.CheckClusterExist(args[0])

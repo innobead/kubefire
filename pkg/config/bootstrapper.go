@@ -1,15 +1,18 @@
 package config
 
 import (
+	"fmt"
 	"github.com/innobead/kubefire/internal/config"
 	"github.com/innobead/kubefire/pkg/constants"
 	"path"
+	"strings"
 )
 
 type BootstrapperVersioner interface {
 	Type() string
 	LocalVersionFile() string
 	Version() string
+	Display() string
 }
 
 type KubeadmBootstrapperVersion struct {
@@ -19,26 +22,15 @@ type KubeadmBootstrapperVersion struct {
 	KubeReleaseVersion  string `json:"kube_release_version"`
 }
 
-func NewKubeadmBootstrapperVersion(bootstrapperVersion string, crictlVersion string, kubeReleaseVersion string) *KubeadmBootstrapperVersion {
-	return &KubeadmBootstrapperVersion{BootstrapperVersion: bootstrapperVersion, BootstrapperType: constants.KUBEADM, CrictlVersion: crictlVersion, KubeReleaseVersion: kubeReleaseVersion}
-}
-
 type K3sBootstrapperVersion struct {
 	BootstrapperVersion string `json:"version"`
 	BootstrapperType    string `json:"type"`
 }
 
-func NewK3sBootstrapperVersion(bootstrapperVersion string) *K3sBootstrapperVersion {
-	return &K3sBootstrapperVersion{BootstrapperVersion: bootstrapperVersion, BootstrapperType: constants.K3S}
-}
-
-type SkubaBootstrapperVersion struct {
-	BootstrapperVersion string `json:"version"`
-	BootstrapperType    string `json:"type"`
-}
-
-func NewSkubaBootstrapperVersion(bootstrapperVersion string) *SkubaBootstrapperVersion {
-	return &SkubaBootstrapperVersion{BootstrapperVersion: bootstrapperVersion, BootstrapperType: constants.SKUBA}
+type RKEBootstrapperVersion struct {
+	BootstrapperVersion string   `json:"version"`
+	BootstrapperType    string   `json:"type"`
+	KubernetesVersions  []string `json:"kubernetes_versions"`
 }
 
 func NewBootstrapperVersion(bootstrapperType string, version string) BootstrapperVersioner {
@@ -49,11 +41,39 @@ func NewBootstrapperVersion(bootstrapperType string, version string) Bootstrappe
 	case constants.K3S:
 		return &K3sBootstrapperVersion{BootstrapperVersion: version, BootstrapperType: bootstrapperType}
 
-	case constants.SKUBA:
-		return &SkubaBootstrapperVersion{BootstrapperVersion: version, BootstrapperType: bootstrapperType}
+	case constants.RKE:
+		return &RKEBootstrapperVersion{BootstrapperVersion: version, BootstrapperType: bootstrapperType}
 	}
 
 	return nil
+}
+
+func NewKubeadmBootstrapperVersion(bootstrapperVersion string, crictlVersion string, kubeReleaseVersion string) *KubeadmBootstrapperVersion {
+	return &KubeadmBootstrapperVersion{
+		BootstrapperVersion: bootstrapperVersion,
+		BootstrapperType:    constants.KUBEADM,
+		CrictlVersion:       crictlVersion,
+		KubeReleaseVersion:  kubeReleaseVersion,
+	}
+}
+
+func NewK3sBootstrapperVersion(bootstrapperVersion string) *K3sBootstrapperVersion {
+	return &K3sBootstrapperVersion{
+		BootstrapperVersion: bootstrapperVersion,
+		BootstrapperType:    constants.K3S,
+	}
+}
+
+func NewRKEBootstrapperVersion(bootstrapperVersion string, kubernetesVersions []string) *RKEBootstrapperVersion {
+	return &RKEBootstrapperVersion{
+		BootstrapperVersion: bootstrapperVersion,
+		BootstrapperType:    constants.RKE,
+		KubernetesVersions:  kubernetesVersions,
+	}
+}
+
+func (k *KubeadmBootstrapperVersion) Display() string {
+	return k.Version()
 }
 
 func (k *KubeadmBootstrapperVersion) Type() string {
@@ -61,11 +81,20 @@ func (k *KubeadmBootstrapperVersion) Type() string {
 }
 
 func (k *KubeadmBootstrapperVersion) LocalVersionFile() string {
-	return path.Join(BootstrapperRootDir, config.TagVersion, k.BootstrapperType, k.BootstrapperVersion+".yaml")
+	return path.Join(
+		BootstrapperRootDir,
+		config.TagVersion,
+		k.BootstrapperType,
+		k.BootstrapperVersion+".yaml",
+	)
 }
 
 func (k *KubeadmBootstrapperVersion) Version() string {
 	return k.BootstrapperVersion
+}
+
+func (k *K3sBootstrapperVersion) Display() string {
+	return k.Version()
 }
 
 func (k *K3sBootstrapperVersion) Type() string {
@@ -73,21 +102,39 @@ func (k *K3sBootstrapperVersion) Type() string {
 }
 
 func (k *K3sBootstrapperVersion) LocalVersionFile() string {
-	return path.Join(BootstrapperRootDir, config.TagVersion, k.BootstrapperType, k.BootstrapperVersion+".yaml")
+	return path.Join(
+		BootstrapperRootDir,
+		config.TagVersion,
+		k.BootstrapperType,
+		k.BootstrapperVersion+".yaml",
+	)
 }
 
 func (k *K3sBootstrapperVersion) Version() string {
 	return k.BootstrapperVersion
 }
 
-func (s *SkubaBootstrapperVersion) Type() string {
+func (s *RKEBootstrapperVersion) Display() string {
+	return fmt.Sprintf(
+		"%s (%s)",
+		s.Version(),
+		strings.Join(s.KubernetesVersions, ", "),
+	)
+}
+
+func (s *RKEBootstrapperVersion) Type() string {
 	return s.BootstrapperType
 }
 
-func (s *SkubaBootstrapperVersion) LocalVersionFile() string {
-	return path.Join(BootstrapperRootDir, config.TagVersion, s.BootstrapperType, s.BootstrapperVersion+".yaml")
+func (s *RKEBootstrapperVersion) LocalVersionFile() string {
+	return path.Join(
+		BootstrapperRootDir,
+		config.TagVersion,
+		s.BootstrapperType,
+		s.BootstrapperVersion+".yaml",
+	)
 }
 
-func (s *SkubaBootstrapperVersion) Version() string {
+func (s *RKEBootstrapperVersion) Version() string {
 	return s.BootstrapperVersion
 }

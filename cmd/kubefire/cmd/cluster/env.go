@@ -14,7 +14,7 @@ var (
 
 var envCmd = &cobra.Command{
 	Use:   "env [name]",
-	Short: "Print environment values of cluster",
+	Short: "Prints environment values of cluster",
 	Args:  validate.OneArg("cluster name"),
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		return validate.CheckClusterExist(args[0])

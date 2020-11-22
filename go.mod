@@ -3,6 +3,7 @@ module github.com/innobead/kubefire
 go 1.14
 
 require (
+	github.com/Masterminds/semver/v3 v3.1.0
 	github.com/avast/retry-go v2.6.0+incompatible
 	github.com/containerd/go-cni v1.0.1
 	github.com/goccy/go-yaml v1.7.5
@@ -21,6 +22,7 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/stretchr/objx v0.2.0 // indirect
 	github.com/stretchr/testify v1.6.1
+	github.com/thoas/go-funk v0.7.0
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
 	golang.org/x/net v0.0.0-20200625001655-4c5254603344 // indirect
 	golang.org/x/sys v0.0.0-20200610111108-226ff32320da // indirect

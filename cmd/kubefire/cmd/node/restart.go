@@ -7,7 +7,7 @@ import (
 
 var restartCmd = &cobra.Command{
 	Use:   "restart [name]",
-	Short: "Restart node",
+	Short: "Restarts node",
 	Args:  validate.OneArg("node name"),
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		return validate.CheckNodeExist(args[0])

@@ -39,7 +39,7 @@ func DelayInit(force bool) {
 	}
 
 	if force {
-		logrus.Debugln("forcibly initializing dependency injection system")
+		logrus.Debugln("forcibly reinitializing dependency injection system")
 		initialized = false
 		container = map[string]interface{}{}
 	} else {

@@ -9,7 +9,7 @@ import (
 
 var stopCmd = &cobra.Command{
 	Use:   "stop [name]",
-	Short: "Stop cluster",
+	Short: "Stops cluster",
 	Args:  validate.OneArg("cluster name"),
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		return validate.CheckClusterExist(args[0])

@@ -12,7 +12,7 @@ import (
 var downloadCmd = &cobra.Command{
 	Use:     "download [cluster-name]",
 	Aliases: []string{"d"},
-	Short:   "Download the kubeconfig of cluster",
+	Short:   "Downloads the kubeconfig of cluster",
 	Args:    validate.OneArg("cluster name"),
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		return validate.CheckClusterExist(args[0])

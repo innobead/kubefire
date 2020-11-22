@@ -10,7 +10,7 @@ import (
 
 var showCmd = &cobra.Command{
 	Use:   "show [name]",
-	Short: "Show cluster info",
+	Short: "Shows cluster info",
 	Args:  validate.OneArg("cluster name"),
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		return validate.CheckClusterExist(args[0])

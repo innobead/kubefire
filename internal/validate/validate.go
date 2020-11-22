@@ -55,7 +55,7 @@ func CheckBootstrapperType(bootstrapper string) error {
 	}
 
 	if runtime.GOARCH == "arm64" {
-		if bootstrapper == constants.KUBEADM || bootstrapper == constants.SKUBA {
+		if bootstrapper == constants.KUBEADM || bootstrapper == constants.RKE {
 			return errors.WithMessage(interr.BootstrapperNotSupportError, Field("bootstrapper", bootstrapper))
 		}
 	}

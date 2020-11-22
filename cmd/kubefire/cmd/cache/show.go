@@ -10,7 +10,7 @@ import (
 
 var showCmd = &cobra.Command{
 	Use:   "show",
-	Short: "Show cache info",
+	Short: "Shows cache info",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var caches []*cache.Cache
 

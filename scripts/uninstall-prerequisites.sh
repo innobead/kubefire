@@ -41,6 +41,7 @@ function uninstall_runc() {
 
 function uninstall_cni() {
   sudo rm -rf /opt/cni/bin
+  sudo rm -rf /var/lib/cni/networks/kubefire-cni-bridge
 }
 
 function uninstall_ignite() {

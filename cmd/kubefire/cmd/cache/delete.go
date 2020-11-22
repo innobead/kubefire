@@ -11,7 +11,7 @@ import (
 
 var deleteCmd = &cobra.Command{
 	Use:     "delete",
-	Short:   "Delete caches",
+	Short:   "Deletes caches",
 	Aliases: []string{"rm", "del"},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		for _, c := range cache.DefaultManagers(di.NodeManager()) {

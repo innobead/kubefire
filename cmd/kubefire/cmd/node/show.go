@@ -10,7 +10,7 @@ import (
 
 var showCmd = &cobra.Command{
 	Use:   "show [name]",
-	Short: "Show node info",
+	Short: "Shows node info",
 	Args:  validate.OneArg("node name"),
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		return validate.CheckNodeExist(args[0])

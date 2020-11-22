@@ -8,6 +8,7 @@ import (
 	"github.com/innobead/kubefire/pkg/util"
 	"github.com/sirupsen/logrus"
 	"regexp"
+	"sort"
 	"strings"
 )
 
@@ -26,18 +27,12 @@ func NewK3sVersionFinder() *K3sVersionFinder {
 func (k *K3sVersionFinder) GetVersionsAfterVersion(afterVersion data.Version) ([]*data.Version, error) {
 	logrus.WithField("bootstrapper", k.bootstrapperType).Debugln("getting the released versions info")
 
-	var versions []*data.Version
-
-	body, _, err := util.HttpGet(K3sChannelInfoUrl)
+	versionsInfoMap, err := getK3sVersionsInfo()
 	if err != nil {
 		return nil, err
 	}
 
-	versionsInfoMap := map[string]interface{}{}
-	decoder := json.NewDecoder(strings.NewReader(body))
-	if err := decoder.Decode(&versionsInfoMap); err != nil {
-		return nil, err
-	}
+	var versions []*data.Version
 
 	if _, ok := versionsInfoMap["data"]; ok {
 		re := regexp.MustCompile(`^v\d+\.\d+$`)
@@ -47,15 +42,21 @@ func (k *K3sVersionFinder) GetVersionsAfterVersion(afterVersion data.Version) ([
 
 			if id, ok := info["id"]; ok {
 				if ok := re.MatchString(id.(string)); ok {
-					version := strings.ReplaceAll(info["latest"].(string), "+k3s1", "")
 					versions = append(
 						versions,
-						data.ParseVersion(version),
+						data.ParseVersion(info["latest"].(string)),
 					)
 				}
 			}
 		}
 	}
+
+	sort.Slice(versions, func(i, j int) bool {
+		v1 := versions[i]
+		v2 := versions[j]
+
+		return v1.Compare(v2) >= 0
+	})
 
 	if len(versions) > 0 {
 		return versions, nil
@@ -67,6 +68,30 @@ func (k *K3sVersionFinder) GetVersionsAfterVersion(afterVersion data.Version) ([
 func (k *K3sVersionFinder) GetLatestVersion() (*data.Version, error) {
 	logrus.WithField("bootstrapper", k.bootstrapperType).Debugln("getting the latest released version info")
 
+	versionsInfoMap, err := getK3sVersionsInfo()
+	if err != nil {
+		return nil, err
+	}
+
+	if _, ok := versionsInfoMap["data"]; ok {
+		for _, versionInfo := range versionsInfoMap["data"].([]interface{}) {
+			info := versionInfo.(map[string]interface{})
+
+			if id, ok := info["id"]; ok && id == "latest" {
+				return data.ParseVersion(info["latest"].(string)), nil
+			}
+		}
+	}
+
+	return nil, interr.NotFoundError
+}
+
+func (k *K3sVersionFinder) HasPatchVersion(version string) bool {
+
+	return hasPatchVersionGithub("rancher", "k3s", version+"+k3s1", k.bootstrapperType)
+}
+
+func getK3sVersionsInfo() (map[string]interface{}, error) {
 	body, _, err := util.HttpGet(K3sChannelInfoUrl)
 	if err != nil {
 		return nil, err
@@ -78,20 +103,5 @@ func (k *K3sVersionFinder) GetLatestVersion() (*data.Version, error) {
 		return nil, err
 	}
 
-	if _, ok := versionsInfoMap["data"]; ok {
-		for _, versionInfo := range versionsInfoMap["data"].([]interface{}) {
-			info := versionInfo.(map[string]interface{})
-
-			if id, ok := info["id"]; ok && id == "latest" {
-				version := strings.ReplaceAll(info["latest"].(string), "+k3s1", "")
-				return data.ParseVersion(version), nil
-			}
-		}
-	}
-
-	return nil, interr.NotFoundError
-}
-
-func (k *K3sVersionFinder) HasPatchVersion(version string) bool {
-	return hasPatchVersionGithub("rancher", "k3s", version+"+k3s1", k.bootstrapperType)
+	return versionsInfoMap, nil
 }

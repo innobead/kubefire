@@ -10,7 +10,7 @@ import (
 
 var configTemplateCmd = &cobra.Command{
 	Use:   "config-template [name]",
-	Short: "Generate template cluster configuration",
+	Short: "Generates template cluster configuration",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		outputer := output.NewOutput(output.YAML, os.Stdout)
 

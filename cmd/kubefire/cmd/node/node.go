@@ -9,7 +9,7 @@ import (
 var Cmd = &cobra.Command{
 	Use:     "node",
 	Aliases: []string{"n"},
-	Short:   "Manage nodes",
+	Short:   "Manages nodes",
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		di.DelayInit(false)
 		return validate.CheckPrerequisites()

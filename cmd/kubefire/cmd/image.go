@@ -11,7 +11,7 @@ import (
 var ImageCmd = &cobra.Command{
 	Use:     "image",
 	Aliases: []string{"i"},
-	Short:   "Show supported RootFS and Kernel images",
+	Short:   "Shows supported RootFS and Kernel images",
 	PreRun: func(cmd *cobra.Command, args []string) {
 		logrus.SetLevel(logrus.ErrorLevel)
 	},

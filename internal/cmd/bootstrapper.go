@@ -12,7 +12,7 @@ import (
 type BootstrapperVersionInfo struct {
 	Kubeadm string
 	K3s     string
-	Skuba   string
+	RKE     string
 }
 
 func BootstrapperVersionInfos() *BootstrapperVersionInfo {
@@ -21,7 +21,7 @@ func BootstrapperVersionInfos() *BootstrapperVersionInfo {
 
 	versionsMap := map[string]string{}
 
-	for _, bootstrapperType := range []string{constants.KUBEADM, constants.K3S, constants.SKUBA} {
+	for _, bootstrapperType := range []string{constants.KUBEADM, constants.K3S, constants.RKE} {
 		bootstrapperType := bootstrapperType
 		go func() {
 			versionsMap[bootstrapperType] = getVersions(bootstrapperType)
@@ -34,7 +34,7 @@ func BootstrapperVersionInfos() *BootstrapperVersionInfo {
 	return &BootstrapperVersionInfo{
 		Kubeadm: versionsMap[constants.KUBEADM],
 		K3s:     versionsMap[constants.K3S],
-		Skuba:   versionsMap[constants.SKUBA],
+		RKE:     versionsMap[constants.RKE],
 	}
 }
 
@@ -47,7 +47,7 @@ func getVersions(bootstrapperType string) string {
 
 	var versions []string
 	for _, v := range supportedVersions {
-		versions = append(versions, v.Version())
+		versions = append(versions, v.Display())
 	}
 
 	return strings.Join(versions, ",")

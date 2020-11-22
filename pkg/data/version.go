@@ -2,9 +2,9 @@ package data
 
 import (
 	"fmt"
-	"regexp"
+	"github.com/Masterminds/semver/v3"
+	"github.com/sirupsen/logrus"
 	"strconv"
-	"strings"
 )
 
 const SupportedMinorVersionCount = 3
@@ -12,9 +12,13 @@ const SupportedMinorVersionCount = 3
 type SubVersionType string
 
 type Version struct {
-	Major SubVersionType
-	Minor SubVersionType
-	Patch SubVersionType
+	Major      SubVersionType
+	Minor      SubVersionType
+	Patch      SubVersionType
+	PRERELEASE SubVersionType
+	METADATA   SubVersionType
+	internal   *semver.Version
+	ExtraMeta  map[string]interface{}
 }
 
 func (s SubVersionType) ToInt() int {
@@ -27,7 +31,7 @@ func (s SubVersionType) ToInt() int {
 }
 
 func (v *Version) String() string {
-	return fmt.Sprintf("v%s.%s.%s", v.Major, v.Minor, v.Patch)
+	return "v" + v.internal.String()
 }
 
 func (v *Version) MajorString() string {
@@ -39,31 +43,22 @@ func (v *Version) MajorMinorString() string {
 }
 
 func (v *Version) Compare(version *Version) int {
-	switch {
-	case version == nil || v.Major.ToInt() > version.Major.ToInt() || v.Major.ToInt() == version.Major.ToInt() && v.Minor.ToInt() > version.Minor.ToInt() || v.Major.ToInt() == version.Major.ToInt() && v.Minor == version.Minor && v.Patch.ToInt() > version.Patch.ToInt():
-		return 1
-	case v.Major == version.Major && v.Minor == version.Minor && v.Patch == version.Patch:
-		return 0
-	default:
-		return -1
-	}
+	return v.internal.Compare(version.internal)
 }
 
 func ParseVersion(version string) *Version {
-	pattern := regexp.MustCompile(`^v(\d+)\.(\d+)(\.\d+)?$`)
-
-	submatch := pattern.FindStringSubmatch(version)
-	if len(submatch) == 0 {
+	v, err := semver.NewVersion(version)
+	if err != nil {
+		logrus.Errorf("failed to parse semantic version %s: %v", version, err)
 		return nil
 	}
 
-	var v = Version{
-		Major: SubVersionType(submatch[1]),
-		Minor: SubVersionType(submatch[2]),
+	return &Version{
+		Major:      SubVersionType(strconv.FormatUint(v.Major(), 10)),
+		Minor:      SubVersionType(strconv.FormatUint(v.Minor(), 10)),
+		Patch:      SubVersionType(strconv.FormatUint(v.Patch(), 10)),
+		PRERELEASE: SubVersionType(v.Prerelease()),
+		METADATA:   SubVersionType(v.Metadata()),
+		internal:   v,
 	}
-	if len(submatch) == 4 {
-		v.Patch = SubVersionType(strings.TrimPrefix(submatch[3], "."))
-	}
-
-	return &v
 }

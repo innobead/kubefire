@@ -9,7 +9,7 @@ import (
 var Cmd = &cobra.Command{
 	Use:     "kubeconfig",
 	Aliases: []string{"k"},
-	Short:   "Manage kubeconfig of clusters",
+	Short:   "Manages kubeconfig of clusters",
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		di.DelayInit(false)
 		return validate.CheckPrerequisites()

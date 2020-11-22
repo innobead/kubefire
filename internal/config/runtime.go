@@ -51,12 +51,12 @@ func K3sVersionsEnvVars(k3sVersion string) EnvVars {
 	return []string{
 		fmt.Sprintf("K3S_VERSION=%s", k3sVersion),
 		// Need to use this option to forcibly ask k3s installer to install the specific version. Otherwise, it will choose a stable version from https://update.k3s.io/v1-release/channels.
-		fmt.Sprintf("INSTALL_K3S_VERSION=%s", k3sVersion+"+k3s1"),
+		fmt.Sprintf("INSTALL_K3S_VERSION=%s", k3sVersion),
 	}
 }
 
-func SkubaVersionsEnvVars(version string) EnvVars {
+func RKEVersionsEnvVars(version string) EnvVars {
 	return []string{
-		fmt.Sprintf("SKUBA_VERSION=%s", version),
+		fmt.Sprintf("RKE_VERSION=%s", version),
 	}
 }

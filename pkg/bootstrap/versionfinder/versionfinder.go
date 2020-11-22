@@ -29,8 +29,8 @@ func New(bootstrapperType string) Finder {
 	case constants.K3S:
 		return NewK3sVersionFinder()
 
-	case constants.SKUBA:
-		return NewSkubaVersionFinder()
+	case constants.RKE:
+		return NewRKEVersionFinder()
 	}
 
 	return nil

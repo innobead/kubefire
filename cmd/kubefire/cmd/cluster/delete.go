@@ -12,7 +12,7 @@ var forceDeleteCluster bool
 var deleteCmd = &cobra.Command{
 	Use:     "delete [name, ...]",
 	Aliases: []string{"rm", "del"},
-	Short:   "Delete clusters",
+	Short:   "Deletes clusters",
 	Args:    validate.MinimumArgs("name"),
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if !forceDeleteCluster {

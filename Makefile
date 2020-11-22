@@ -15,8 +15,10 @@ CR_IMAGE_PREFIX := $(CR_PATH)innobead
 KERNEL_IMAGE_NAME=${CR_IMAGE_PREFIX}/$(PROJECT)-ignite-kernel
 BUILD_SUSE_IMAGES ?=
 
+GolangCILintVersion := 1.32.2
+
 ContainerdVersion := v1.4.1
-IgniteVersion := v0.7.1
+IgniteVersion := v0.8.0
 CniVersion := v0.8.7
 RuncVersion := v1.0.0-rc92
 
@@ -53,10 +55,10 @@ build-all: clean clean-cni env build build-cni checksum ## Build all
 env: ## Prepare build env
 	 [ -x "$(BUILD_CACHE_DIR)/golangci-lint" ] || (\
 			mkdir -p $(BUILD_CACHE_DIR) || true && \
-			curl -sfLO https://github.com/golangci/golangci-lint/releases/download/v1.30.0/golangci-lint-1.30.0-linux-$(GOARCH).tar.gz && \
-			tar -zxvf golangci-lint-1.30.0-linux-$(GOARCH).tar.gz && \
-			mv ./golangci-lint-1.30.0-linux-$(GOARCH)/golangci-lint $(BUILD_CACHE_DIR)/ && \
-			rm -rf ./golangci-lint-1.30.0-linux* || true)
+			curl -sfLO https://github.com/golangci/golangci-lint/releases/download/v${GolangCILintVersion}/golangci-lint-$(GolangCILintVersion)-linux-$(GOARCH).tar.gz && \
+			tar -zxvf golangci-lint-$(GolangCILintVersion)-linux-$(GOARCH).tar.gz && \
+			mv ./golangci-lint-$(GolangCILintVersion)-linux-$(GOARCH)/golangci-lint $(BUILD_CACHE_DIR)/ && \
+			rm -rf ./golangci-lint-$(GolangCILintVersion)-linux* || true)
 
 .PHONY: build
 build: env format ## Build executables (linux/amd64 supported only)

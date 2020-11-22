@@ -24,7 +24,7 @@ const (
 
 	InstallPrerequisitesKubeadm Type = "install-prerequisites-kubeadm.sh"
 	InstallPrerequisitesK3s     Type = "install-prerequisites-k3s.sh"
-	InstallPrerequisitesSkuba   Type = "install-prerequisites-skuba.sh" //FIXME planned to remove
+	InstallPrerequisitesRKE     Type = "install-prerequisites-rke.sh"
 )
 
 var (

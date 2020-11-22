@@ -2,6 +2,8 @@ package bootstrap
 
 import (
 	"fmt"
+	"github.com/avast/retry-go"
+	"github.com/hashicorp/go-multierror"
 	interr "github.com/innobead/kubefire/internal/error"
 	"github.com/innobead/kubefire/pkg/bootstrap/versionfinder"
 	pkgconfig "github.com/innobead/kubefire/pkg/config"
@@ -14,12 +16,14 @@ import (
 	"os"
 	"path"
 	"strings"
+	"sync"
+	"time"
 )
 
 var BuiltinTypes = []string{
 	constants.KUBEADM,
-	constants.SKUBA,
 	constants.K3S,
+	constants.RKE,
 }
 
 type Bootstrapper interface {
@@ -31,14 +35,14 @@ type Bootstrapper interface {
 
 func New(bootstrapper string) Bootstrapper {
 	switch bootstrapper {
-	case constants.SKUBA:
-		return NewSkubaBootstrapper()
-
 	case constants.KUBEADM, "":
 		return NewKubeadmBootstrapper()
 
 	case constants.K3S:
 		return NewK3sBootstrapper()
+
+	case constants.RKE:
+		return NewRKEBootstrapper()
 
 	default:
 		panic("no supported bootstrapper")
@@ -47,14 +51,18 @@ func New(bootstrapper string) Bootstrapper {
 
 func IsValid(bootstrapper string) bool {
 	switch bootstrapper {
-	case constants.KUBEADM, constants.SKUBA, constants.K3S:
+	case constants.KUBEADM, constants.RKE, constants.K3S:
 		return true
 	default:
 		return false
 	}
 }
 
-func GenerateSaveBootstrapperVersions(bootstrapperType string, configManager pkgconfig.Manager) (bootstrapperLatestVersion pkgconfig.BootstrapperVersioner, bootstrapperVersions []pkgconfig.BootstrapperVersioner, err error) {
+func GenerateSaveBootstrapperVersions(bootstrapperType string, configManager pkgconfig.Manager) (
+	bootstrapperLatestVersion pkgconfig.BootstrapperVersioner,
+	bootstrapperVersions []pkgconfig.BootstrapperVersioner,
+	err error,
+) {
 	versionFinder := versionfinder.New(bootstrapperType)
 
 	latestVersion, err := versionFinder.GetLatestVersion()
@@ -62,6 +70,7 @@ func GenerateSaveBootstrapperVersions(bootstrapperType string, configManager pkg
 		return
 	}
 
+	// get from the cache
 	bootstrapperVersion := pkgconfig.NewBootstrapperVersion(bootstrapperType, latestVersion.String())
 	if _, err = os.Stat(bootstrapperVersion.LocalVersionFile()); !os.IsNotExist(err) {
 		bootstrapperVersions, err = configManager.GetBootstrapperVersions(bootstrapperVersion)
@@ -72,6 +81,7 @@ func GenerateSaveBootstrapperVersions(bootstrapperType string, configManager pkg
 		return
 	}
 
+	// get the versions from the bootstrapper
 	var versions []*data.Version
 	versions, err = versionFinder.GetVersionsAfterVersion(*latestVersion)
 	if err != nil {
@@ -120,10 +130,10 @@ func GenerateSaveBootstrapperVersions(bootstrapperType string, configManager pkg
 			}
 		}
 
-	case *versionfinder.SkubaVersionFinder:
+	case *versionfinder.RKEVersionFinder:
 
 		for _, v := range versions {
-			bv := pkgconfig.NewSkubaBootstrapperVersion(v.String())
+			bv := pkgconfig.NewRKEBootstrapperVersion(v.String(), v.ExtraMeta["kubernetes_version"].([]string))
 			bootstrapperVersions = append(bootstrapperVersions, bv)
 
 			if bv.Version() == latestVersion.String() {
@@ -209,4 +219,64 @@ func getSupportedBootstrapperVersion(versionFinder versionfinder.Finder, configM
 		interr.NotFoundError,
 		fmt.Sprintf("bootstrapper=%s, version=%s", bootstrapper.Type(), version),
 	)
+}
+
+func initNodes(cluster *data.Cluster, cmds []string) error {
+	logrus.WithField("cluster", cluster.Name).Infoln("initializing cluster nodes")
+
+	wgInitNodes := sync.WaitGroup{}
+	wgInitNodes.Add(len(cluster.Nodes))
+
+	chErr := make(chan error, len(cluster.Nodes))
+
+	for _, n := range cluster.Nodes {
+		logrus.WithField("node", n.Name).Infoln("initializing node")
+
+		go func(n *data.Node) {
+			defer wgInitNodes.Done()
+
+			_ = retry.Do(func() error {
+				sshClient, err := utilssh.NewClient(
+					n.Name,
+					cluster.Spec.Prikey,
+					"root",
+					n.Status.IPAddresses,
+					nil,
+				)
+				if err != nil {
+					return err
+				}
+				defer sshClient.Close()
+
+				err = sshClient.Run(nil, nil, cmds...)
+				if err != nil {
+					chErr <- errors.WithMessagef(err, "failed on node (%s)", n.Name)
+				}
+
+				return nil
+			},
+				retry.Delay(10*time.Second),
+				retry.MaxDelay(1*time.Minute),
+			)
+		}(n)
+	}
+
+	logrus.Info("waiting all nodes initialization finished")
+
+	wgInitNodes.Wait()
+	close(chErr)
+
+	var err error
+	for {
+		e, ok := <-chErr
+		if !ok {
+			break
+		}
+
+		if e != nil {
+			err = multierror.Append(err, e)
+		}
+	}
+
+	return err
 }
