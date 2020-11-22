@@ -118,7 +118,7 @@ func init() {
 
 	flags.BoolVarP(&forceDeleteCluster, "force", "f", false, "Force to recreate if the cluster exists")
 	flags.BoolVar(&noCache, "no-cache", false, "Forget caches")
-	flags.BoolVar(&noStart, "no-start", false, "Don't Start nodes")
+	flags.BoolVar(&noStart, "no-start", false, "Don't start nodes")
 }
 
 func deployCluster(name string) error {

@@ -62,18 +62,17 @@ Please run `kubefire install` command with root permission (or sudo without pass
 
 #### With command options
 ```console
-➜ kubefire cluster create -h
-Create cluster
+❯ kubefire cluster create -h
+Creates cluster
 
 Usage:
   kubefire cluster create [name] [flags]
 
 Flags:
-      --bootstrapper string    Bootstrapper type, options: [kubeadm, skuba, k3s] (default "kubeadm")
-      --cache                  Use caches (default true)
+      --bootstrapper string    Bootstrapper type, options: [kubeadm, k3s, rke] (default "kubeadm")
       --config string          Cluster configuration file (ex: use 'config-template' command to generate the default cluster config)
       --extra-options string   Extra options (ex: key=value,...) for bootstrapper
-      --force                  Force to recreate if the cluster exists
+  -f, --force                  Force to recreate if the cluster exists
   -h, --help                   help for create
       --image string           Rootfs container image (default "ghcr.io/innobead/kubefire-opensuse-leap:15.2")
       --kernel-args string     Kernel arguments (default "console=ttyS0 reboot=k panic=1 pci=off ip=dhcp security=apparmor apparmor=1")
@@ -82,8 +81,9 @@ Flags:
       --master-cpu int         CPUs of master node (default 2)
       --master-memory string   Memory of master node (default "2GB")
       --master-size string     Disk size of master node (default "10GB")
+      --no-cache               Forget caches
+      --no-start               Don't start nodes
       --pubkey string          Public key
-      --start                  Start nodes (default true)
       --version string         Version of Kubernetes supported by bootstrapper (ex: v1.18, v1.18.8, empty)
       --worker-count int       Count of worker node
       --worker-cpu int         CPUs of worker node (default 2)
@@ -91,17 +91,17 @@ Flags:
       --worker-size string     Disk size of worker node (default "10GB")
 
 Global Flags:
-      --log-level string   log level, options: [panic, fatal, error, warning, info, debug, trace] (default "info")
-  -o, --output string      output format, options: [default, json, yaml] (default "default")
+  -l, --log-level string   log level, options: [panic, fatal, error, warning, info, debug, trace] (default "info")
+
 ```
 
 #### With declarative config file
 
 ```console
 # Geneate a cluster template configuration, then update the config as per your needs
-➜ kubefire cluster config-template > cluster.yaml
+❯ kubefire cluster config-template > cluster.yaml
 
-➜ cat cluster.yaml   
+❯ cat cluster.yaml   
 name: ""
 bootstrapper: kubeadm
 pubkey: ""
@@ -124,39 +124,39 @@ worker:
   disk_size: 10GB
 
 # Create a cluster with the config file
-➜ kubeifre cluster create demo --config=cluster.yaml
+❯ kubeifre cluster create demo --config=cluster.yaml
 ```
 
 ### Bootstrapping with selectable Kubernetes versions
 
 ```console
 # Create a cluster with the latest versions w/o any specified version
-kubefire cluster create demo
+❯ kubefire cluster create demo
 
 # Create a cluster with the latest patch version of v1.18
-kubefire cluster create demo --version=v1.18
+❯ kubefire cluster create demo --version=v1.18
 
 # Create a cluster with a valid specific version v1.18.8
-kubefire cluster create demo --version=v1.18.8
+❯ kubefire cluster create demo --version=v1.18.8
 
 # Create a cluster with the latest patch version of supported minor releases
-kubefire cluster create demo --version=v1.17
-kubefire cluster create demo --version=v1.16
+❯ kubefire cluster create demo --version=v1.17
+❯ kubefire cluster create demo --version=v1.16
 
 # If the version is outside the supported versions (last 3 minor versions given the latest is v1.18), the cluster creation will be not supported 
-kubefire cluster create demo --version=v1.15
+❯ kubefire cluster create demo --version=v1.15
 ```
 
 ### Bootstrapping with Kubeadm
 > Supports [the latest supported version](https://dl.k8s.io/release/stable.txt) and last 3 minor versions.
 
 ```console
-kubefire cluster create demo --bootstrapper=kubeadm
+❯ kubefire cluster create demo --bootstrapper=kubeadm
 ```
 
-#### Add extra Kubeadm installation options
+#### Add extra Kubeadm deployment options
 
-To add extra installation options of the control plane components, use `--extra-options` of `cluster create` command to provide `init_options`, `api_server_options`, `controller_manager_options` or `scheduler_options` key-value pairs as the below example. 
+To add extra deployment options of the control plane components, use `--extra-options` of `cluster create` command to provide `init_options`, `api_server_options`, `controller_manager_options` or `scheduler_options` key-value pairs as the below example. 
 
 > Note: the key-value pairs in `--extra-options` are separated by comma.
 
@@ -166,7 +166,7 @@ To add extra installation options of the control plane components, use `--extra-
 - Add extra options of `Scheduler` into `scheduler_options='<option>,...'`.
 
 ```console
-kubefire cluster create demo --bootstrapper=kubeadm --extra-options="init_options='--service-dns-domain=yourcluster.local' api_server_options='--audit-log-maxage=10'"
+❯ kubefire cluster create demo --bootstrapper=kubeadm --extra-options="init_options='--service-dns-domain=yourcluster.local' api_server_options='--audit-log-maxage=10'"
 ```
 
 [![asciicast](https://asciinema.org/a/lQfFfMa1zCXWvz321eUqhNyxB.svg)](https://asciinema.org/a/lQfFfMa1zCXWvz321eUqhNyxB)
@@ -179,7 +179,7 @@ Therefore, if using the prebuilt kernels, please use `4.19` (which is the defaul
 For rootfs, it's no problem to use other non-Ubuntu images.
 
 ```console
-kubefire cluster create demo --bootstrapper=k3s
+❯ kubefire cluster create demo --bootstrapper=k3s
 ```
 
 ### Bootstrapping with K3s on ARM64
@@ -191,9 +191,9 @@ From 0.3.0, it's able to deploy K3s cluster on ARM64 architecture.
 
 [![asciicast](https://asciinema.org/a/6UVU9PVdcqAAtgN17N9EAaSFq.svg)](https://asciinema.org/a/6UVU9PVdcqAAtgN17N9EAaSFq)
 
-#### Add extra K3s installation options
+#### Add extra K3s deployment options
 
-To add extra installation options of the server or agent nodes, use `--extra-options` of `cluster create` command to provide `server_install_options` or `agent_install_options` key-value pairs as the below example. 
+To add extra deployment options of the server or agent nodes, use `--extra-options` of `cluster create` command to provide `server_install_options` or `agent_install_options` key-value pairs as the below example. 
 
 > Note: the key-value pairs in `--extra-options` are separated by comma.
 
@@ -201,15 +201,32 @@ To add extra installation options of the server or agent nodes, use `--extra-opt
 - Add extra options of `k3s agent` into `agent_install_options='<k3s agent option>,...'`.
 
 ```console
-kubefire cluster create demo --bootstrapper=k3s --extra-options="server_install_options='--disable=traefik,--disable=metrics-server'"
+❯ kubefire cluster create demo --bootstrapper=k3s --extra-options="server_install_options='--disable=traefik,--disable=metrics-server'"
 ```
 
 [![asciicast](https://asciinema.org/a/HqmfS4wZP7pPVS3E7M7gwAzmA.svg)](https://asciinema.org/a/HqmfS4wZP7pPVS3E7M7gwAzmA)
 
-### Bootstrapping with SUSE Skuba (K8s 1.17.9)
+### Bootstrapping with RKE
 
 ```console
-kubefire cluster create demo --bootstrapper=skuba --extra-options="register_code=<Product Register Code>"
+❯ kubefire cluster create demo --bootstrapper=rke
+```
+
+#### Add extra RKE deployment options
+
+To add extra deployment options of the RKE cluster, use `--extra-options` of `cluster create` command to provide the below options as key-value pairs. 
+
+> Note: the key-value pairs in `--extra-options` are separated by comma.
+
+- Add `kubernetes_version` into `kubernetes_version='<RKE supported kubernetes version>'`.
+- Add `cluster_config_file` into `cluster_config_file='<RKE customized cluster.yaml>,...'`.
+
+```console
+❯ cat /tmp/cluster.yaml
+network:
+    plugin: calico
+
+❯ kubefire cluster create demo --bootstrapper=rke --extra-options="kubernetes_version=v1.18.12-rancher1-1 cluster_config_file=/tmp/cluster.yaml"
 ```
 
 ## Accessing Cluster
@@ -240,6 +257,7 @@ There are two ways below to operate the deployed cluster. After having a valid K
 Make sure to run kubefire commands with root permission or sudo without password, because ignite needs root permission to manage Firecracker VMs for now, but it is planned to improve in the future release.
 
 ```console
+❯ kubefire -h
 KubeFire, creates and manages Kubernetes clusters using FireCracker microVMs
 
 Usage:
@@ -247,101 +265,101 @@ Usage:
   kubefire [command]
 
 Available Commands:
-  cluster     Manage clusters
+  cache       Manages caches
+  cluster     Manages clusters
   help        Help about any command
-  image       Show supported RootFS and Kernel images
-  info        Show info of prerequisites, supported K8s/K3s versions
-  install     Install or update prerequisites
-  kubeconfig  Manage kubeconfig of clusters
-  node        Manage nodes
-  uninstall   Uninstall prerequisites
-  version     Show version
+  image       Shows supported RootFS and Kernel images
+  info        Shows info of prerequisites, supported K8s/K3s versions
+  install     Installs or updates prerequisites
+  kubeconfig  Manages kubeconfig of clusters
+  node        Manages nodes
+  uninstall   Uninstalls prerequisites
+  version     Shows version
 
 Flags:
   -h, --help               help for kubefire
   -l, --log-level string   log level, options: [panic, fatal, error, warning, info, debug, trace] (default "info")
 
-Use "kubefire [command] --help" for more information about a command.
 ```
 
 ```console
 # Show version
-kubefire version
+❯ kubefire version
 
 # Show supported RootFS and Kernel images
-kubefire image
+❯ kubefire image
 
 # Show prerequisites information
-kubefire info
+❯ kubefire info
 
 # Show supported K8s/K3s versions by builtin bootstrappers
-kubefire info -b
+❯ kubefire info -b
 
 # Install or Update prerequisites
-kubefire install 
+❯ kubefire install 
 
 # Uninstall prerequisites
-kubefire uninstall
+❯ kubefire uninstall
 
 # Create a cluster
-kubefire cluster create
+❯ kubefire cluster create
 
 # Create a cluster w/ a selected version
-kubefire cluster create --version=[v<MAJOR>.<MINOR>.<PATCH> | v<MAJOR>.<MINOR>]
+❯ kubefire cluster create --version=[v<MAJOR>.<MINOR>.<PATCH> | v<MAJOR>.<MINOR>]
 
 # Delete clusters
-kubefire cluster delete
+❯ kubefire cluster delete
 
 # Show a cluster info
-kubefire cluster show
+❯ kubefire cluster show
 
 # Show a cluster config
-kubefire cluster config
+❯ kubefire cluster config
 
 # Create the default cluster config template
-kubefire cluster config-template
+❯ kubefire cluster config-template
 
 # Stop a cluster
-kubefire cluster stop
+❯ kubefire cluster stop
 
 # Start a cluster
-kubefire cluster start
+❯ kubefire cluster start
 
 # Restart a cluster
-kubefire cluster restart
+❯ kubefire cluster restart
 
 # List clusters
-kubefire cluster list
+❯ kubefire cluster list
 
 # Print environment variables of cluster (ex: KUBECONFIG)
-kubefire cluster env
+❯ kubefire cluster env
 
 # Print cluster kubeconfig
-kubefire kubeconfig show
+❯ kubefire kubeconfig show
 
 # Download cluster kubeconfig
-kubefire kubeconfig download
+❯ kubefire kubeconfig download
 
 # SSH to a node
-kubefire node ssh
+❯ kubefire node ssh
 
 # Show a node info
-kubefire node show
+❯ kubefire node show
 
 # Stop a node
-kubefire node stop
+❯ kubefire node stop
 
 # Start a node
-kubefire node start
+❯ kubefire node start
 
 # Restart a node
-kubefire node restart
+❯ kubefire node restart
 
 # Show cache info
-kubefire cache show
+❯ kubefire cache show
 
 # Delete caches
-kubefire cache delete
+❯ kubefire cache delete
 ```
 
 # Troubleshooting
@@ -375,4 +393,3 @@ Besides below prebuilt images, you can also use the images provided by [weavewor
 - [Firecracker](https://github.com/firecracker-microvm/firecracker)
 - [Ignite](https://github.com/weaveworks/ignite)
 - [K3s](https://github.com/rancher/k3s) 
-
