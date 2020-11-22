@@ -186,10 +186,10 @@ func (i *IgniteNodeManager) GetNode(name string) (*data.Node, error) {
 			"{{.Spec.DiskSize}}": "DiskSize",
 		},
 		&node.Status: {
-			"{{.Status.Running}}":     "Running",
-			"{{.Status.IPAddresses}}": "IPAddresses",
-			"{{.Status.Image.ID}}":    "Image",
-			"{{.Status.Kernel.ID}}":   "Kernel",
+			"{{.Status.Running}}":             "Running",
+			"{{.Status.Network.IPAddresses}}": "IPAddresses",
+			"{{.Status.Image.ID}}":            "Image",
+			"{{.Status.Kernel.ID}}":           "Kernel",
 		},
 	}
 
