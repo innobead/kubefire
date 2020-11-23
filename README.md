@@ -7,6 +7,8 @@ KubeFire is to create and manage Kubernetes clusters running on FireCracker micr
 - Have different cluster bootstappers to provision Kubernetes clusters like Kubeadm, K3s, and Rancher RKE
 - Supports deploying clusters on different architectures like x86_64/AMD64 and ARM64/AARCH64
 
+![kubefire in action](./doc/demo.svg)
+
 # Getting Started
 
 ## Installing KubeFire
