@@ -69,12 +69,12 @@ Usage:
   kubefire cluster create [name] [flags]
 
 Flags:
-      --bootstrapper string    Bootstrapper type, options: [kubeadm, k3s, rke] (default "kubeadm")
-      --config string          Cluster configuration file (ex: use 'config-template' command to generate the default cluster config)
-      --extra-options string   Extra options (ex: key=value,...) for bootstrapper
+  -b, --bootstrapper string    Bootstrapper type, options: [kubeadm, k3s, rke] (default "kubeadm")
+  -c, --config string          Cluster configuration file (ex: use 'config-template' command to generate the default cluster config)
+  -o, --extra-options string   Extra options (ex: key=value,...) for bootstrapper
   -f, --force                  Force to recreate if the cluster exists
   -h, --help                   help for create
-      --image string           Rootfs container image (default "ghcr.io/innobead/kubefire-opensuse-leap:15.2")
+  -i, --image string           Rootfs container image (default "ghcr.io/innobead/kubefire-opensuse-leap:15.2")
       --kernel-args string     Kernel arguments (default "console=ttyS0 reboot=k panic=1 pci=off ip=dhcp security=apparmor apparmor=1")
       --kernel-image string    Kernel container image (default "ghcr.io/innobead/kubefire-ignite-kernel:4.19.125-amd64")
       --master-count int       Count of master node (default 1)
@@ -83,8 +83,8 @@ Flags:
       --master-size string     Disk size of master node (default "10GB")
       --no-cache               Forget caches
       --no-start               Don't start nodes
-      --pubkey string          Public key
-      --version string         Version of Kubernetes supported by bootstrapper (ex: v1.18, v1.18.8, empty)
+  -k, --pubkey string          Public key
+  -v, --version string         Version of Kubernetes supported by bootstrapper (ex: v1.18, v1.18.8, empty)
       --worker-count int       Count of worker node
       --worker-cpu int         CPUs of worker node (default 2)
       --worker-memory string   Memory of worker node (default "2GB")

@@ -97,13 +97,13 @@ var createCmd = &cobra.Command{
 func init() {
 	flags := createCmd.Flags()
 
-	flags.StringVar(&cluster.Bootstrapper, "bootstrapper", cluster.Bootstrapper, util.FlagsValuesUsage("Bootstrapper type", bootstrap.BuiltinTypes))
-	flags.StringVar(&cluster.Pubkey, "pubkey", "", "Public key")
-	flags.StringVar(&cluster.Version, "version", "", "Version of Kubernetes supported by bootstrapper (ex: v1.18, v1.18.8, empty)")
-	flags.StringVar(&cluster.Image, "image", cluster.Image, "Rootfs container image")
+	flags.StringVarP(&cluster.Bootstrapper, "bootstrapper", "b", cluster.Bootstrapper, util.FlagsValuesUsage("Bootstrapper type", bootstrap.BuiltinTypes))
+	flags.StringVarP(&cluster.Pubkey, "pubkey", "k", "", "Public key")
+	flags.StringVarP(&cluster.Version, "version", "v", "", "Version of Kubernetes supported by bootstrapper (ex: v1.18, v1.18.8, empty)")
+	flags.StringVarP(&cluster.Image, "image", "i", cluster.Image, "Rootfs container image")
 	flags.StringVar(&cluster.KernelImage, "kernel-image", cluster.KernelImage, "Kernel container image")
 	flags.StringVar(&cluster.KernelArgs, "kernel-args", cluster.KernelArgs, "Kernel arguments")
-	flags.StringVar(&extraOptions, "extra-options", "", "Extra options (ex: key=value,...) for bootstrapper")
+	flags.StringVarP(&extraOptions, "extra-options", "o", "", "Extra options (ex: key=value,...) for bootstrapper")
 
 	flags.IntVar(&cluster.Master.Count, "master-count", cluster.Master.Count, "Count of master node")
 	flags.IntVar(&cluster.Master.Cpus, "master-cpu", cluster.Master.Cpus, "CPUs of master node")
@@ -114,7 +114,7 @@ func init() {
 	flags.IntVar(&cluster.Worker.Cpus, "worker-cpu", cluster.Worker.Cpus, "CPUs of worker node")
 	flags.StringVar(&cluster.Worker.Memory, "worker-memory", cluster.Worker.Memory, "Memory of worker node")
 	flags.StringVar(&cluster.Worker.DiskSize, "worker-size", cluster.Worker.DiskSize, "Disk size of worker node")
-	flags.StringVar(&configFile, "config", "", "Cluster configuration file (ex: use 'config-template' command to generate the default cluster config)")
+	flags.StringVarP(&configFile, "config", "c", "", "Cluster configuration file (ex: use 'config-template' command to generate the default cluster config)")
 
 	flags.BoolVarP(&forceDeleteCluster, "force", "f", false, "Force to recreate if the cluster exists")
 	flags.BoolVar(&noCache, "no-cache", false, "Forget caches")

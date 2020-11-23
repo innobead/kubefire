@@ -21,10 +21,11 @@ import (
 )
 
 const (
-	RunCmd            = `ignite run {{.Image}} --name={{.Name}} --label=cluster={{.Cluster}} --ssh={{.Pubkey}} --kernel-image={{.KernelImage}} --kernel-image={{.KernelImage}} --cpus={{.Cpus}} --memory={{.Memory}} --size={{.DiskSize}}`
-	CreateCmd         = `ignite create {{.Image}} --name={{.Name}} --label=cluster={{.Cluster}} --ssh={{.Pubkey}} --kernel-image={{.KernelImage}} --kernel-image={{.KernelImage}} --cpus={{.Cpus}} --memory={{.Memory}} --size={{.DiskSize}}`
-	DeleteCmd         = "ignite rm {{.Name}} --force"
-	StartCmd          = "ignite start {{.Name}}"
+	RunCmd    = `ignite run {{.Image}} --name={{.Name}} --label=cluster={{.Cluster}} --ssh={{.Pubkey}} --kernel-image={{.KernelImage}} --kernel-image={{.KernelImage}} --cpus={{.Cpus}} --memory={{.Memory}} --size={{.DiskSize}}`
+	CreateCmd = `ignite create {{.Image}} --name={{.Name}} --label=cluster={{.Cluster}} --ssh={{.Pubkey}} --kernel-image={{.KernelImage}} --kernel-image={{.KernelImage}} --cpus={{.Cpus}} --memory={{.Memory}} --size={{.DiskSize}}`
+	DeleteCmd = "ignite rm {{.Name}} --force"
+	//FIXME: ignite 0.8.0 issue, need specific runtime and network plugin options even there are default values already
+	StartCmd          = "ignite start {{.Name}} --runtime containerd --network-plugin cni"
 	StopCmd           = "ignite stop {{.Name}}"
 	ListImageCmd      = "ignite {{.Image}} ls -q"
 	InspectCmd        = "ignite inspect {{.Resource}} {{.ResourceName}} -t \"{{.ResourceFilter}}\""
