@@ -395,3 +395,5 @@ Besides below prebuilt images, you can also use the images provided by [weavewor
 - [Firecracker](https://github.com/firecracker-microvm/firecracker)
 - [Ignite](https://github.com/weaveworks/ignite)
 - [K3s](https://github.com/rancher/k3s) 
+- [Kubeadm](https://github.com/kubernetes/kubeadm)
+- [Rancher RKE](https://rancher.com/docs/rke/latest/en/)
