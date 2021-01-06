@@ -12,22 +12,22 @@ import (
 	"strings"
 )
 
-const K3sChannelInfoUrl = "https://update.k3s.io/v1-release/channels"
+const RKE2ChannelInfoUrl = "https://update.rke2.io/v1-release/channels"
 
-type K3sVersionFinder struct {
+type RKE2VersionFinder struct {
 	BaseVersionFinder
 }
 
-func NewK3sVersionFinder() *K3sVersionFinder {
-	return &K3sVersionFinder{BaseVersionFinder{
-		constants.K3S,
+func NewRKE2VersionFinder() *RKE2VersionFinder {
+	return &RKE2VersionFinder{BaseVersionFinder{
+		constants.RKE2,
 	}}
 }
 
-func (k *K3sVersionFinder) GetVersionsAfterVersion(afterVersion data.Version) ([]*data.Version, error) {
+func (k *RKE2VersionFinder) GetVersionsAfterVersion(afterVersion data.Version) ([]*data.Version, error) {
 	logrus.WithField("bootstrapper", k.bootstrapperType).Debugln("getting the released versions info")
 
-	versionsInfoMap, err := getK3sVersionsInfo()
+	versionsInfoMap, err := getRKE2VersionsInfo()
 	if err != nil {
 		return nil, err
 	}
@@ -41,7 +41,7 @@ func (k *K3sVersionFinder) GetVersionsAfterVersion(afterVersion data.Version) ([
 			info := versionInfo.(map[string]interface{})
 
 			if id, ok := info["id"]; ok {
-				if ok := re.MatchString(id.(string)); ok {
+				if id == "latest" || re.MatchString(id.(string)) {
 					versions = append(
 						versions,
 						data.ParseVersion(info["latest"].(string)),
@@ -65,10 +65,10 @@ func (k *K3sVersionFinder) GetVersionsAfterVersion(afterVersion data.Version) ([
 	return nil, interr.NodeNotFoundError
 }
 
-func (k *K3sVersionFinder) GetLatestVersion() (*data.Version, error) {
+func (k *RKE2VersionFinder) GetLatestVersion() (*data.Version, error) {
 	logrus.WithField("bootstrapper", k.bootstrapperType).Debugln("getting the latest released version info")
 
-	versionsInfoMap, err := getK3sVersionsInfo()
+	versionsInfoMap, err := getRKE2VersionsInfo()
 	if err != nil {
 		return nil, err
 	}
@@ -86,8 +86,8 @@ func (k *K3sVersionFinder) GetLatestVersion() (*data.Version, error) {
 	return nil, interr.NotFoundError
 }
 
-func getK3sVersionsInfo() (map[string]interface{}, error) {
-	body, _, err := util.HttpGet(K3sChannelInfoUrl)
+func getRKE2VersionsInfo() (map[string]interface{}, error) {
+	body, _, err := util.HttpGet(RKE2ChannelInfoUrl)
 	if err != nil {
 		return nil, err
 	}

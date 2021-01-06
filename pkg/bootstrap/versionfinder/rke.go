@@ -66,6 +66,10 @@ func (k *RKEVersionFinder) GetLatestVersion() (*data.Version, error) {
 		return nil, errors.WithStack(err)
 	}
 
+	versions = funk.Filter(versions, func(v map[string]interface{}) bool {
+		return !strings.Contains(v["tag_name"].(string), "-rc")
+	}).([]map[string]interface{})
+
 	sort.Slice(versions, func(i, j int) bool {
 		v1 := versions[i]
 		v2 := versions[2]
@@ -77,11 +81,6 @@ func (k *RKEVersionFinder) GetLatestVersion() (*data.Version, error) {
 	})
 
 	return data.ParseVersion(versions[0]["tag_name"].(string)), nil
-}
-
-func (k *RKEVersionFinder) HasPatchVersion(version string) bool {
-	v := data.ParseVersion(version)
-	return v.Patch != ""
 }
 
 func (k *RKEVersionFinder) getLatestSupportedK8sVersion() (*data.Version, error) {

@@ -19,12 +19,12 @@ import (
 type Type string
 
 const (
-	InstallPrerequisites   Type = "install-prerequisites.sh"
-	UninstallPrerequisites Type = "uninstall-prerequisites.sh"
-
+	InstallPrerequisites        Type = "install-prerequisites.sh"
+	UninstallPrerequisites      Type = "uninstall-prerequisites.sh"
 	InstallPrerequisitesKubeadm Type = "install-prerequisites-kubeadm.sh"
 	InstallPrerequisitesK3s     Type = "install-prerequisites-k3s.sh"
 	InstallPrerequisitesRKE     Type = "install-prerequisites-rke.sh"
+	InstallPrerequisitesRKE2    Type = "install-prerequisites-rke2.sh"
 )
 
 var (

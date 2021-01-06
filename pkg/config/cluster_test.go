@@ -22,6 +22,18 @@ func TestCluster_UpdateExtraOptions(t *testing.T) {
 			options: `options="--k1=v1,--k2=v2"`,
 		},
 		{
+			name: "valid repeated extra options with comma separator",
+			extraOptions: map[string]interface{}{
+				"options": []string{
+					"--k1=v1",
+					"--k1=v1",
+					"--k2=v2",
+					"--k2=v2",
+				},
+			},
+			options: `options="--k1=v1,--k1=v1,--k2=v2,--k2=v2"`,
+		},
+		{
 			name: "valid many same extra options with comma separator",
 			extraOptions: map[string]interface{}{
 				"options": []string{

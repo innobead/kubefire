@@ -54,10 +54,6 @@ func (k *KubeadmVersionFinder) GetLatestVersion() (*data.Version, error) {
 	return data.ParseVersion(strings.TrimSuffix(body, "\n")), nil
 }
 
-func (k *KubeadmVersionFinder) HasPatchVersion(version string) bool {
-	return hasPatchVersionGithub("kubernetes", "kubernetes", version, k.bootstrapperType)
-}
-
 func (k *KubeadmVersionFinder) GetCritoolVersionsAfterVersion(afterVersion data.Version) ([]*data.Version, error) {
 	logrus.WithField("bootstrapper", k.bootstrapperType).Infof("getting the cri-tools release versions info less than/equal to %s", afterVersion.String())
 

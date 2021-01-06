@@ -26,9 +26,9 @@ trap cleanup EXIT ERR INT TERM
 
 function install_k3s() {
   # https://get.k3s.io
-  local url="https://raw.githubusercontent.com/rancher/k3s/${K3S_VERSION}+k3s1/install.sh" # for backward compatible
+  local url="https://raw.githubusercontent.com/k3s-io/k3s/${K3S_VERSION}+k3s1/install.sh" # for backward compatible
   if [[ "$K3S_VERSION" =~ .*+k3s.* ]]; then
-    local url="https://raw.githubusercontent.com/rancher/k3s/${K3S_VERSION}/install.sh"
+    local url="https://raw.githubusercontent.com/k3s-io/k3s/${K3S_VERSION}/install.sh"
   fi
 
   curl -sfSL "$url" -o k3s-install.sh

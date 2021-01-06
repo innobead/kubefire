@@ -2,6 +2,7 @@ package cluster
 
 import (
 	"fmt"
+	"github.com/avast/retry-go"
 	"github.com/goccy/go-yaml"
 	"github.com/innobead/kubefire/internal/config"
 	"github.com/innobead/kubefire/internal/di"
@@ -14,6 +15,7 @@ import (
 	"io/ioutil"
 	"regexp"
 	"strings"
+	"time"
 )
 
 var (
@@ -142,9 +144,15 @@ func deployCluster(name string) error {
 		return errors.WithMessagef(err, "failed to mark the cluster (%s) as deployed", cluster.Name)
 	}
 
-	if _, err := di.Bootstrapper().DownloadKubeConfig(cluster, ""); err != nil {
-		return errors.WithMessagef(err, "failed to download the kubeconfig of cluster (%s)", cluster.Name)
-	}
+	_ = retry.Do(func() error {
+		if _, err := di.Bootstrapper().DownloadKubeConfig(cluster, ""); err != nil {
+			return errors.WithMessagef(err, "failed to download the kubeconfig of cluster (%s)", cluster.Name)
+		}
+
+		return nil
+	},
+		retry.Delay(10*time.Second),
+	)
 
 	return nil
 }

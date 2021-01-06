@@ -47,16 +47,23 @@ func KubeadmVersionsEnvVars(k8sVersion, kubeReleaseVersion, crictlVersion string
 	return preVersions
 }
 
-func K3sVersionsEnvVars(k3sVersion string) EnvVars {
+func K3sVersionsEnvVars(version string) EnvVars {
 	return []string{
-		fmt.Sprintf("K3S_VERSION=%s", k3sVersion),
+		fmt.Sprintf("K3S_VERSION=%s", version),
 		// Need to use this option to forcibly ask k3s installer to install the specific version. Otherwise, it will choose a stable version from https://update.k3s.io/v1-release/channels.
-		fmt.Sprintf("INSTALL_K3S_VERSION=%s", k3sVersion),
+		fmt.Sprintf("INSTALL_K3S_VERSION=%s", version),
 	}
 }
 
 func RKEVersionsEnvVars(version string) EnvVars {
 	return []string{
 		fmt.Sprintf("RKE_VERSION=%s", version),
+	}
+}
+
+func RKE2VersionsEnvVars(version string, rke2ConfigValue string) EnvVars {
+	return []string{
+		fmt.Sprintf("RKE2_VERSION=%s", version),
+		fmt.Sprintf("RKE2_CONFIG=\"%s\"", rke2ConfigValue),
 	}
 }

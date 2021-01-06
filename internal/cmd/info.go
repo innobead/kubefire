@@ -61,7 +61,7 @@ func (p PrerequisitesInfo) String() string {
 }
 
 func (p PrerequisitesInfo) Matched() bool {
-	return p.InstalledVersion == p.ExpectedVersion
+	return p.ExpectedVersion == "" || p.InstalledVersion == p.ExpectedVersion
 }
 
 func CurrentPrerequisitesInfos() *PrerequisitesInfos {

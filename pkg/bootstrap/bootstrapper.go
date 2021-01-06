@@ -24,6 +24,7 @@ var BuiltinTypes = []string{
 	constants.KUBEADM,
 	constants.K3S,
 	constants.RKE,
+	constants.RKE2,
 }
 
 type Bootstrapper interface {
@@ -37,13 +38,12 @@ func New(bootstrapper string) Bootstrapper {
 	switch bootstrapper {
 	case constants.KUBEADM, "":
 		return NewKubeadmBootstrapper()
-
 	case constants.K3S:
 		return NewK3sBootstrapper()
-
 	case constants.RKE:
 		return NewRKEBootstrapper()
-
+	case constants.RKE2:
+		return NewRKE2Bootstrapper()
 	default:
 		panic("no supported bootstrapper")
 	}
@@ -51,7 +51,7 @@ func New(bootstrapper string) Bootstrapper {
 
 func IsValid(bootstrapper string) bool {
 	switch bootstrapper {
-	case constants.KUBEADM, constants.RKE, constants.K3S:
+	case constants.KUBEADM, constants.K3S, constants.RKE, constants.RKE2:
 		return true
 	default:
 		return false
@@ -134,6 +134,17 @@ func GenerateSaveBootstrapperVersions(bootstrapperType string, configManager pkg
 
 		for _, v := range versions {
 			bv := pkgconfig.NewRKEBootstrapperVersion(v.String(), v.ExtraMeta["kubernetes_version"].([]string))
+			bootstrapperVersions = append(bootstrapperVersions, bv)
+
+			if bv.Version() == latestVersion.String() {
+				bootstrapperLatestVersion = bv
+			}
+		}
+
+	case *versionfinder.RKE2VersionFinder:
+
+		for _, v := range versions {
+			bv := pkgconfig.NewRKE2BootstrapperVersion(v.String())
 			bootstrapperVersions = append(bootstrapperVersions, bv)
 
 			if bv.Version() == latestVersion.String() {

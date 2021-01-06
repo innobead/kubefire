@@ -179,6 +179,17 @@ func (l *LocalConfigManager) GetBootstrapperVersions(latestVersion BootstrapperV
 			v := v
 			bootstrapperVersions = append(bootstrapperVersions, &v)
 		}
+
+	case *RKE2BootstrapperVersion:
+		var versions []RKE2BootstrapperVersion
+		if err := yaml.Unmarshal(bytes, &versions); err != nil {
+			return nil, errors.WithStack(err)
+		}
+
+		for _, v := range versions {
+			v := v
+			bootstrapperVersions = append(bootstrapperVersions, &v)
+		}
 	}
 
 	return bootstrapperVersions, nil
