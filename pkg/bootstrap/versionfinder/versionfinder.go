@@ -24,6 +24,8 @@ func New(bootstrapperType string) Finder {
 		return NewRKEVersionFinder()
 	case constants.RKE2:
 		return NewRKE2VersionFinder()
+	case constants.K0s:
+		return NewK0sVersionFinder()
 	}
 
 	return nil

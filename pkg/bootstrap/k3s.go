@@ -128,17 +128,17 @@ func (k *K3sBootstrapper) bootstrap(node *data.Node, isSingleNode bool, extraOpt
 	}
 	defer sshClient.Close()
 
-	k3sOpts := []string{
+	deployCmdOpts := []string{
 		fmt.Sprintf("--bind-address=%s", node.Status.IPAddresses),
 	}
 	tokenBuf := bytes.Buffer{}
 
 	if !isSingleNode {
-		k3sOpts = append(k3sOpts, "--cluster-init")
+		deployCmdOpts = append(deployCmdOpts, "--cluster-init")
 	}
 
 	if extraOptions.ServerInstallOptions != nil {
-		k3sOpts = append(k3sOpts, extraOptions.ServerInstallOptions...)
+		deployCmdOpts = append(deployCmdOpts, extraOptions.ServerInstallOptions...)
 	}
 
 	cmds := []struct {
@@ -146,7 +146,7 @@ func (k *K3sBootstrapper) bootstrap(node *data.Node, isSingleNode bool, extraOpt
 		before  utilssh.Callback
 	}{
 		{
-			cmdline: fmt.Sprintf(`INSTALL_K3S_EXEC="%s" %s k3s-install.sh `, strings.Join(k3sOpts, " "), strings.Join(extraOptions.ExtraOptions, " ")),
+			cmdline: fmt.Sprintf(`INSTALL_K3S_EXEC="%s" %s k3s-install.sh `, strings.Join(deployCmdOpts, " "), strings.Join(extraOptions.ExtraOptions, " ")),
 		},
 		{
 			cmdline: "cat /var/lib/rancher/k3s/server/node-token",
@@ -182,22 +182,22 @@ func (k *K3sBootstrapper) join(node *data.Node, apiServerAddress string, joinTok
 	}
 	defer sshClient.Close()
 
-	var k3sOpts []string
+	var deployCmdOpts []string
 	cmd := fmt.Sprintf("K3S_URL=https://%s:6443 K3S_TOKEN=%s k3s-install.sh", apiServerAddress, joinToken)
 
 	if node.IsMaster() {
-		k3sOpts = append(k3sOpts, "--server")
+		deployCmdOpts = append(deployCmdOpts, "--server")
 
 		if len(extraOptions.ServerInstallOptions) > 0 {
-			k3sOpts = append(k3sOpts, extraOptions.ServerInstallOptions...)
+			deployCmdOpts = append(deployCmdOpts, extraOptions.ServerInstallOptions...)
 		}
 	} else {
 		if len(extraOptions.AgentInstallOptions) > 0 {
-			k3sOpts = append(k3sOpts, extraOptions.AgentInstallOptions...)
+			deployCmdOpts = append(deployCmdOpts, extraOptions.AgentInstallOptions...)
 		}
 	}
 
-	cmd = fmt.Sprintf(`INSTALL_K3S_EXEC="%s" %s %s`, strings.Join(k3sOpts, " "), strings.Join(extraOptions.ExtraOptions, " "), cmd)
+	cmd = fmt.Sprintf(`INSTALL_K3S_EXEC="%s" %s %s`, strings.Join(deployCmdOpts, " "), strings.Join(extraOptions.ExtraOptions, " "), cmd)
 
 	if err := sshClient.Run(nil, nil, cmd); err != nil {
 		return errors.WithStack(err)

@@ -3,7 +3,9 @@ package bootstrap
 import (
 	"fmt"
 	"github.com/avast/retry-go"
+	"github.com/goccy/go-yaml"
 	"github.com/hashicorp/go-multierror"
+	"github.com/innobead/kubefire/internal/config"
 	interr "github.com/innobead/kubefire/internal/error"
 	"github.com/innobead/kubefire/pkg/bootstrap/versionfinder"
 	pkgconfig "github.com/innobead/kubefire/pkg/config"
@@ -13,6 +15,8 @@ import (
 	utilssh "github.com/innobead/kubefire/pkg/util/ssh"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+	"github.com/thoas/go-funk"
+	"io/ioutil"
 	"os"
 	"path"
 	"strings"
@@ -25,6 +29,7 @@ var BuiltinTypes = []string{
 	constants.K3S,
 	constants.RKE,
 	constants.RKE2,
+	constants.K0s,
 }
 
 type Bootstrapper interface {
@@ -44,18 +49,15 @@ func New(bootstrapper string) Bootstrapper {
 		return NewRKEBootstrapper()
 	case constants.RKE2:
 		return NewRKE2Bootstrapper()
+	case constants.K0s:
+		return NewK0sBootstrapper()
 	default:
 		panic("no supported bootstrapper")
 	}
 }
 
 func IsValid(bootstrapper string) bool {
-	switch bootstrapper {
-	case constants.KUBEADM, constants.K3S, constants.RKE, constants.RKE2:
-		return true
-	default:
-		return false
-	}
+	return funk.Contains(BuiltinTypes, bootstrapper)
 }
 
 func GenerateSaveBootstrapperVersions(bootstrapperType string, configManager pkgconfig.Manager) (
@@ -151,6 +153,17 @@ func GenerateSaveBootstrapperVersions(bootstrapperType string, configManager pkg
 				bootstrapperLatestVersion = bv
 			}
 		}
+
+	case *versionfinder.K0sVersionFinder:
+
+		for _, v := range versions {
+			bv := pkgconfig.NewK0sBootstrapperVersion(v.String())
+			bootstrapperVersions = append(bootstrapperVersions, bv)
+
+			if bv.Version() == latestVersion.String() {
+				bootstrapperLatestVersion = bv
+			}
+		}
 	}
 
 	if err = configManager.SaveBootstrapperVersions(bootstrapperLatestVersion, bootstrapperVersions); err != nil {
@@ -194,6 +207,25 @@ func downloadKubeConfig(nodeManager node.Manager, cluster *data.Cluster, remoteK
 
 	if err := sshClient.Download(remoteKubeConfigPath, destPath); err != nil {
 		return "", err
+	}
+
+	// for k0s, need to modify the downloaded kubeconfig
+	if config.Bootstrapper == constants.K0s {
+		rawBytes, err := ioutil.ReadFile(destPath)
+		if err != nil {
+			return "", errors.WithStack(err)
+		}
+
+		result := strings.Replace(
+			string(rawBytes),
+			"https://localhost:6443",
+			fmt.Sprintf("https://%s:6443", firstMaster.Status.IPAddresses),
+			1,
+		)
+
+		if err := ioutil.WriteFile(destPath, []byte(result), 0755); err != nil {
+			return "", errors.WithStack(err)
+		}
 	}
 
 	return destPath, nil
@@ -290,4 +322,60 @@ func initNodes(cluster *data.Cluster, cmds []string) error {
 	}
 
 	return err
+}
+
+func mergeClusterConfig(clusterConfigPath string, userClusterConfigFile string, ignoredKeys []string) error {
+	if userClusterConfigFile == "" {
+		return nil
+	}
+
+	logrus.Infof("merging the cluster config (%s) with the user provided cluster config (%s)\n", clusterConfigPath, userClusterConfigFile)
+
+	clusterConfig := map[string]interface{}{}
+
+	// read the generated cluster config
+	if _, err := os.Stat(clusterConfigPath); err == nil {
+		bytes, err := ioutil.ReadFile(clusterConfigPath)
+		if err != nil {
+			return errors.WithStack(err)
+		}
+
+		if err := yaml.Unmarshal(bytes, &clusterConfig); err != nil {
+			return errors.WithStack(err)
+		}
+	}
+
+	// read the user provided cluster config
+	bytes, err := ioutil.ReadFile(userClusterConfigFile)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	userClusterConfig := map[string]interface{}{}
+	if err := yaml.Unmarshal(bytes, &userClusterConfig); err != nil {
+		return errors.WithStack(err)
+	}
+
+	// merge
+	for k, v := range userClusterConfig {
+		if ignoredKeys != nil {
+			if funk.Contains(k, ignoredKeys) {
+				continue
+			}
+		}
+
+		clusterConfig[k] = v
+	}
+
+	bytes, err = yaml.Marshal(&clusterConfig)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	err = ioutil.WriteFile(clusterConfigPath, bytes, 0755)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	return nil
 }

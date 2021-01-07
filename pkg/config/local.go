@@ -190,6 +190,17 @@ func (l *LocalConfigManager) GetBootstrapperVersions(latestVersion BootstrapperV
 			v := v
 			bootstrapperVersions = append(bootstrapperVersions, &v)
 		}
+
+	case *K0sBootstrapperVersion:
+		var versions []K0sBootstrapperVersion
+		if err := yaml.Unmarshal(bytes, &versions); err != nil {
+			return nil, errors.WithStack(err)
+		}
+
+		for _, v := range versions {
+			v := v
+			bootstrapperVersions = append(bootstrapperVersions, &v)
+		}
 	}
 
 	return bootstrapperVersions, nil

@@ -14,30 +14,30 @@ type BootstrapperVersionInfo struct {
 	K3s     string
 	RKE     string
 	RKE2    string
+	K0s     string
 }
 
 func BootstrapperVersionInfos() *BootstrapperVersionInfo {
-	bootstrapTypes := []string{constants.KUBEADM, constants.K3S, constants.RKE, constants.RKE2}
-
 	wgDone := sync.WaitGroup{}
-	wgDone.Add(len(bootstrapTypes))
+	wgDone.Add(len(bootstrap.BuiltinTypes))
 
 	versionsMap := map[string]string{}
 
-	for _, bootstrapperType := range bootstrapTypes {
+	for _, bootstrapperType := range bootstrap.BuiltinTypes {
 		bootstrapperType := bootstrapperType
-		go func() {
-			versionsMap[bootstrapperType] = getVersions(bootstrapperType)
-			wgDone.Done()
-		}()
+		//go func() {
+		versionsMap[bootstrapperType] = getVersions(bootstrapperType)
+		//wgDone.Done()
+		//}()
 	}
-	wgDone.Wait()
+	//wgDone.Wait()
 
 	return &BootstrapperVersionInfo{
 		Kubeadm: versionsMap[constants.KUBEADM],
 		K3s:     versionsMap[constants.K3S],
 		RKE:     versionsMap[constants.RKE],
 		RKE2:    versionsMap[constants.RKE2],
+		K0s:     versionsMap[constants.K0s],
 	}
 }
 

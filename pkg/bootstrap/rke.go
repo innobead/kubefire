@@ -21,7 +21,6 @@ import (
 	"path/filepath"
 	"strings"
 )
-import "github.com/thoas/go-funk"
 
 type RKEExtraOptions struct {
 	ClusterConfigFile string `json:"cluster_config_file"`
@@ -117,7 +116,7 @@ func (k *RKEBootstrapper) init(cluster *data.Cluster, extraOptions *RKEExtraOpti
 	}
 
 	// generate cluster.yaml in cluster folder
-	configPath := k.rkeClusterConfigPath(&cluster.Spec)
+	configPath := k.clusterConfigPath(&cluster.Spec)
 
 	logrus.WithField("cluster", cluster.Name).Infof("generating RKE cluster.yaml (%s)\n", configPath)
 
@@ -162,11 +161,11 @@ func (k *RKEBootstrapper) init(cluster *data.Cluster, extraOptions *RKEExtraOpti
 		clusterConfig["kubernetes_version"] = extraOptions.KubernetesVersion
 	}
 
-	bytes, err := yaml.Marshal(clusterConfig)
+	rawBytes, err := yaml.Marshal(clusterConfig)
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	if err = ioutil.WriteFile(configPath, bytes, 0755); err != nil {
+	if err = ioutil.WriteFile(configPath, rawBytes, 0755); err != nil {
 		return errors.WithStack(err)
 	}
 
@@ -175,9 +174,10 @@ func (k *RKEBootstrapper) init(cluster *data.Cluster, extraOptions *RKEExtraOpti
 
 func (k *RKEBootstrapper) bootstrap(node *data.Node, extraOptions *RKEExtraOptions) (token string, err error) {
 	cluster := node.Spec.Cluster
-	configPath := k.rkeClusterConfigPath(cluster)
+	configPath := k.clusterConfigPath(cluster)
 
-	if err := k.mergeClusterConfig(configPath, extraOptions); err != nil {
+	ignoredKeys := []string{"nodes", "cluster_name", "kubernetes_version"}
+	if err := mergeClusterConfig(configPath, extraOptions.ClusterConfigFile, ignoredKeys); err != nil {
 		return "", err
 	}
 
@@ -200,54 +200,6 @@ func (k *RKEBootstrapper) bootstrap(node *data.Node, extraOptions *RKEExtraOptio
 	}
 
 	return "", nil
-}
-
-func (k *RKEBootstrapper) mergeClusterConfig(configPath string, extraOptions *RKEExtraOptions) error {
-	if extraOptions.ClusterConfigFile == "" {
-		return nil
-	}
-
-	logrus.Infof("merging the cluster config (%s) with the user provided cluster config (%s)\n", configPath, extraOptions.ClusterConfigFile)
-
-	// read the generated cluster config
-	bytes, err := ioutil.ReadFile(configPath)
-	if err != nil {
-		return errors.WithStack(err)
-	}
-	clusterConfig := map[string]interface{}{}
-	if err := yaml.Unmarshal(bytes, &clusterConfig); err != nil {
-		return errors.WithStack(err)
-	}
-
-	// read the user provided cluster config
-	bytes, err = ioutil.ReadFile(extraOptions.ClusterConfigFile)
-	if err != nil {
-		return errors.WithStack(err)
-	}
-	userClusterConfig := map[string]interface{}{}
-	if err := yaml.Unmarshal(bytes, &userClusterConfig); err != nil {
-		return errors.WithStack(err)
-	}
-
-	// merge
-	ignoredKeys := []string{"nodes", "cluster_name", "kubernetes_version"}
-	for k, v := range userClusterConfig {
-		if funk.Contains(k, ignoredKeys) {
-			continue
-		}
-
-		clusterConfig[k] = v
-	}
-	bytes, err = yaml.Marshal(&clusterConfig)
-	if err != nil {
-		return errors.WithStack(err)
-	}
-	err = ioutil.WriteFile(configPath, bytes, 0755)
-	if err != nil {
-		return errors.WithStack(err)
-	}
-
-	return nil
 }
 
 func (k *RKEBootstrapper) installRKEExecutables(version string, force bool) error {
@@ -275,6 +227,6 @@ func (k *RKEBootstrapper) installRKEExecutables(version string, force bool) erro
 	return nil
 }
 
-func (k *RKEBootstrapper) rkeClusterConfigPath(cluster *pkgconfig.Cluster) string {
+func (k *RKEBootstrapper) clusterConfigPath(cluster *pkgconfig.Cluster) string {
 	return path.Join(cluster.LocalClusterDir(), "cluster.rke.yaml")
 }

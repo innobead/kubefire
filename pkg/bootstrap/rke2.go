@@ -30,11 +30,11 @@ func NewRKE2Bootstrapper() *RKE2Bootstrapper {
 	return &RKE2Bootstrapper{}
 }
 
-func (k *RKE2Bootstrapper) SetNodeManager(nodeManager node.Manager) {
-	k.nodeManager = nodeManager
+func (r *RKE2Bootstrapper) SetNodeManager(nodeManager node.Manager) {
+	r.nodeManager = nodeManager
 }
 
-func (k *RKE2Bootstrapper) Deploy(cluster *data.Cluster, before func() error) error {
+func (r *RKE2Bootstrapper) Deploy(cluster *data.Cluster, before func() error) error {
 	if before != nil {
 		if err := before(); err != nil {
 			return err
@@ -48,27 +48,27 @@ func (k *RKE2Bootstrapper) Deploy(cluster *data.Cluster, before func() error) er
 		return err
 	}
 
-	if err := k.nodeManager.WaitNodesRunning(cluster.Name, 5); err != nil {
+	if err := r.nodeManager.WaitNodesRunning(cluster.Name, 5); err != nil {
 		return errors.WithMessage(err, "some nodes are not running")
 	}
 
-	if err := k.init(cluster); err != nil {
+	if err := r.init(cluster); err != nil {
 		return err
 	}
 
-	firstMaster, err := k.nodeManager.GetNode(node.Name(cluster.Name, node.Master, 1))
+	firstMaster, err := r.nodeManager.GetNode(node.Name(cluster.Name, node.Master, 1))
 	if err != nil {
 		return err
 	}
 
 	firstMaster.Spec.Cluster = &cluster.Spec
 
-	joinToken, err := k.bootstrap(firstMaster, len(cluster.Nodes) == 1, &extraOptions)
+	joinToken, err := r.bootstrap(firstMaster, len(cluster.Nodes) == 1, &extraOptions)
 	if err != nil {
 		return err
 	}
 
-	nodes, err := k.nodeManager.ListNodes(cluster.Name)
+	nodes, err := r.nodeManager.ListNodes(cluster.Name)
 	if err != nil {
 		return err
 	}
@@ -83,7 +83,7 @@ func (k *RKE2Bootstrapper) Deploy(cluster *data.Cluster, before func() error) er
 		}
 		n.Spec.Cluster = &cluster.Spec
 
-		if err := k.join(n, firstMaster.Status.IPAddresses, joinToken, &extraOptions); err != nil {
+		if err := r.join(n, firstMaster.Status.IPAddresses, joinToken, &extraOptions); err != nil {
 			return err
 		}
 	}
@@ -91,19 +91,19 @@ func (k *RKE2Bootstrapper) Deploy(cluster *data.Cluster, before func() error) er
 	return nil
 }
 
-func (k *RKE2Bootstrapper) DownloadKubeConfig(cluster *data.Cluster, destDir string) (string, error) {
-	return downloadKubeConfig(k.nodeManager, cluster, "/etc/rancher/rke2/rke2.yaml", destDir)
+func (r *RKE2Bootstrapper) DownloadKubeConfig(cluster *data.Cluster, destDir string) (string, error) {
+	return downloadKubeConfig(r.nodeManager, cluster, "/etc/rancher/rke2/rke2.yaml", destDir)
 }
 
-func (k *RKE2Bootstrapper) Prepare(cluster *data.Cluster, force bool) error {
+func (r *RKE2Bootstrapper) Prepare(cluster *data.Cluster, force bool) error {
 	return nil
 }
 
-func (k *RKE2Bootstrapper) Type() string {
+func (r *RKE2Bootstrapper) Type() string {
 	return constants.RKE2
 }
 
-func (k *RKE2Bootstrapper) init(cluster *data.Cluster) error {
+func (r *RKE2Bootstrapper) init(cluster *data.Cluster) error {
 	cmds := []string{
 		"swapoff -a",
 		fmt.Sprintf("curl -sfSLO %s", script.RemoteScriptUrl(script.InstallPrerequisitesRKE2)),
@@ -114,7 +114,7 @@ func (k *RKE2Bootstrapper) init(cluster *data.Cluster) error {
 	return initNodes(cluster, cmds)
 }
 
-func (k *RKE2Bootstrapper) bootstrap(node *data.Node, isSingleNode bool, extraOptions *RKE2ExtraOptions) (token string, err error) {
+func (r *RKE2Bootstrapper) bootstrap(node *data.Node, isSingleNode bool, extraOptions *RKE2ExtraOptions) (token string, err error) {
 	logrus.WithField("node", node.Name).Infoln("bootstrapping the first master node")
 
 	sshClient, err := utilssh.NewClient(
@@ -130,14 +130,16 @@ func (k *RKE2Bootstrapper) bootstrap(node *data.Node, isSingleNode bool, extraOp
 	defer sshClient.Close()
 
 	joinToken := util.GenerateRandomStr(8)
-	rke2Opts := []string{
+	deployCmdOpts := []string{
 		fmt.Sprintf("--bind-address=%s", node.Status.IPAddresses),
 		fmt.Sprintf("--token=%s", joinToken),
 	}
+
 	if extraOptions.ServerInstallOptions != nil {
-		rke2Opts = append(rke2Opts, extraOptions.ServerInstallOptions...)
+		deployCmdOpts = append(deployCmdOpts, extraOptions.ServerInstallOptions...)
 	}
-	rke2ConfigValue, err := createRKK2Config(rke2Opts)
+
+	deployConfigValue, err := createRKK2Config(deployCmdOpts)
 	if err != nil {
 		return "", err
 	}
@@ -148,8 +150,8 @@ func (k *RKE2Bootstrapper) bootstrap(node *data.Node, isSingleNode bool, extraOp
 	}{
 		{
 			cmdline: fmt.Sprintf(
-				"%s ./%s create_rke2_config",
-				config.RKE2VersionsEnvVars(node.Spec.Cluster.Version, rke2ConfigValue).String(),
+				"%s ./%s create_config",
+				config.RKE2VersionsEnvVars(node.Spec.Cluster.Version, deployConfigValue).String(),
 				script.InstallPrerequisitesRKE2,
 			),
 		},
@@ -174,7 +176,7 @@ func (k *RKE2Bootstrapper) bootstrap(node *data.Node, isSingleNode bool, extraOp
 	return strings.TrimSuffix(joinToken, "\n"), nil
 }
 
-func (k *RKE2Bootstrapper) join(node *data.Node, apiServerAddress string, joinToken string, extraOptions *RKE2ExtraOptions) error {
+func (r *RKE2Bootstrapper) join(node *data.Node, apiServerAddress string, joinToken string, extraOptions *RKE2ExtraOptions) error {
 	logrus.WithField("node", node.Name).Infoln("joining node")
 
 	sshClient, err := utilssh.NewClient(
@@ -189,7 +191,7 @@ func (k *RKE2Bootstrapper) join(node *data.Node, apiServerAddress string, joinTo
 	}
 	defer sshClient.Close()
 
-	rke2Opts := []string{
+	deployCmdOpts := []string{
 		fmt.Sprintf("--server=https://%s:9345", apiServerAddress),
 		fmt.Sprintf("--token=%s", joinToken),
 	}
@@ -197,17 +199,17 @@ func (k *RKE2Bootstrapper) join(node *data.Node, apiServerAddress string, joinTo
 	systemdService := "rke2-server.service"
 	if node.IsMaster() {
 		if len(extraOptions.ServerInstallOptions) > 0 {
-			rke2Opts = append(rke2Opts, extraOptions.ServerInstallOptions...)
+			deployCmdOpts = append(deployCmdOpts, extraOptions.ServerInstallOptions...)
 		}
 	} else {
 		cmd = "INSTALL_RKE2_TYPE=agent rke2-install.sh"
 		systemdService = "rke2-agent.service"
 		if len(extraOptions.AgentInstallOptions) > 0 {
-			rke2Opts = append(rke2Opts, extraOptions.AgentInstallOptions...)
+			deployCmdOpts = append(deployCmdOpts, extraOptions.AgentInstallOptions...)
 		}
 	}
 
-	rke2ConfigValue, err := createRKK2Config(rke2Opts)
+	deployConfigValue, err := createRKK2Config(deployCmdOpts)
 	if err != nil {
 		return err
 	}
@@ -218,8 +220,8 @@ func (k *RKE2Bootstrapper) join(node *data.Node, apiServerAddress string, joinTo
 	}{
 		{
 			cmdline: fmt.Sprintf(
-				"%s ./%s create_rke2_config",
-				config.RKE2VersionsEnvVars(node.Spec.Cluster.Version, rke2ConfigValue).String(),
+				"%s ./%s create_config",
+				config.RKE2VersionsEnvVars(node.Spec.Cluster.Version, deployConfigValue).String(),
 				script.InstallPrerequisitesRKE2,
 			),
 		},

@@ -22,6 +22,7 @@ const (
 	InstallPrerequisites        Type = "install-prerequisites.sh"
 	UninstallPrerequisites      Type = "uninstall-prerequisites.sh"
 	InstallPrerequisitesKubeadm Type = "install-prerequisites-kubeadm.sh"
+	InstallPrerequisitesK0s     Type = "install-prerequisites-k0s.sh"
 	InstallPrerequisitesK3s     Type = "install-prerequisites-k3s.sh"
 	InstallPrerequisitesRKE     Type = "install-prerequisites-rke.sh"
 	InstallPrerequisitesRKE2    Type = "install-prerequisites-rke2.sh"

@@ -61,9 +61,17 @@ func RKEVersionsEnvVars(version string) EnvVars {
 	}
 }
 
-func RKE2VersionsEnvVars(version string, rke2ConfigValue string) EnvVars {
+func RKE2VersionsEnvVars(version string, configContent string) EnvVars {
 	return []string{
 		fmt.Sprintf("RKE2_VERSION=%s", version),
-		fmt.Sprintf("RKE2_CONFIG=\"%s\"", rke2ConfigValue),
+		fmt.Sprintf(`RKE2_CONFIG="%s"`, configContent),
+	}
+}
+
+func K0sVersionsEnvVars(version string, configContent string, cmdOpts string) EnvVars {
+	return []string{
+		fmt.Sprintf("K0S_VERSION=%s", version),
+		fmt.Sprintf(`K0S_CONFIG="%s"`, configContent),
+		fmt.Sprintf(`K0S_CMD_OPTS="%s"`, cmdOpts),
 	}
 }
