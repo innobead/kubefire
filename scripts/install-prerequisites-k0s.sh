@@ -55,13 +55,17 @@ function install_k0s() {
 }
 
 function create_config() {
-  if [ -n "$K0S_CONFIG" ]; then
     mkdir -p /etc/k0s || true
+  if [ -n "$K0S_CONFIG" ]; then
     echo "$K0S_CONFIG" > /etc/k0s/config.yaml
   else
     k0s default-config > /etc/k0s/config.yaml
   fi
 
+  create_service_config
+}
+
+function create_service_config() {
   cat <<EOF >/etc/systemd/system/k0s.service
 [Unit]
 Description=K0s server
@@ -84,7 +88,7 @@ RestartSec=5s
 ExecStartPre=-/sbin/modprobe ipip
 ExecStart=/usr/local/bin/k0s $K0S_CMD_OPTS
 EOF
-
 }
+
 
 $1
