@@ -25,14 +25,14 @@ function cleanup() {
 
 trap cleanup EXIT ERR INT TERM
 
-function install_rke2() {
+function install() {
   # https://get.rke2.io
   local url="https://raw.githubusercontent.com/rancher/rke2/${RKE2_VERSION}/install.sh"
   curl -sfSL "$url" -o rke2-install.sh
   chmod +x rke2-install.sh && sudo mv rke2-install.sh /usr/local/bin/
 }
 
-function create_rke2_config() {
+function create_config() {
   if [ -n "$RKE2_CONFIG" ]; then
     mkdir -p /etc/rancher/rke2 || true
     echo "$RKE2_CONFIG" >/etc/rancher/rke2/config.yaml
