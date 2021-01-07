@@ -25,7 +25,7 @@ function cleanup() {
 
 trap cleanup EXIT ERR INT TERM
 
-function install() {
+function install_rke2() {
   # https://get.rke2.io
   local url="https://raw.githubusercontent.com/rancher/rke2/${RKE2_VERSION}/install.sh"
   curl -sfSL "$url" -o rke2-install.sh
