@@ -9,6 +9,7 @@ TMP_DIR=/tmp/kubefire
 
 K0S_VERSION=${K0S_VERSION:-}
 K0S_CONFIG=${K0S_CONFIG:-}
+K0S_CMD_OPTS=${K0S_CMD_OPTS:-}
 ARCH=${ARCH:-}
 
 if [ -z "$K0S_VERSION" ]; then
@@ -43,6 +44,12 @@ function install_k0s() {
     ;;
   esac
 
+  if [[ $(command -v apt-get) ]]; then
+    apt update
+    apt install ipip
+  fi
+  modprobe ipip
+
   curl -sfSL "$url" -o k0s
   chmod +x k0s && sudo mv k0s /usr/local/bin/
 }
@@ -50,8 +57,34 @@ function install_k0s() {
 function create_config() {
   if [ -n "$K0S_CONFIG" ]; then
     mkdir -p /etc/k0s || true
-    echo "$K0S_CONFIG" >/etc/k0s/config.yaml
+    echo "$K0S_CONFIG" > /etc/k0s/config.yaml
+  else
+    k0s default-config > /etc/k0s/config.yaml
   fi
+
+  cat <<EOF >/etc/systemd/system/k0s.service
+[Unit]
+Description=K0s server
+Wants=network-online.target
+After=network-online.target
+
+[Install]
+WantedBy=multi-user.target
+
+[Service]
+KillMode=process
+Delegate=yes
+LimitNOFILE=1048576
+LimitNPROC=infinity
+LimitCORE=infinity
+TasksMax=infinity
+TimeoutStartSec=0
+Restart=always
+RestartSec=5s
+ExecStartPre=-/sbin/modprobe ipip
+ExecStart=/usr/local/bin/k0s $K0S_CMD_OPTS
+EOF
+
 }
 
 $1
