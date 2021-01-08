@@ -23,13 +23,13 @@ KubeFire is to create and manage Kubernetes clusters running on FireCracker micr
     - [Bootstrapping with RKE2](#bootstrapping-with-rke2)
     - [Bootstrapping with K0s](#bootstrapping-with-k0s)
   - [Accessing Cluster](#accessing-cluster)
-  - [Usage](#usage)
-    - [CLI Commands](#cli-commands)
-  - [Troubleshooting](#troubleshooting)    
-  - [Supported Container Images for RootFS and Kernel](#supported-container-images-for-rootfs-and-kernel)
-    - [RootFS images](#rootfs-images)
-    - [Kernel images (w/ AppArmor enabled)](#kernel-images-w-apparmor-enabled)
-  - [References](#references)
+- [Usage](#usage)
+  - [CLI Commands](#cli-commands)
+- [Troubleshooting](#troubleshooting)    
+- [Supported Container Images for RootFS and Kernel](#supported-container-images-for-rootfs-and-kernel)
+  - [RootFS images](#rootfs-images)
+  - [Kernel images (w/ AppArmor enabled)](#kernel-images-w-apparmor-enabled)
+- [References](#references)
 
 # Getting Started
 
