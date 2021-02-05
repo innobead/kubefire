@@ -22,7 +22,7 @@ sudo snap install --classic kubectl
 echo "Building containerd ARM64 artifacts ..."
 go get github.com/containerd/containerd
 cd "$(go env GOPATH)/src/github.com/containerd/containerd"
-git checkout -b v1.4.1 v1.4.1
+git checkout -b v1.4.3 v1.4.3
 make
 sudo make install
 
