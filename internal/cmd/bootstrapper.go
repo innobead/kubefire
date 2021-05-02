@@ -9,11 +9,12 @@ import (
 )
 
 type BootstrapperVersionInfo struct {
-	Kubeadm string
-	K3s     string
-	RKE     string
-	RKE2    string
-	K0s     string
+	Kubeadm  string
+	K3s      string
+	RKE      string
+	RKE2     string
+	RANCHERD string
+	K0s      string
 }
 
 func BootstrapperVersionInfos() *BootstrapperVersionInfo {
@@ -25,11 +26,12 @@ func BootstrapperVersionInfos() *BootstrapperVersionInfo {
 	}
 
 	return &BootstrapperVersionInfo{
-		Kubeadm: versionsMap[constants.KUBEADM],
-		K3s:     versionsMap[constants.K3S],
-		RKE:     versionsMap[constants.RKE],
-		RKE2:    versionsMap[constants.RKE2],
-		K0s:     versionsMap[constants.K0s],
+		Kubeadm:  versionsMap[constants.KUBEADM],
+		K3s:      versionsMap[constants.K3S],
+		RKE:      versionsMap[constants.RKE],
+		RKE2:     versionsMap[constants.RKE2],
+		RANCHERD: versionsMap[constants.RANCHERD],
+		K0s:      versionsMap[constants.K0s],
 	}
 }
 

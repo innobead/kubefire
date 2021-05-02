@@ -3,7 +3,7 @@ package versionfinder
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/google/go-github/github"
+	"github.com/innobead/kubefire/internal/config"
 	interr "github.com/innobead/kubefire/internal/error"
 	"github.com/innobead/kubefire/pkg/constants"
 	"github.com/innobead/kubefire/pkg/data"
@@ -32,7 +32,7 @@ func NewRKEVersionFinder() *RKEVersionFinder {
 		BaseVersionFinder: BaseVersionFinder{
 			constants.RKE,
 		},
-		githubInfoer: util.NewGithubInfoer(github.NewClient(nil)),
+		githubInfoer: util.NewGithubInfoer(config.GithubToken),
 		owner:        "rancher",
 		repo:         "rke",
 	}

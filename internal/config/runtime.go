@@ -6,6 +6,7 @@ var (
 	LogLevel     string
 	Output       string
 	Bootstrapper string
+	GithubToken  string
 )
 
 var (
@@ -64,6 +65,13 @@ func RKEVersionsEnvVars(version string) EnvVars {
 func RKE2VersionsEnvVars(version string, configContent string) EnvVars {
 	return []string{
 		fmt.Sprintf("RKE2_VERSION=%s", version),
+		fmt.Sprintf(`RKE2_CONFIG="%s"`, configContent),
+	}
+}
+
+func RancherdVersionsEnvVars(version string, configContent string) EnvVars {
+	return []string{
+		fmt.Sprintf("RANCHERD_VERSION=%s", version),
 		fmt.Sprintf(`RKE2_CONFIG="%s"`, configContent),
 	}
 }

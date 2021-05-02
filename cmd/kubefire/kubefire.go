@@ -32,6 +32,7 @@ func init() {
 	cobra.OnInitialize(initConfig)
 
 	rootCmd.PersistentFlags().StringVarP(&config.LogLevel, "log-level", "l", logrus.InfoLevel.String(), util.FlagsValuesUsage("log level", logrus.AllLevels))
+	rootCmd.PersistentFlags().StringVarP(&config.GithubToken, "github-token", "t", "", "GIthub Personal Access Token used to query repo release info")
 }
 
 func initConfig() {

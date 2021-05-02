@@ -5,6 +5,8 @@ import (
 	"github.com/google/go-github/github"
 	"github.com/innobead/kubefire/pkg/data"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
+	"golang.org/x/oauth2"
 	"sort"
 	"strconv"
 )
@@ -13,7 +15,20 @@ type GithubInfoer struct {
 	client *github.Client
 }
 
-func NewGithubInfoer(client *github.Client) *GithubInfoer {
+func NewGithubInfoer(token string) *GithubInfoer {
+	var client *github.Client
+
+	if len(token) != 0 {
+		ctx := context.Background()
+		ts := oauth2.StaticTokenSource(
+			&oauth2.Token{AccessToken: token},
+		)
+		tc := oauth2.NewClient(ctx, ts)
+		client = github.NewClient(tc)
+	} else {
+		client = github.NewClient(nil)
+	}
+
 	return &GithubInfoer{client: client}
 }
 
@@ -21,6 +36,7 @@ func (g *GithubInfoer) GetVersionsAfterVersion(afterVersion data.Version, repoOw
 	var versions []*data.Version
 
 	opt := github.ListOptions{}
+
 done:
 	for {
 		releases, resp, err := g.client.Repositories.ListReleases(context.Background(), repoOwner, repo, &opt)
@@ -46,6 +62,11 @@ done:
 		for _, release := range releases {
 			releaseVersion := data.ParseVersion(release.GetTagName())
 			if releaseVersion == nil {
+				continue
+			}
+
+			if len(releaseVersion.PRERELEASE) > 0 {
+				logrus.Debugf("ignored to getting pre-release version: %s", releaseVersion)
 				continue
 			}
 

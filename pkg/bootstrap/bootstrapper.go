@@ -29,6 +29,7 @@ var BuiltinTypes = []string{
 	constants.K3S,
 	constants.RKE,
 	constants.RKE2,
+	constants.RANCHERD,
 	constants.K0s,
 }
 
@@ -49,6 +50,8 @@ func New(bootstrapper string) Bootstrapper {
 		return NewRKEBootstrapper()
 	case constants.RKE2:
 		return NewRKE2Bootstrapper()
+	case constants.RANCHERD:
+		return NewRancherdBootstrapper()
 	case constants.K0s:
 		return NewK0sBootstrapper()
 	default:
@@ -122,7 +125,6 @@ func GenerateSaveBootstrapperVersions(bootstrapperType string, configManager pkg
 		}
 
 	case *versionfinder.K3sVersionFinder:
-
 		for _, v := range versions {
 			bv := pkgconfig.NewK3sBootstrapperVersion(v.String())
 			bootstrapperVersions = append(bootstrapperVersions, bv)
@@ -133,7 +135,6 @@ func GenerateSaveBootstrapperVersions(bootstrapperType string, configManager pkg
 		}
 
 	case *versionfinder.RKEVersionFinder:
-
 		for _, v := range versions {
 			bv := pkgconfig.NewRKEBootstrapperVersion(v.String(), v.ExtraMeta["kubernetes_version"].([]string))
 			bootstrapperVersions = append(bootstrapperVersions, bv)
@@ -144,7 +145,6 @@ func GenerateSaveBootstrapperVersions(bootstrapperType string, configManager pkg
 		}
 
 	case *versionfinder.RKE2VersionFinder:
-
 		for _, v := range versions {
 			bv := pkgconfig.NewRKE2BootstrapperVersion(v.String())
 			bootstrapperVersions = append(bootstrapperVersions, bv)
@@ -154,8 +154,17 @@ func GenerateSaveBootstrapperVersions(bootstrapperType string, configManager pkg
 			}
 		}
 
-	case *versionfinder.K0sVersionFinder:
+	case *versionfinder.RancherdVersionFinder:
+		for _, v := range versions {
+			bv := pkgconfig.NewRancherdBootstrapperVersion(v.String())
+			bootstrapperVersions = append(bootstrapperVersions, bv)
 
+			if bv.Version() == latestVersion.String() {
+				bootstrapperLatestVersion = bv
+			}
+		}
+
+	case *versionfinder.K0sVersionFinder:
 		for _, v := range versions {
 			bv := pkgconfig.NewK0sBootstrapperVersion(v.String())
 			bootstrapperVersions = append(bootstrapperVersions, bv)
@@ -166,7 +175,17 @@ func GenerateSaveBootstrapperVersions(bootstrapperType string, configManager pkg
 		}
 	}
 
+	if bootstrapperLatestVersion == nil {
+		logrus.Warnf(
+			"ignored to save bootstrapper (%s) versions, because the latest version %s not matched: %v",
+			bootstrapperType,
+			latestVersion,
+			bootstrapperVersions,
+		)
+		return
+	}
 	if err = configManager.SaveBootstrapperVersions(bootstrapperLatestVersion, bootstrapperVersions); err != nil {
+		logrus.Errorf("failed to save bootstrapper (%s) verions: %v", bootstrapperType, err)
 		return
 	}
 

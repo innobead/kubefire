@@ -40,6 +40,10 @@ type RKE2BootstrapperVersion struct {
 	BaseBootstrapperVersion
 }
 
+type RancherdBootstrapperVersion struct {
+	BaseBootstrapperVersion
+}
+
 type K0sBootstrapperVersion struct {
 	BaseBootstrapperVersion
 }
@@ -48,6 +52,7 @@ var _ BootstrapperVersioner = (*KubeadmBootstrapperVersion)(nil)
 var _ BootstrapperVersioner = (*K3sBootstrapperVersion)(nil)
 var _ BootstrapperVersioner = (*RKEBootstrapperVersion)(nil)
 var _ BootstrapperVersioner = (*RKE2BootstrapperVersion)(nil)
+var _ BootstrapperVersioner = (*RancherdBootstrapperVersion)(nil)
 var _ BootstrapperVersioner = (*K0sBootstrapperVersion)(nil)
 
 func NewBootstrapperVersion(bootstrapperType string, version string) BootstrapperVersioner {
@@ -69,6 +74,8 @@ func NewBootstrapperVersion(bootstrapperType string, version string) Bootstrappe
 		return &RKEBootstrapperVersion{BaseBootstrapperVersion: bootstrapperVersion}
 	case constants.RKE2:
 		return &RKE2BootstrapperVersion{BaseBootstrapperVersion: bootstrapperVersion}
+	case constants.RANCHERD:
+		return &RancherdBootstrapperVersion{BaseBootstrapperVersion: bootstrapperVersion}
 	case constants.K0s:
 		return &K0sBootstrapperVersion{BaseBootstrapperVersion: bootstrapperVersion}
 	}
@@ -111,6 +118,15 @@ func NewRKE2BootstrapperVersion(bootstrapperVersion string) *RKE2BootstrapperVer
 		BaseBootstrapperVersion: BaseBootstrapperVersion{
 			BootstrapperVersion: bootstrapperVersion,
 			BootstrapperType:    constants.RKE2,
+		},
+	}
+}
+
+func NewRancherdBootstrapperVersion(bootstrapperVersion string) *RancherdBootstrapperVersion {
+	return &RancherdBootstrapperVersion{
+		BaseBootstrapperVersion: BaseBootstrapperVersion{
+			BootstrapperVersion: bootstrapperVersion,
+			BootstrapperType:    constants.RANCHERD,
 		},
 	}
 }

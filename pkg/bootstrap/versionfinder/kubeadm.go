@@ -2,7 +2,7 @@ package versionfinder
 
 import (
 	"fmt"
-	"github.com/google/go-github/github"
+	"github.com/innobead/kubefire/internal/config"
 	"github.com/innobead/kubefire/pkg/constants"
 	"github.com/innobead/kubefire/pkg/data"
 	"github.com/innobead/kubefire/pkg/util"
@@ -27,7 +27,7 @@ func NewKubeadmVersionFinder() *KubeadmVersionFinder {
 		BaseVersionFinder: BaseVersionFinder{
 			constants.KUBEADM,
 		},
-		githubInfoer: util.NewGithubInfoer(github.NewClient(nil)),
+		githubInfoer: util.NewGithubInfoer(config.GithubToken),
 		owner:        "kubernetes",
 		repo:         "kubernetes",
 	}
