@@ -2,3 +2,8 @@ ghcr.io/innobead/kubefire-ignite-kernel:4.19.125-amd64
 ghcr.io/innobead/kubefire-ignite-kernel:5.4.43-amd64
 ghcr.io/innobead/kubefire-ignite-kernel:4.19.125-arm64
 ghcr.io/innobead/kubefire-ignite-kernel:5.4.43-arm64
+weaveworks/ignite-amazon-kernel
+weaveworks/ignite-kernel:4.14.227
+weaveworks/ignite-kernel:4.19.183
+weaveworks/ignite-kernel:5.4.108
+weaveworks/ignite-kernel:5.10.25

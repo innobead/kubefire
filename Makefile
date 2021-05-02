@@ -17,9 +17,9 @@ BUILD_SUSE_IMAGES ?=
 
 GolangCILintVersion := 1.32.2
 
-ContainerdVersion := v1.4.3
-IgniteVersion := v0.8.0
-CniVersion := v0.8.7
+ContainerdVersion := v1.4.4
+IgniteVersion := v0.9.0
+CniVersion := v0.9.1
 RuncVersion := v1.0.0-rc93
 
 GO_LINKFLAGS := -X=github.com/innobead/kubefire/internal/config.BuildVersion=$(COMMIT)
