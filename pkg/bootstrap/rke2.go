@@ -156,7 +156,10 @@ func (r *RKE2Bootstrapper) bootstrap(node *data.Node, isSingleNode bool, extraOp
 			),
 		},
 		{
-			cmdline: "rke2-install.sh",
+			cmdline: fmt.Sprintf(
+				"%s rke2-install.sh",
+				config.RKE2VersionsEnvVars(node.Spec.Cluster.Version, "").String(),
+			),
 		},
 		{
 			cmdline: "systemctl enable rke2-server.service",
@@ -197,6 +200,7 @@ func (r *RKE2Bootstrapper) join(node *data.Node, apiServerAddress string, joinTo
 	}
 	cmd := "INSTALL_RKE2_TYPE=server rke2-install.sh"
 	systemdService := "rke2-server.service"
+
 	if node.IsMaster() {
 		if len(extraOptions.ServerInstallOptions) > 0 {
 			deployCmdOpts = append(deployCmdOpts, extraOptions.ServerInstallOptions...)
@@ -226,7 +230,11 @@ func (r *RKE2Bootstrapper) join(node *data.Node, apiServerAddress string, joinTo
 			),
 		},
 		{
-			cmdline: cmd,
+			cmdline: fmt.Sprintf(
+				"%s %s",
+				config.RKE2VersionsEnvVars(node.Spec.Cluster.Version, "").String(),
+				cmd,
+			),
 		},
 		{
 			cmdline: fmt.Sprintf("systemctl enable %s", systemdService),

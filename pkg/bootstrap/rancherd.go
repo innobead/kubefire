@@ -156,7 +156,10 @@ func (r *RancherdBootstrapper) bootstrap(node *data.Node, isSingleNode bool, ext
 			),
 		},
 		{
-			cmdline: "rancherd-install.sh",
+			cmdline: fmt.Sprintf(
+				"%s rancherd-install.sh",
+				config.RancherdVersionsEnvVars(node.Spec.Cluster.Version, deployConfigValue).String(),
+			),
 		},
 		{
 			cmdline: "systemctl enable rancherd-server.service",
@@ -197,6 +200,7 @@ func (r *RancherdBootstrapper) join(node *data.Node, apiServerAddress string, jo
 	}
 	cmd := "INSTALL_RKE2_TYPE=server rancherd-install.sh"
 	systemdService := "rancherd-server.service"
+
 	if node.IsMaster() {
 		if len(extraOptions.ServerInstallOptions) > 0 {
 			deployCmdOpts = append(deployCmdOpts, extraOptions.ServerInstallOptions...)
@@ -226,7 +230,11 @@ func (r *RancherdBootstrapper) join(node *data.Node, apiServerAddress string, jo
 			),
 		},
 		{
-			cmdline: cmd,
+			cmdline: fmt.Sprintf(
+				"%s %s",
+				config.RancherdVersionsEnvVars(node.Spec.Cluster.Version, deployConfigValue).String(),
+				cmd,
+			),
 		},
 		{
 			cmdline: fmt.Sprintf("systemctl enable %s", systemdService),

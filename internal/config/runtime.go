@@ -65,6 +65,7 @@ func RKEVersionsEnvVars(version string) EnvVars {
 func RKE2VersionsEnvVars(version string, configContent string) EnvVars {
 	return []string{
 		fmt.Sprintf("RKE2_VERSION=%s", version),
+		fmt.Sprintf("INSTALL_RKE2_VERSION=%s", version),
 		fmt.Sprintf(`RKE2_CONFIG="%s"`, configContent),
 	}
 }
@@ -72,6 +73,7 @@ func RKE2VersionsEnvVars(version string, configContent string) EnvVars {
 func RancherdVersionsEnvVars(version string, configContent string) EnvVars {
 	return []string{
 		fmt.Sprintf("RANCHERD_VERSION=%s", version),
+		fmt.Sprintf("INSTALL_RANCHERD_VERSION=%s", version),
 		fmt.Sprintf(`RKE2_CONFIG="%s"`, configContent),
 	}
 }

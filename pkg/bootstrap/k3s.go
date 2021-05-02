@@ -146,7 +146,12 @@ func (k *K3sBootstrapper) bootstrap(node *data.Node, isSingleNode bool, extraOpt
 		before  utilssh.Callback
 	}{
 		{
-			cmdline: fmt.Sprintf(`INSTALL_K3S_EXEC="%s" %s k3s-install.sh `, strings.Join(deployCmdOpts, " "), strings.Join(extraOptions.ExtraOptions, " ")),
+			cmdline: fmt.Sprintf(
+				`%s INSTALL_K3S_EXEC="%s" %s k3s-install.sh `,
+				config.K3sVersionsEnvVars(node.Spec.Cluster.Version).String(),
+				strings.Join(deployCmdOpts, " "),
+				strings.Join(extraOptions.ExtraOptions, " "),
+			),
 		},
 		{
 			cmdline: "cat /var/lib/rancher/k3s/server/node-token",
@@ -183,7 +188,12 @@ func (k *K3sBootstrapper) join(node *data.Node, apiServerAddress string, joinTok
 	defer sshClient.Close()
 
 	var deployCmdOpts []string
-	cmd := fmt.Sprintf("K3S_URL=https://%s:6443 K3S_TOKEN=%s k3s-install.sh", apiServerAddress, joinToken)
+	cmd := fmt.Sprintf(
+		"%s K3S_URL=https://%s:6443 K3S_TOKEN=%s k3s-install.sh",
+		config.K3sVersionsEnvVars(node.Spec.Cluster.Version).String(),
+		apiServerAddress,
+		joinToken,
+	)
 
 	if node.IsMaster() {
 		deployCmdOpts = append(deployCmdOpts, "--server")
