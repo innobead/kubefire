@@ -9,28 +9,6 @@ KubeFire is to create and manage Kubernetes clusters running on FireCracker micr
 
 ![kubefire in action](./doc/demo.svg)
 
-- [Getting Started](#getting-started)
-  - [Insntalling KubeFire](#installing-kubefire)
-  - [Quickstart](#quickstart)
-  - [Installing or Updating Prerequisites](#installing-or-updating-prerequisites)
-  - [Bootstrapping Cluster](#bootstrapping-cluster)
-    - [Bootstrapping with command options, or a declarative config file](#bootstrapping-with-selectable-kubernetes-versions)
-    - [Bootstrapping with selectable Kubernetes versions](#bootstrapping-with-selectable-kubernetes-versions)
-    - [Bootstrapping with Kubeadm](#bootstrapping-with-kubeadm)
-    - [Bootstrapping with K3s](#bootstrapping-with-k3s)
-    - [Bootstrapping with K3s on ARM64](#bootstrapping-with-k3s-on-arm64)
-    - [Bootstrapping with RKE](#bootstrapping-with-rke)
-    - [Bootstrapping with RKE2](#bootstrapping-with-rke2)
-    - [Bootstrapping with K0s](#bootstrapping-with-k0s)
-  - [Accessing Cluster](#accessing-cluster)
-- [Usage](#usage)
-  - [CLI Commands](#cli-commands)
-- [Troubleshooting](#troubleshooting)    
-- [Supported Container Images for RootFS and Kernel](#supported-container-images-for-rootfs-and-kernel)
-  - [RootFS images](#rootfs-images)
-  - [Kernel images (w/ AppArmor enabled)](#kernel-images-w-apparmor-enabled)
-- [References](#references)
-
 # Getting Started
 
 ## Installing KubeFire
