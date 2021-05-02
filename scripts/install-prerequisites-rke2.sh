@@ -11,7 +11,7 @@ RKE2_VERSION=${RKE2_VERSION:-}
 RANCHERD_VERSION=${RANCHERD_VERSION:-}
 RKE2_CONFIG=${RKE2_CONFIG:-}
 
-if [ -z "$RKE2_VERSION" ]; then
+if [ -z "$RKE2_VERSION" ] && [ -z "$RANCHERD_VERSION" ]; then
   echo "incorrect versions provided!" >/dev/stderr
   exit 1
 fi
