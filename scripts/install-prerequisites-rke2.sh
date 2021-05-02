@@ -8,6 +8,7 @@ set -o xtrace
 TMP_DIR=/tmp/kubefire
 
 RKE2_VERSION=${RKE2_VERSION:-}
+RANCHERD_VERSION=${RANCHERD_VERSION:-}
 RKE2_CONFIG=${RKE2_CONFIG:-}
 
 if [ -z "$RKE2_VERSION" ]; then
@@ -32,6 +33,12 @@ function install_rke2() {
   chmod +x rke2-install.sh && sudo mv rke2-install.sh /usr/local/bin/
 }
 
+function install_rancherd() {
+  local url="https://raw.githubusercontent.com/rancher/rancher/${RANCHERD_VERSION}/cmd/rancherd/install.sh"
+  curl -sfSL "$url" -o rancherd-install.sh
+  chmod +x rancherd-install.sh && sudo mv rancherd-install.sh /usr/local/bin/
+}
+
 function create_config() {
   if [ -n "$RKE2_CONFIG" ]; then
     mkdir -p /etc/rancher/rke2 || true
@@ -40,4 +47,3 @@ function create_config() {
 }
 
 $1
-
