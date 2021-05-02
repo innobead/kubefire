@@ -4,7 +4,7 @@ KubeFire is to create and manage Kubernetes clusters running on FireCracker micr
 
 - Uses independent rootfs and kernel from OCI images instead of traditional VM images like qcow2, vhd, etc 
 - Uses containerd to manage Firecracker processes
-- Have different cluster bootstappers to provision Kubernetes clusters like Kubeadm, K3s, Rancher RKE, RKE2, and K0s
+- Have different cluster bootstappers to provision Kubernetes clusters like Kubeadm, K3s, Rancher RKE, RKE2, RancherD, and K0s
 - Supports deploying clusters on different architectures like x86_64/AMD64 and ARM64/AARCH64 (ex: K3s, RKE2, K0s)
 
 ![kubefire in action](./doc/demo.svg)
