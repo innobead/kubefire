@@ -289,7 +289,7 @@ func (k *KubeadmBootstrapper) bootstrap(node *data.Node, isSingleNode bool, opti
 			},
 		},
 		{
-			cmdline: "KUBECONFIG=/etc/kubernetes/admin.conf kubectl create -f https://raw.githubusercontent.com/cilium/cilium/v1.8/install/kubernetes/quick-install.yaml",
+			cmdline: "KUBECONFIG=/etc/kubernetes/admin.conf kubectl create -f https://raw.githubusercontent.com/cilium/cilium/v1.9.6/install/kubernetes/quick-install.yaml",
 			before: func(session *ssh.Session) bool {
 				logrus.Info("applying CNI network")
 				return true
