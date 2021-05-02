@@ -9,6 +9,7 @@ import (
 	"github.com/innobead/kubefire/internal/validate"
 	"github.com/innobead/kubefire/pkg/bootstrap"
 	pkgconfig "github.com/innobead/kubefire/pkg/config"
+	"github.com/innobead/kubefire/pkg/data"
 	"github.com/innobead/kubefire/pkg/util"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -173,9 +174,7 @@ func correctClusterVersion(version string) (string, error) {
 		return "", err
 	}
 
-	patternCheckMajorMinorVersion := regexp.MustCompile(`^v\d+\.\d+$`)
-	patternCheckMajorMinorPatchVersion := regexp.MustCompile(`^v\d+\.\d+\.\d+`)
-
+	majorMinorVersionRegex := regexp.MustCompile(`^v\d+\.\d+$`)
 	for _, v := range versions {
 		if version == v.Version() {
 			return v.Version(), nil
@@ -189,12 +188,12 @@ func correctClusterVersion(version string) (string, error) {
 		case version == v.Version():
 			return v.Version(), nil
 
-		case patternCheckMajorMinorVersion.MatchString(version) && strings.HasPrefix(v.Version(), version+"."):
+		case majorMinorVersionRegex.MatchString(version) && strings.HasPrefix(v.Version(), version+"."):
 			return v.Version(), nil
 		}
 	}
 
-	if patternCheckMajorMinorPatchVersion.MatchString(version) {
+	if data.ParseVersion(version) != nil {
 		return version, nil
 	}
 

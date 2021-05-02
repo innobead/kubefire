@@ -7,8 +7,8 @@ import (
 	interr "github.com/innobead/kubefire/internal/error"
 	"github.com/innobead/kubefire/pkg/bootstrap"
 	"github.com/innobead/kubefire/pkg/constants"
+	"github.com/innobead/kubefire/pkg/data"
 	"github.com/pkg/errors"
-	"regexp"
 	"runtime"
 )
 
@@ -42,7 +42,7 @@ func CheckClusterVersion(version string) error {
 		return nil
 	}
 
-	if matched, _ := regexp.MatchString(`^v\d+\.\d+(\.\d+)?$`, version); !matched {
+	if data.ParseVersion(version) == nil {
 		return errors.WithMessage(interr.ClusterVersionInvalidError, Field("version", version))
 	}
 
