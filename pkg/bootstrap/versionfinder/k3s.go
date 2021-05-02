@@ -32,7 +32,7 @@ func (k *K3sVersionFinder) GetVersionsAfterVersion(afterVersion data.Version) ([
 		return nil, err
 	}
 
-	var versions []*data.Version
+	versions := []*data.Version{&afterVersion}
 
 	if _, ok := versionsInfoMap["data"]; ok {
 		re := regexp.MustCompile(`^v\d+\.\d+$`)

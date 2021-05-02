@@ -6,7 +6,6 @@ import (
 	"github.com/innobead/kubefire/pkg/constants"
 	"github.com/sirupsen/logrus"
 	"strings"
-	"sync"
 )
 
 type BootstrapperVersionInfo struct {
@@ -18,19 +17,12 @@ type BootstrapperVersionInfo struct {
 }
 
 func BootstrapperVersionInfos() *BootstrapperVersionInfo {
-	wgDone := sync.WaitGroup{}
-	wgDone.Add(len(bootstrap.BuiltinTypes))
-
 	versionsMap := map[string]string{}
 
 	for _, bootstrapperType := range bootstrap.BuiltinTypes {
 		bootstrapperType := bootstrapperType
-		//go func() {
 		versionsMap[bootstrapperType] = getVersions(bootstrapperType)
-		//wgDone.Done()
-		//}()
 	}
-	//wgDone.Wait()
 
 	return &BootstrapperVersionInfo{
 		Kubeadm: versionsMap[constants.KUBEADM],
