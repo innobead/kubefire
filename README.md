@@ -436,5 +436,5 @@ Besides below prebuilt images, you can also use the images provided by [weavewor
 - [K3s](https://github.com/k3s-io/k3s) 
 - [Kubeadm](https://github.com/kubernetes/kubeadm)
 - [Rancher RKE](https://rancher.com/docs/rke/latest/en/)
-- [Rancher RKE](https://docs.rke2.io/)
+- [Rancher RKE2](https://docs.rke2.io/)
 - [K0s](https://github.com/k0sproject/k0s)
