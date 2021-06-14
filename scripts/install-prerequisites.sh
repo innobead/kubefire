@@ -52,7 +52,7 @@ function check_virtualization() {
     return
   fi
 
-  lscpu | grep Virtualization
+  lscpu | grep "Virtuali[s|z]ation"
   lsmod | grep kvm
 }
 
