@@ -418,8 +418,9 @@ kubefire install
 Besides below prebuilt images, you can also use the images provided by [weaveworks/ignite](https://github.com/weaveworks/ignite/tree/master/images).
 
 ## RootFS images
-- ghcr.io/innobead/kubefire-opensuse-leap:15.1, 15.2
-- ghcr.io/innobead/kubefire-sle15:15.1, 15.2
+- ghcr.io/innobead/kubefire-opensuse-leap:15.3
+- ghcr.io/innobead/kubefire-sle15:15.3
+- ghcr.io/innobead/kubefire-rocky:8
 - ghcr.io/innobead/kubefire-centos:8
 - ghcr.io/innobead/kubefire-ubuntu:18.04, 20.04, 20.10
 
