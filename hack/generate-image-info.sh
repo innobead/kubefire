@@ -7,7 +7,7 @@ set -o pipefail
 
 PROJECT_DIR=$(readlink -f "$(dirname "${BASH_SOURCE[0]}")/..")
 PROJECT=$(basename "$PROJECT_DIR")
-IMAGES="centos:8 ubuntu:18.04 ubuntu:20.04 ubuntu:20.10 opensuse-leap:15.1 opensuse-leap:15.2 opensuse-leap:15.3"
+IMAGES="centos:8 ubuntu:18.04 ubuntu:20.04 ubuntu:20.10 opensuse-leap:15.3 rockylinux:8"
 KERNELS=$(ls "${PROJECT_DIR}/build/kernels" | grep -v "README.md" | sed -E 's/config-(arm64|amd64)-//;' | awk '!a[$0]++')
 GENERATED_DIR=${PROJECT_DIR}/generated
 IMAGE_LIST_FILE=${GENERATED_DIR}/image.list
