@@ -185,6 +185,13 @@ publish-kernel-%: check-publish-image-env build-kernel-% ## Publish a kernel ima
 publish-kernels: ## Publish all kernel images
 	for i in $(KERNELS); do $(MAKE) publish-kernel-$$i; done
 
+.PHONY: setup-buildx
+setup-buildx: ## Setup buildx for multiple arch supported
+	# Ref: https://docs.docker.com/buildx/working-with-buildx/
+	docker run --privileged --rm tonistiigi/binfmt --install all
+	sudo zypper install qemu-linux-user
+	docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+
 .PHONY: init-buildx
 init-buildx: ## Init multiple arch builder
 ifeq ($(strip $(HAS_BUILDX_BUILDER)),)
