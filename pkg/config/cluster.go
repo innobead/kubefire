@@ -2,10 +2,11 @@ package config
 
 import (
 	"encoding/json"
+	"github.com/dlclark/regexp2"
 	"github.com/innobead/kubefire/pkg/constants"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 	"path"
-	"regexp"
 	"runtime"
 	"strings"
 )
@@ -104,15 +105,23 @@ func (c *Cluster) UpdateExtraOptions(options string) {
 		}
 
 		if strings.Contains(values[1], "=") {
-			pattern := regexp.MustCompile(`^['"]?([\w\d-=_,.]+)['"]?$`)
-			matches := pattern.FindStringSubmatch(values[1])
+			pattern := regexp2.MustCompile(`^['"]?([\S\-=_,.]+)(?=['"])['"]?$`, regexp2.None)
+			matches, err := pattern.FindStringMatch(values[1])
+			if err != nil {
+				logrus.WithError(err).Printf("failed to parse the extra options %v\n", values[1])
+				return
+			}
 
-			if len(matches) == 2 {
+			if matches.GroupCount() == 2 {
 				if _, ok := c.ExtraOptions[values[0]]; !ok {
 					c.ExtraOptions[values[0]] = []string{}
 				}
 
-				c.ExtraOptions[values[0]] = append(c.ExtraOptions[values[0]].([]string), strings.Split(matches[1], ",")...)
+				subOptions := matches.GroupByNumber(1).String()
+				c.ExtraOptions[values[0]] = append(
+					c.ExtraOptions[values[0]].([]string),
+					strings.Split(subOptions, ",")...,
+				)
 			}
 
 			continue

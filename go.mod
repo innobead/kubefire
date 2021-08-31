@@ -6,6 +6,7 @@ require (
 	github.com/Masterminds/semver/v3 v3.1.0
 	github.com/avast/retry-go v2.6.0+incompatible
 	github.com/containerd/go-cni v1.0.1
+	github.com/dlclark/regexp2 v1.4.0
 	github.com/goccy/go-yaml v1.7.5
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/google/go-querystring v1.0.0 // indirect
