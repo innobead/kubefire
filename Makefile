@@ -159,7 +159,8 @@ build-kernels: ## Build kernel images
 .PHONY: build-kernel-%
 build-kernel-%: ## Build a kernel image
 	rm -rf ignite/ || true
-	git clone https://github.com/weaveworks/ignite.git
+	git clone https://github.com/weaveworks/ignite.git && \
+	docker build -t weaveworks/ignite-kernel-builder:dev ./ignite/images/kernel/builder/ && \
 	cp build/kernels/config-* ignite/images/kernel/generated/ && \
  	cd ./ignite/images/kernel && \
     docker build -t $(KERNEL_IMAGE_NAME):$*-amd64 \
