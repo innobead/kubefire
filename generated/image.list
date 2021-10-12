@@ -4,6 +4,8 @@ ghcr.io/innobead/kubefire-ubuntu:20.04
 ghcr.io/innobead/kubefire-ubuntu:20.10
 ghcr.io/innobead/kubefire-opensuse-leap:15.1
 ghcr.io/innobead/kubefire-opensuse-leap:15.2
+ghcr.io/innobead/kubefire-opensuse-leap:15.3
+ghcr.io/innobead/kubefire-rockylinux:8
 weaveworks/ignite-amazonlinux:2
 weaveworks/ignite-alpine
 weaveworks/ignite-centos:7
