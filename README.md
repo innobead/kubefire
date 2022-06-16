@@ -4,7 +4,7 @@ KubeFire is to create and manage Kubernetes clusters running on FireCracker micr
 
 - Uses independent rootfs and kernel from OCI images instead of traditional VM images like qcow2, vhd, etc 
 - Uses containerd to manage Firecracker processes
-- Have different cluster bootstappers to provision Kubernetes clusters like Kubeadm, K3s, Rancher RKE, RKE2, RancherD, and K0s
+- Have different cluster bootstappers to provision Kubernetes clusters like Kubeadm, K3s, RKE2, and K0s
 - Supports deploying clusters on different architectures like x86_64/AMD64 and ARM64/AARCH64 (ex: K3s, RKE2, K0s)
 
 ![kubefire in action](./doc/demo.svg)
@@ -71,7 +71,7 @@ Usage:
   kubefire cluster create [name] [flags]
 
 Flags:
-  -b, --bootstrapper string    Bootstrapper type, options: [kubeadm, k3s, rke, rke2, k0s] (default "kubeadm")
+  -b, --bootstrapper string    Bootstrapper type, options: [kubeadm, k3s, rke2, k0s] (default "kubeadm")
   -c, --config string          Cluster configuration file (ex: use 'config-template' command to generate the default cluster config)
   -o, --extra-options string   Extra options (ex: key=value,...) for bootstrapper
   -f, --force                  Force to recreate if the cluster exists
@@ -208,29 +208,6 @@ To add extra deployment options of the server or agent nodes, use `--extra-optio
 
 [![asciicast](https://asciinema.org/a/HqmfS4wZP7pPVS3E7M7gwAzmA.svg)](https://asciinema.org/a/HqmfS4wZP7pPVS3E7M7gwAzmA)
 
-### Bootstrapping with RKE
-
-```console
-❯ kubefire cluster create demo --bootstrapper=rke
-```
-
-#### Add extra RKE deployment options
-
-To add extra deployment options of the RKE cluster, use `--extra-options` of `cluster create` command to provide the below options as key-value pairs. 
-
-> Note: the key-value pairs in `--extra-options` are separated by a comma.
-
-- Add `kubernetes_version` into `kubernetes_version='<RKE supported kubernetes version>'`.
-- Add `cluster_config_file` into `cluster_config_file='<RKE customized cluster.yaml>,...'`.
-
-```console
-❯ cat /tmp/cluster.yaml
-network:
-    plugin: calico
-
-❯ kubefire cluster create demo --bootstrapper=rke --extra-options="kubernetes_version=v1.18.12-rancher1-1 cluster_config_file=/tmp/cluster.yaml"
-```
-
 ### Bootstrapping with RKE2
 
 ```console
@@ -239,7 +216,7 @@ network:
 
 #### Add extra RKE2 deployment options
 
-To add extra deployment options of the RKE cluster, use `--extra-options` of `cluster create` command to provide the below options as key-value pairs.
+To add extra deployment options of the RKE2 cluster, use `--extra-options` of `cluster create` command to provide the below options as key-value pairs.
 
 > Note: the key-value pairs in `--extra-options` are separated by a comma.
 
@@ -258,7 +235,7 @@ To add extra deployment options of the RKE cluster, use `--extra-options` of `cl
 
 #### Add extra K0s deployment options
 
-To add extra deployment options of the RKE cluster, use `--extra-options` of `cluster create` command to provide the below options as key-value pairs.
+To add extra deployment options of the K0s cluster, use `--extra-options` of `cluster create` command to provide the below options as key-value pairs.
 
 > Note: the key-value pairs in `--extra-options` are separated by a comma.
 
@@ -436,6 +413,5 @@ Besides below prebuilt images, you can also use the images provided by [weavewor
 - [Ignite](https://github.com/weaveworks/ignite)
 - [K3s](https://github.com/k3s-io/k3s) 
 - [Kubeadm](https://github.com/kubernetes/kubeadm)
-- [Rancher RKE](https://rancher.com/docs/rke/latest/en/)
-- [Rancher RKE2](https://docs.rke2.io/)
+- [RKE2](https://docs.rke2.io/)
 - [K0s](https://github.com/k0sproject/k0s)

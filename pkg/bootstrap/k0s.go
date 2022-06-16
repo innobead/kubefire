@@ -28,7 +28,7 @@ spec:
   api:
     externalAddress: {{.BindAddress}}
     address: {{.BindAddress}}
-  sans:
+    sans:
     - {{.BindAddress}}
 `
 
@@ -152,7 +152,7 @@ func (k *K0sBootstrapper) bootstrap(node *data.Node, isSingleNode bool, extraOpt
 	}
 	//FIXME need to enable worker, otherwise the workloads will be pending due to no node available. Probably upstream issue.
 	//if isSingleNode {
-	deployCmdOpts = append(deployCmdOpts, "--enable-worker")
+	deployCmdOpts = append(deployCmdOpts, "--enable-worker --no-taints")
 	//}
 
 	// create the default cluster config
@@ -253,7 +253,7 @@ func (k *K0sBootstrapper) join(node *data.Node, serverJoinToken string, workerJo
 
 	var deployCmdOpts []string
 
-	cmd := fmt.Sprintf(`server --enable-worker %s`, serverJoinToken)
+	cmd := fmt.Sprintf(`server --enable-worker --no-taints %s`, serverJoinToken)
 	if node.IsMaster() {
 		if len(extraOptions.ServerInstallOptions) > 0 {
 			deployCmdOpts = append(deployCmdOpts, extraOptions.ServerInstallOptions...)

@@ -27,9 +27,9 @@ import (
 var BuiltinTypes = []string{
 	constants.KUBEADM,
 	constants.K3S,
-	constants.RKE,
+	//constants.RKE,
 	constants.RKE2,
-	constants.RANCHERD,
+	//constants.RANCHERD,
 	constants.K0s,
 }
 
