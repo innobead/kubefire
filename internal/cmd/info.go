@@ -69,7 +69,7 @@ func CurrentPrerequisitesInfos() *PrerequisitesInfos {
 		Containerd: prerequisiteVersion("containerd --version", `(v\d+.\d+.\d+)`, config.ContainerdVersion),
 		Ignite:     prerequisiteVersion("ignite version -o short", `(v\d+.\d+.\d+)`, config.IgniteVersion),
 		Cni:        prerequisiteVersion("/opt/cni/bin/loopback", `(v\d+.\d+.\d+)`, config.CniVersion),
-		Runc:       prerequisiteVersion("runc -v", `runc version (\d+.\d+.\d+[-\w\d]+)`, strings.TrimPrefix(config.RuncVersion, "v")),
+		Runc:       prerequisiteVersion("runc -v", `(\d+.\d+.\d+)`, strings.TrimPrefix(config.RuncVersion, "v")),
 		CniPlugin:  cniVersion("0.4.0/kubefire-cni-bridge"),
 	}
 }
