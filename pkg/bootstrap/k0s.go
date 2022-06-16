@@ -197,7 +197,7 @@ func (k *K0sBootstrapper) bootstrap(node *data.Node, isSingleNode bool, extraOpt
 	}{
 		{
 			cmdline: fmt.Sprintf(
-				"%s ./%s create_config",
+				"%s ./%s create_controller",
 				config.K0sVersionsEnvVars(
 					node.Spec.Cluster.Version,
 					deployConfigValue,
@@ -207,24 +207,18 @@ func (k *K0sBootstrapper) bootstrap(node *data.Node, isSingleNode bool, extraOpt
 			),
 		},
 		{
-			cmdline: "systemctl enable k0s.service",
-		},
-		{
-			cmdline: "systemctl start k0s.service",
-		},
-		{
 			// make sure the related CA generated before creating the token in the following commands
 			cmdline: "sleep 30s",
 		},
 		{
-			cmdline: "k0s token create -c /etc/k0s/config.yaml --role=controller",
+			cmdline: "k0s token create --role=controller",
 			before: func(session *ssh.Session) bool {
 				session.Stdout = &serverTokenBuf
 				return true
 			},
 		},
 		{
-			cmdline: "k0s token create -c /etc/k0s/config.yaml --role=worker",
+			cmdline: "k0s token create --role=worker",
 			before: func(session *ssh.Session) bool {
 				session.Stdout = &workerTokenBuf
 				return true
@@ -277,7 +271,7 @@ func (k *K0sBootstrapper) join(node *data.Node, serverJoinToken string, workerJo
 	}{
 		{
 			cmdline: fmt.Sprintf(
-				"%s ./%s create_service_config",
+				"%s ./%s create_worker",
 				config.K0sVersionsEnvVars(
 					node.Spec.Cluster.Version,
 					"",
@@ -285,12 +279,6 @@ func (k *K0sBootstrapper) join(node *data.Node, serverJoinToken string, workerJo
 				).String(),
 				script.InstallPrerequisitesK0s,
 			),
-		},
-		{
-			cmdline: "systemctl enable k0s.service",
-		},
-		{
-			cmdline: "systemctl start k0s.service",
 		},
 	}
 
