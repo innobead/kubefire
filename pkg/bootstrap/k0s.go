@@ -252,14 +252,17 @@ func (k *K0sBootstrapper) join(node *data.Node, serverJoinToken string, workerJo
 	defer sshClient.Close()
 
 	var deployCmdOpts []string
-
-	cmd := fmt.Sprintf(`server --enable-worker --no-taints %s`, serverJoinToken)
+	var joinToken string
+	var cmd string
 	if node.IsMaster() {
+		joinToken = serverJoinToken
+		cmd = "server --enable-worker --no-taints"
 		if len(extraOptions.ServerInstallOptions) > 0 {
 			deployCmdOpts = append(deployCmdOpts, extraOptions.ServerInstallOptions...)
 		}
 	} else {
-		cmd = fmt.Sprintf("worker %s", workerJoinToken)
+		joinToken = workerJoinToken
+		cmd = "worker"
 		if len(extraOptions.WorkerInstallOptions) > 0 {
 			deployCmdOpts = append(deployCmdOpts, extraOptions.WorkerInstallOptions...)
 		}
@@ -270,12 +273,18 @@ func (k *K0sBootstrapper) join(node *data.Node, serverJoinToken string, workerJo
 		before  utilssh.Callback
 	}{
 		{
+			cmdline: "mkdir -p /etc/k0s",
+		},
+		{
+			cmdline: fmt.Sprintf(`echo "%s" > /etc/k0s/join-token`, joinToken),
+		},
+		{
 			cmdline: fmt.Sprintf(
 				"%s ./%s join_node",
 				config.K0sVersionsEnvVars(
 					node.Spec.Cluster.Version,
 					"",
-					fmt.Sprintf("%s %s", cmd, strings.Join(deployCmdOpts, " ")),
+					fmt.Sprintf("%s --token-file /etc/k0s/join-token %s", cmd, strings.Join(deployCmdOpts, " ")),
 				).String(),
 				script.InstallPrerequisitesK0s,
 			),
