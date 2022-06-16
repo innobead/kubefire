@@ -10,7 +10,6 @@ TMP_DIR=/tmp/kubefire
 K0S_VERSION=${K0S_VERSION:-}
 K0S_CONFIG=${K0S_CONFIG:-}
 K0S_CMD_OPTS=${K0S_CMD_OPTS:-}
-K0S_START_CMD=${K0S_SUBCMD:-}
 ARCH=${ARCH:-}
 
 if [ -z "$K0S_VERSION" ]; then
@@ -56,13 +55,11 @@ function install_k0s() {
 }
 
 function create_controller() {
-  K0S_START_CMD="server -c /etc/k0s/config.yaml"
   create_config
   enable_service
 }
 
 function create_worker() {
-  K0S_START_CMD="worker"
   enable_service
 }
 
@@ -78,7 +75,7 @@ function create_config() {
 function enable_service() {
   if k0s install -h >/dev/null; then
     # shellcheck disable=SC2086
-    k0s install $K0S_START_CMD -c /etc/k0s/config.yaml $K0S_CMD_OPTS
+    k0s install $K0S_CMD_OPTS
     k0s start
   else
     # deprecated
