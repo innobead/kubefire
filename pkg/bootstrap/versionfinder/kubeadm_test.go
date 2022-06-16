@@ -1,3 +1,4 @@
+//go:build !feature_run_on_ci
 // +build !feature_run_on_ci
 
 package versionfinder

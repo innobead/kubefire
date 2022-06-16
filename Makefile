@@ -15,12 +15,12 @@ CR_IMAGE_PREFIX := $(CR_PATH)innobead
 KERNEL_IMAGE_NAME=${CR_IMAGE_PREFIX}/$(PROJECT)-ignite-kernel
 BUILD_SUSE_IMAGES ?=
 
-GolangCILintVersion := 1.32.2
+GolangCILintVersion := 1.46.2
 
-ContainerdVersion := v1.4.4
-IgniteVersion := v0.9.0
-CniVersion := v0.9.1
-RuncVersion := v1.0.0-rc93
+ContainerdVersion := v1.6.6
+IgniteVersion := v0.10.0
+CniVersion := v1.1.1
+RuncVersion := v1.1.3
 
 GO_LINKFLAGS := -X=github.com/innobead/kubefire/internal/config.BuildVersion=$(COMMIT)
 GO_LINKFLAGS := -X=github.com/innobead/kubefire/internal/config.TagVersion=$(TAG) $(GO_LINKFLAGS)

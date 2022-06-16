@@ -54,10 +54,7 @@ func (k *KubeadmExtraOptions) generateKubeadmInitOptions() []string {
 func (k *KubeadmExtraOptions) generateControlPlaneComponentOptions(cpOptions *[]string) []string {
 	var options []string
 	for _, o := range *cpOptions {
-		if strings.HasPrefix(o, "--") {
-			o = strings.TrimPrefix(o, "--")
-		}
-
+		o = strings.TrimPrefix(o, "--")
 		options = append(options, o)
 	}
 
