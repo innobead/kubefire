@@ -59,7 +59,7 @@ function create_controller() {
   enable_service
 }
 
-function create_worker() {
+function join_node() {
   enable_service
 }
 

@@ -271,7 +271,7 @@ func (k *K0sBootstrapper) join(node *data.Node, serverJoinToken string, workerJo
 	}{
 		{
 			cmdline: fmt.Sprintf(
-				"%s ./%s create_worker",
+				"%s ./%s join_node",
 				config.K0sVersionsEnvVars(
 					node.Spec.Cluster.Version,
 					"",
