@@ -56,13 +56,13 @@ function install_k0s() {
 }
 
 function create_controller() {
-  K0S_START_CMD="server --enable-worker -c /etc/k0s/config.yaml"
+  K0S_START_CMD="server -c /etc/k0s/config.yaml"
   create_config
   enable_service
 }
 
 function create_worker() {
-  K0S_START_CMD="worker -c /etc/k0s/config.yaml"
+  K0S_START_CMD="worker"
   enable_service
 }
 
