@@ -10,14 +10,14 @@ make build-image-opensuse-leap RELEASE=15.1
 make build-image-sle15 RELEASE=15.1
 ```
 
-# Build Kernel images
+# Build Kernel images (deprecated, just use the upstream instead)
 
 ```
 make build-kernel-4.19.125
 make build-kernel-5.4.43
 ```
 
-# Build all supported Kernel images
+# Build all supported Kernel images (deprecated, just use the upstream instead)
 
 ```
 make build-kernels

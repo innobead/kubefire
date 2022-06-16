@@ -1,4 +1,4 @@
-Besides the prebuilt `weaveworks/ignite-kernel` kernel images, you can build customized ones as below steps.
+Besides, the prebuilt `weaveworks/ignite-kernel` kernel images, you can build customized ones as below steps.
 
 # Build customized kernel image
 
