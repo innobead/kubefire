@@ -72,7 +72,7 @@ build-cni: ## Build CNI executables
 	mkdir -p $(BUILD_TMP_DIR) || true
 	mkdir -p $(BUILD_CNI_DIR)
 	cd $(BUILD_TMP_DIR); \
-		TAG=$(CniVersion)-patch; \
+		TAG=v0.9.1-patch; \
 		git clone --branch $${TAG} https://github.com/innobead/plugins; \
         GOOS=linux GOARCH=amd64 ./plugins/build_linux.sh -ldflags "-extldflags -static -X github.com/containernetworking/plugins/pkg/utils/buildversion.BuildVersion=$${TAG}"; \
 		mv ./plugins/bin/host-local $(BUILD_CNI_DIR)/host-local-rev-linux-amd64; \
