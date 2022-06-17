@@ -5,7 +5,6 @@ import (
 	"github.com/avast/retry-go"
 	"github.com/goccy/go-yaml"
 	"github.com/hashicorp/go-multierror"
-	"github.com/innobead/kubefire/internal/config"
 	interr "github.com/innobead/kubefire/internal/error"
 	"github.com/innobead/kubefire/pkg/bootstrap/versionfinder"
 	pkgconfig "github.com/innobead/kubefire/pkg/config"
@@ -228,26 +227,30 @@ func downloadKubeConfig(nodeManager node.Manager, cluster *data.Cluster, remoteK
 		return "", err
 	}
 
-	// for k0s, need to modify the downloaded kubeconfig
-	if config.Bootstrapper == constants.K0s {
-		rawBytes, err := ioutil.ReadFile(destPath)
-		if err != nil {
-			return "", errors.WithStack(err)
+	// for k0s and k3s, need to modify the downloaded kubeconfig
+	updateKubeConfig := func(f string, ipaddrs ...string) (string, error) {
+		for _, ipaddr := range ipaddrs {
+			rawBytes, err := ioutil.ReadFile(f)
+			if err != nil {
+				return "", errors.WithStack(err)
+			}
+
+			result := strings.Replace(
+				string(rawBytes),
+				fmt.Sprintf("https://%s:", ipaddr),
+				fmt.Sprintf("https://%s:", firstMaster.Status.IPAddresses),
+				1,
+			)
+
+			if err := ioutil.WriteFile(f, []byte(result), 0755); err != nil {
+				return f, errors.WithStack(err)
+			}
 		}
 
-		result := strings.Replace(
-			string(rawBytes),
-			"https://localhost:6443",
-			fmt.Sprintf("https://%s:6443", firstMaster.Status.IPAddresses),
-			1,
-		)
-
-		if err := ioutil.WriteFile(destPath, []byte(result), 0755); err != nil {
-			return "", errors.WithStack(err)
-		}
+		return f, nil
 	}
 
-	return destPath, nil
+	return updateKubeConfig(destPath, "localhost", "127.0.0.1")
 }
 
 func getSupportedBootstrapperVersion(versionFinder versionfinder.Finder, configManager pkgconfig.Manager, bootstrapper Bootstrapper, version string) (pkgconfig.BootstrapperVersioner, error) {

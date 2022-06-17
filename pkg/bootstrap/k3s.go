@@ -129,7 +129,7 @@ func (k *K3sBootstrapper) bootstrap(node *data.Node, isSingleNode bool, extraOpt
 	defer sshClient.Close()
 
 	deployCmdOpts := []string{
-		fmt.Sprintf("--bind-address=%s", node.Status.IPAddresses),
+		fmt.Sprintf(`--node-name=%s`, node.Status.IPAddresses),
 	}
 	tokenBuf := bytes.Buffer{}
 
