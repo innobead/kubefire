@@ -129,7 +129,7 @@ func (k *K3sBootstrapper) bootstrap(node *data.Node, isSingleNode bool, extraOpt
 	defer sshClient.Close()
 
 	deployCmdOpts := []string{
-		fmt.Sprintf(`--node-name=%s`, node.Status.IPAddresses),
+		fmt.Sprintf(`--node-name="%s"`, node.Name),
 	}
 	tokenBuf := bytes.Buffer{}
 
@@ -187,7 +187,9 @@ func (k *K3sBootstrapper) join(node *data.Node, apiServerAddress string, joinTok
 	}
 	defer sshClient.Close()
 
-	var deployCmdOpts []string
+	deployCmdOpts := []string{
+		fmt.Sprintf(`--node-name="%s"`, node.Name),
+	}
 	cmd := fmt.Sprintf(
 		"%s K3S_URL=https://%s:6443 K3S_TOKEN=%s k3s-install.sh",
 		config.K3sVersionsEnvVars(node.Spec.Cluster.Version).String(),

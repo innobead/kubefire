@@ -131,6 +131,7 @@ func (r *RKE2Bootstrapper) bootstrap(node *data.Node, isSingleNode bool, extraOp
 
 	joinToken := util.GenerateRandomStr(8)
 	deployCmdOpts := []string{
+		fmt.Sprintf(`--node-name="%s"`, node.Name),
 		fmt.Sprintf("--bind-address=%s", node.Status.IPAddresses),
 		fmt.Sprintf("--token=%s", joinToken),
 	}
@@ -195,6 +196,7 @@ func (r *RKE2Bootstrapper) join(node *data.Node, apiServerAddress string, joinTo
 	defer sshClient.Close()
 
 	deployCmdOpts := []string{
+		fmt.Sprintf(`--node-name="%s"`, node.Name),
 		fmt.Sprintf("--server=https://%s:9345", apiServerAddress),
 		fmt.Sprintf("--token=%s", joinToken),
 	}

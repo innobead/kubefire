@@ -256,19 +256,11 @@ func (k *KubeadmBootstrapper) bootstrap(node *data.Node, isSingleNode bool, opti
 	}{
 		{
 			cmdline: fmt.Sprintf(
-				`kubeadm init phase control-plane all -v 5 --apiserver-extra-args="%s" --controller-manager-extra-args="%s" --scheduler-extra-args="%s"`,
+				`kubeadm init -v 5 --node-name="%s" --apiserver-extra-args="%s" --controller-manager-extra-args="%s" --scheduler-extra-args="%s" --ignore-preflight-errors='%s' %s`,
+				node.Name,
 				strings.Join(options.generateControlPlaneComponentOptions(&options.ApiServerOptions), ","),
 				strings.Join(options.generateControlPlaneComponentOptions(&options.ControllerManagerOptions), ","),
 				strings.Join(options.generateControlPlaneComponentOptions(&options.SchedulerOptions), ","),
-			),
-			before: func(session *ssh.Session) bool {
-				logrus.Info("running kubeadm init")
-				return true
-			},
-		},
-		{
-			cmdline: fmt.Sprintf(
-				"kubeadm init -v 5 --skip-phases='control-plane' --ignore-preflight-errors='%s' %s",
 				strings.Join(ignoreErrors, ","),
 				strings.Join(options.generateKubeadmInitOptions(), " "),
 			),
@@ -331,7 +323,7 @@ func (k *KubeadmBootstrapper) join(node *data.Node, joinCmd string) error {
 
 	logrus.Infof("running join command (%s)", joinCmd)
 
-	if err := sshClient.Run(nil, nil, fmt.Sprintf("%s -v 5", joinCmd)); err != nil {
+	if err := sshClient.Run(nil, nil, fmt.Sprintf(`%s -v 5 --node-name="%s"`, joinCmd, node.Name)); err != nil {
 		return errors.WithStack(err)
 	}
 
