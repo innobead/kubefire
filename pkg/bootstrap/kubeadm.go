@@ -256,11 +256,20 @@ func (k *KubeadmBootstrapper) bootstrap(node *data.Node, isSingleNode bool, opti
 	}{
 		{
 			cmdline: fmt.Sprintf(
-				`kubeadm init -v 5 --node-name="%s" --apiserver-extra-args="%s" --controller-manager-extra-args="%s" --scheduler-extra-args="%s" --ignore-preflight-errors='%s' %s`,
-				node.Name,
+				`kubeadm init phase control-plane all -v 5 --apiserver-extra-args="%s" --controller-manager-extra-args="%s" --scheduler-extra-args="%s"`,
 				strings.Join(options.generateControlPlaneComponentOptions(&options.ApiServerOptions), ","),
 				strings.Join(options.generateControlPlaneComponentOptions(&options.ControllerManagerOptions), ","),
 				strings.Join(options.generateControlPlaneComponentOptions(&options.SchedulerOptions), ","),
+			),
+			before: func(session *ssh.Session) bool {
+				logrus.Info("running kubeadm init")
+				return true
+			},
+		},
+		{
+			cmdline: fmt.Sprintf(
+				`kubeadm init -v 5 --node-name="%s" --skip-phases='control-plane' --ignore-preflight-errors='%s' %s`,
+				node.Name,
 				strings.Join(ignoreErrors, ","),
 				strings.Join(options.generateKubeadmInitOptions(), " "),
 			),
