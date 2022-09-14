@@ -22,20 +22,10 @@ function ask() {
 }
 
 function uninstall_containerd() {
-  if _is_arm_arch; then
-    echo "!!! Please uninstall containerd aarch64 via system package manager !!!"
-    return
-  fi
-
   sudo rm -f /usr/local/bin/containerd* /usr/local/bin/ctr
 }
 
 function uninstall_runc() {
-  if _is_arm_arch; then
-    echo "!!! Please uninstall containerd aarch64 via system package manager !!!"
-    return
-  fi
-
   sudo rm -f /usr/local/bin/runc
 }
 

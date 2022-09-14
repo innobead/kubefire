@@ -66,11 +66,6 @@ function install_containerd() {
   local dir=containerd-$version
 
 
-  if _is_arm_arch; then
-    echo "!!! Please install containerd aarch64 via system package manager, because there is no official aarch64 release from the github repo. !!!"
-    return
-  fi
-
   curl -sfSLO "https://github.com/containerd/containerd/releases/download/${CONTAINERD_VERSION}/containerd-${version}-linux-${GOARCH}.tar.gz"
   mkdir -p $dir
   tar -zxvf $dir*.tar.gz -C $dir
@@ -95,12 +90,8 @@ function install_runc() {
     return
   fi
 
-  if _is_arm_arch; then
-    echo "!!! Please install runc aarch64 via system package manager, because there is no official aarch64 release from the github repo. !!!"
-    return
-  fi
 
-  curl -sfSL "https://github.com/opencontainers/runc/releases/download/${RUNC_VERSION}/runc.amd64" -o runc
+  curl -sfSL "https://github.com/opencontainers/runc/releases/download/${RUNC_VERSION}/runc.${GOARCH}" -o runc
   chmod +x runc
   sudo mv runc /usr/local/bin/
 }
