@@ -55,8 +55,6 @@ Please run `kubefire install` command with root permission (or sudo without pass
 > Notes: 
 > - To uninstall the prerequisites, run `kubefire uninstall`.
 > - To check the installation status, run `kubefire info`. 
-> - For ARM64, `containerd` and `runc` will not be automatically installed by `kubefire install`, because there are no official ARM64 artifacts provided by https://github.com/containerd/containerd and https://github.com/opencontainers/runc. 
-> Please install manually via package manager on host (ex: Ubuntu apt, OpenSUSE zypper, CentOS yum, etc).
 
 [![asciicast](https://asciinema.org/a/tQKqYjojnsgZOjZqrGbF9Zqh0.svg)](https://asciinema.org/a/tQKqYjojnsgZOjZqrGbF9Zqh0)
 
