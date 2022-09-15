@@ -23,9 +23,9 @@ fi
 STABLE_KUBEFIRE_VERSION=$(sed -E "s/(v[0-9]+\.[0-9]+\.[0-9]+)[a-zA-Z0-9\-]*/\1/g"< <(echo "$KUBEFIRE_VERSION"))
 
 if [ ${ARCH} = aarch64 ] || [ ${ARCH} = arm64 ]; then
-  ARCH_SUFFIX = arm64
-elif [ ${ARCH} = x86_64 ]
-  ARCH_SUFFIX = amd64
+  ARCH_SUFFIX=arm64
+elif [ ${ARCH} = x86_64 ]; then
+  ARCH_SUFFIX=amd64
 fi
 
 rm -rf $TMP_DIR && mkdir -p $TMP_DIR
