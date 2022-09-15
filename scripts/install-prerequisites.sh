@@ -7,7 +7,7 @@ set -o pipefail
 set -o xtrace
 
 TMP_DIR=/tmp/kubefire
-GOARCH=$(go env GOARCH 2>/dev/null || echo "amd64")
+ARCH=`uname -m`
 
 KUBEFIRE_VERSION=${KUBEFIRE_VERSION:-}
 CONTAINERD_VERSION=${CONTAINERD_VERSION:-""}
@@ -21,6 +21,12 @@ if [ -z "$KUBEFIRE_VERSION" ] || [ -z "$CONTAINERD_VERSION" ] || [ -z "$IGNITE_V
 fi
 
 STABLE_KUBEFIRE_VERSION=$(sed -E "s/(v[0-9]+\.[0-9]+\.[0-9]+)[a-zA-Z0-9\-]*/\1/g"< <(echo "$KUBEFIRE_VERSION"))
+
+if [ ${ARCH} = aarch64 ] || [ ${ARCH} = arm64 ]; then
+  ARCH_SUFFIX = arm64
+elif [ ${ARCH} = x86_64 ]
+  ARCH_SUFFIX = amd64
+fi
 
 rm -rf $TMP_DIR && mkdir -p $TMP_DIR
 pushd $TMP_DIR
@@ -42,13 +48,8 @@ function _check_version() {
   return $?
 }
 
-function _is_arm_arch() {
-    uname -m | grep "aarch64"
-    return $?
-}
-
 function check_virtualization() {
-  if _is_arm_arch; then
+  if [ ${ARCH} = aarch64 ]; then
     return
   fi
 
@@ -66,7 +67,7 @@ function install_containerd() {
   local dir=containerd-$version
 
 
-  curl -sfSLO "https://github.com/containerd/containerd/releases/download/${CONTAINERD_VERSION}/containerd-${version}-linux-${GOARCH}.tar.gz"
+  curl -sfSLO "https://github.com/containerd/containerd/releases/download/${CONTAINERD_VERSION}/containerd-${version}-linux-${ARCH_SUFFIX}.tar.gz"
   mkdir -p $dir
   tar -zxvf $dir*.tar.gz -C $dir
   chmod +x $dir/bin/*
@@ -91,7 +92,7 @@ function install_runc() {
   fi
 
 
-  curl -sfSL "https://github.com/opencontainers/runc/releases/download/${RUNC_VERSION}/runc.${GOARCH}" -o runc
+  curl -sfSL "https://github.com/opencontainers/runc/releases/download/${RUNC_VERSION}/runc.${ARCH_SUFFIX}" -o runc
   chmod +x runc
   sudo mv runc /usr/local/bin/
 }
@@ -103,23 +104,12 @@ function install_cni() {
   fi
 
   mkdir -p /opt/cni/bin
-
-  local f="https://github.com/containernetworking/plugins/releases/download/${CNI_VERSION}/cni-plugins-linux-amd64-${CNI_VERSION}.tgz"
-  if _is_arm_arch; then
-    f="https://github.com/containernetworking/plugins/releases/download/${CNI_VERSION}/cni-plugins-linux-arm64-${CNI_VERSION}.tgz"
-  fi
-
+  local f="https://github.com/containernetworking/plugins/releases/download/${CNI_VERSION}/cni-plugins-linux-${ARCH_SUFFIX}-${CNI_VERSION}.tgz"
   curl -sfSL "$f" | tar -C /opt/cni/bin -xz
 }
 
 function install_cni_patches() {
-    if _is_arm_arch; then
-      curl -o host-local-rev -sSL "https://github.com/innobead/kubefire/releases/download/${STABLE_KUBEFIRE_VERSION}/host-local-rev-linux-arm64" # FIXME: add -f back later
-    else
-      curl -o host-local-rev -sfSL "https://github.com/innobead/kubefire/releases/download/${STABLE_KUBEFIRE_VERSION}/host-local-rev-linux-amd64" || \
-      curl -o host-local-rev -sfSL "https://github.com/innobead/kubefire/releases/download/${STABLE_KUBEFIRE_VERSION}/host-local-rev"
-    fi
-
+    curl -o host-local-rev -sfSL "https://github.com/innobead/kubefire/releases/download/${STABLE_KUBEFIRE_VERSION}/host-local-rev-linux-${ARCH_SUFFIX}"
     chmod +x host-local-rev
     sudo mv host-local-rev /opt/cni/bin/
 }
@@ -133,11 +123,7 @@ function install_ignite() {
   for binary in ignite ignited; do
     echo "Installing $binary..."
 
-    local f="https://github.com/weaveworks/ignite/releases/download/${IGNITE_VERION}/${binary}-amd64"
-    if _is_arm_arch; then
-      f="https://github.com/weaveworks/ignite/releases/download/${IGNITE_VERION}/${binary}-arm64"
-    fi
-
+    local f="https://github.com/weaveworks/ignite/releases/download/${IGNITE_VERION}/${binary}-${ARCH_SUFFIX}"
     curl -sfSLo $binary "$f"
     chmod +x $binary
     sudo mv $binary /usr/local/bin
