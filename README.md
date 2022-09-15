@@ -46,7 +46,11 @@ To be able to run kubefire commands w/o issues like node/cluster management, the
 Please run `kubefire install` command with root permission (or sudo without password) to install or update these prerequisites via the below steps.
 
 - Check virtualization supported
-- Install necessary components including runc, containerd, CNI plugins, and Ignite
+- Install necessary components including runc, containerd, CNI plugins, and Ignite. See below minimum required versions of components
+  - RuncVersion >= v1.1.3
+  - ContainerdVersion >= v1.6.6
+  - CniVersion >= v1.1.1
+  - IgniteVersion >= v0.10.0
 
 > Notes: 
 > - To uninstall the prerequisites, run `kubefire uninstall`.
