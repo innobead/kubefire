@@ -52,7 +52,7 @@ function _check_version() {
 }
 
 function check_virtualization() {
-  if [ ${ARCH} = aarch64 ]; then
+  if [ ${ARCH_SUFFIX} = arm64 ]; then
     return
   fi
 
