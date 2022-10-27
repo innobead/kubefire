@@ -26,6 +26,9 @@ if [ ${ARCH} = aarch64 ] || [ ${ARCH} = arm64 ]; then
   ARCH_SUFFIX=arm64
 elif [ ${ARCH} = x86_64 ]; then
   ARCH_SUFFIX=amd64
+else
+  echo "${ARCH} is not supported!" >/dev/stderr
+  exit 1
 fi
 
 rm -rf $TMP_DIR && mkdir -p $TMP_DIR
