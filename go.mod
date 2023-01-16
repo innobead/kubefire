@@ -7,7 +7,7 @@ require (
 	github.com/avast/retry-go v3.0.0+incompatible
 	github.com/containerd/go-cni v1.1.7
 	github.com/dlclark/regexp2 v1.8.0
-	github.com/goccy/go-yaml v1.9.7
+	github.com/goccy/go-yaml v1.9.8
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/olekukonko/tablewriter v0.0.5
