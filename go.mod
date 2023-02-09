@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/Masterminds/semver/v3 v3.2.0
 	github.com/avast/retry-go v3.0.0+incompatible
-	github.com/containerd/go-cni v1.1.7
+	github.com/containerd/go-cni v1.1.8
 	github.com/dlclark/regexp2 v1.8.0
 	github.com/goccy/go-yaml v1.9.8
 	github.com/google/go-github v17.0.0+incompatible
@@ -21,7 +21,7 @@ require (
 )
 
 require (
-	github.com/containernetworking/cni v1.1.1 // indirect
+	github.com/containernetworking/cni v1.1.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fatih/color v1.13.0 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
