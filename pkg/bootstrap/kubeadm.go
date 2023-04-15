@@ -294,10 +294,10 @@ func (k *KubeadmBootstrapper) bootstrap(node *data.Node, isSingleNode bool, opti
 			},
 		},
 		{
-			cmdline: "KUBECONFIG=/etc/kubernetes/admin.conf kubectl taint nodes --all node-role.kubernetes.io/master-",
+			cmdline: "KUBECONFIG=/etc/kubernetes/admin.conf kubectl taint nodes --all node-role.kubernetes.io/control-plane-",
 			before: func(session *ssh.Session) bool {
 				if isSingleNode {
-					logrus.WithField("node", node.Name).Infoln("untainting the master node")
+					logrus.WithField("node", node.Name).Infoln("untainting the control plane node")
 				}
 
 				return isSingleNode
