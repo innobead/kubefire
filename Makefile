@@ -19,7 +19,7 @@ GolangCILintVersion := 1.51.2
 
 ContainerdVersion := v1.6.20
 IgniteVersion := v0.10.0
-CniVersion := v1.1.2
+CniVersion := v1.1.1
 RuncVersion := v1.1.6
 
 GO_LINKFLAGS := -X=github.com/innobead/kubefire/internal/config.BuildVersion=$(COMMIT)
