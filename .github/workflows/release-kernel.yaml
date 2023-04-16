@@ -7,7 +7,7 @@ on:
 jobs:
   release:
     name: Release kernel images
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     needs: []
     steps:
       - name: Checkout code

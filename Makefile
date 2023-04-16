@@ -63,8 +63,8 @@ env: ## Prepare build env
 .PHONY: build
 build: env format ## Build executables (linux/amd64 supported only)
 	mkdir -p $(BUILD_DIR)
-	GOOS=linux GOARCH=amd64 go build -o $(BUILD_DIR)/kubefire-linux-amd64 $(GO_LDFLAGS) ./cmd/kubefire
-	GOOS=linux GOARCH=arm64 go build -o $(BUILD_DIR)/kubefire-linux-arm64 $(GO_LDFLAGS) ./cmd/kubefire
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o $(BUILD_DIR)/kubefire-linux-amd64 $(GO_LDFLAGS) ./cmd/kubefire
+	GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -o $(BUILD_DIR)/kubefire-linux-arm64 $(GO_LDFLAGS) ./cmd/kubefire
 
 .PHONY: build-cni
 build-cni: ## Build CNI executables
