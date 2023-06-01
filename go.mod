@@ -6,7 +6,7 @@ require (
 	github.com/Masterminds/semver/v3 v3.2.1
 	github.com/avast/retry-go v3.0.0+incompatible
 	github.com/containerd/go-cni v1.1.9
-	github.com/dlclark/regexp2 v1.9.0
+	github.com/dlclark/regexp2 v1.10.0
 	github.com/goccy/go-yaml v1.11.0
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/hashicorp/go-multierror v1.1.1
