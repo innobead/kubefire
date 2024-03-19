@@ -15,7 +15,7 @@ CR_IMAGE_PREFIX := $(CR_PATH)innobead
 KERNEL_IMAGE_NAME=${CR_IMAGE_PREFIX}/$(PROJECT)-ignite-kernel
 BUILD_SUSE_IMAGES ?=
 
-GolangCILintVersion := 1.51.2
+GolangCILintVersion := 1.56.2
 
 ContainerdVersion := v1.6.20
 IgniteVersion := v0.10.0
