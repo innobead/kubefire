@@ -1,5 +1,5 @@
-# github.com/Masterminds/semver/v3 v3.2.1
-## explicit; go 1.18
+# github.com/Masterminds/semver/v3 v3.4.0
+## explicit; go 1.21
 github.com/Masterminds/semver/v3
 # github.com/avast/retry-go v3.0.0+incompatible
 ## explicit
