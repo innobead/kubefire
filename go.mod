@@ -1,6 +1,6 @@
 module github.com/innobead/kubefire
 
-go 1.22
+go 1.24.0
 
 require (
 	github.com/Masterminds/semver/v3 v3.2.1
@@ -17,14 +17,13 @@ require (
 	github.com/stretchr/testify v1.8.2
 	github.com/thoas/go-funk v0.9.3
 	golang.org/x/crypto v0.21.0
-	golang.org/x/oauth2 v0.18.0
+	golang.org/x/oauth2 v0.31.0
 )
 
 require (
 	github.com/containernetworking/cni v1.1.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fatih/color v1.16.0 // indirect
-	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
@@ -38,8 +37,6 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	golang.org/x/sys v0.18.0 // indirect
 	golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028 // indirect
-	google.golang.org/appengine v1.6.8 // indirect
-	google.golang.org/protobuf v1.33.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
